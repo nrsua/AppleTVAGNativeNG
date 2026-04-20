@@ -29,6 +29,10 @@
   var activityListenerBound = false;
   var fullListenerBound = false;
   var topnavSettingsOpen = false;
+  var controlPanelOpen = false;
+  var controlPanelPrevController = '';
+  var controlPanelControllerReady = false;
+  var controlPanelDocCloseBound = false;
 
   var I18N = {
     ru: {
@@ -238,12 +242,17 @@
 
   function removePluginUi() {
     try {
+      closeControlPanel(false);
       if (document.body) document.body.classList.remove(BODY_CLASS);
       if (document.body) document.body.classList.remove(GLARE_CLASS);
       var style = document.getElementById(STYLE_ID);
       if (style) style.remove();
       var shell = document.querySelector('.agnative-topnav-shell');
       if (shell) shell.remove();
+      var right = document.querySelector('.agnative-topnav-right');
+      if (right) right.remove();
+      var panel = document.querySelector('.agnative-control-panel');
+      if (panel) panel.remove();
       var clock = document.getElementById(CLOCK_ID);
       if (clock) clock.remove();
     } catch (e) { }
@@ -275,6 +284,16 @@
     }, 0);
   }
 
+  function normalizeTopnavAction(action) {
+    var value = String(action || '').trim().toLowerCase();
+    if (!value) return '';
+    if (value === 'release' || value === 'releases') return 'relise';
+    if (value === 'bookmarks') return 'favorite';
+    if (value === 'schedule') return 'timetable';
+    if (value === 'collection' || value === 'collections') return 'catalog';
+    return value;
+  }
+
   function getFallbackTopnavItems() {
     return [
       { action: 'main', label: t('nav_main') },
@@ -282,13 +301,11 @@
       { action: 'tv', label: t('nav_tv') },
       { action: 'cartoon', label: t('nav_cartoon') },
       { action: 'anime', label: t('nav_anime') },
-      { action: 'release', label: t('nav_release') },
-      { action: 'releases', label: t('nav_release') },
-      { action: 'collection', label: t('nav_collection') },
-      { action: 'collections', label: t('nav_collection') },
-      { action: 'schedule', label: t('nav_schedule') },
+      { action: 'relise', label: t('nav_release') },
+      { action: 'catalog', label: t('nav_collection') },
+      { action: 'timetable', label: t('nav_schedule') },
       { action: 'history', label: t('nav_history') },
-      { action: 'bookmarks', label: t('nav_bookmarks') },
+      { action: 'favorite', label: t('nav_bookmarks') },
       { action: 'notice', label: t('nav_notice') },
       { action: 'feed', label: t('nav_feed') },
       { action: 'console', label: t('nav_console') }
@@ -300,7 +317,7 @@
     var seen = {};
 
     qsa('.menu .menu__item.selector[data-action]').forEach(function (item) {
-      var action = item.getAttribute('data-action');
+      var action = normalizeTopnavAction(item.getAttribute('data-action'));
       if (!action || seen[action]) return;
       if (action === 'search' || action === 'settings') return;
       var label = '';
@@ -333,7 +350,8 @@
           raw = raw.split(',').map(function (item) { return item.trim(); }).filter(Boolean);
         }
       }
-      return Array.isArray(raw) ? raw : ['main', 'movie', 'tv', 'cartoon'];
+      var actions = Array.isArray(raw) ? raw : ['main', 'movie', 'tv', 'cartoon'];
+      return actions.map(normalizeTopnavAction).filter(Boolean);
     } catch (e) {
       return ['main', 'movie', 'tv', 'cartoon'];
     }
@@ -359,8 +377,10 @@
     });
 
     if (enabled) {
-      if (current.indexOf(action) === -1) current.push(action);
+      action = normalizeTopnavAction(action);
+      if (action && current.indexOf(action) === -1) current.push(action);
     } else {
+      action = normalizeTopnavAction(action);
       current = current.filter(function (item) { return item !== action; });
     }
 
@@ -378,7 +398,7 @@
       map[item.action] = item;
     });
     return selected.map(function (action) {
-      return map[action];
+      return map[normalizeTopnavAction(action)];
     }).filter(Boolean);
   }
 
@@ -1026,15 +1046,27 @@
       '  background: transparent !important;',
       '  box-shadow: none !important;',
       '}',
-      'body.' + BODY_CLASS + ' .agnative-topnav-shell { position:absolute; left:50%; top:.46em; transform:translateX(-50%); z-index:20; width:max-content; max-width:calc(100vw - 24em); display:inline-flex; align-items:center; }',
-      'body.' + BODY_CLASS + ' .agnative-topnav-shell__inner { display:inline-flex; align-items:center; gap:.18em; padding:.22em .32em; border-radius:999px; background:rgba(22,24,30,.28); border:1px solid rgba(255,255,255,.10); box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 8px 18px rgba(0,0,0,.12); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%); }',
+      'body.' + BODY_CLASS + ' .agnative-topnav-shell { position:absolute; left:0; right:0; top:.46em; z-index:20; }',
+      'body.' + BODY_CLASS + ' .agnative-topnav-shell__inner { margin:0 auto; width:max-content; display:inline-flex; align-items:center; gap:.18em; padding:.22em .32em; border-radius:999px; background:rgba(22,24,30,.28); border:1px solid rgba(255,255,255,.10); box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 8px 18px rgba(0,0,0,.12); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%); position:relative; left:50%; transform:translateX(-50%); }',
       'body.' + BODY_CLASS + ' .agnative-topnav-shell__items { display:flex; align-items:center; justify-content:center; gap:.08em; }',
-      'body.' + BODY_CLASS + ' .agnative-topnav-shell__right { display:flex; align-items:center; gap:.08em; margin-left:.12em; padding-left:.18em; }',
+      'body.' + BODY_CLASS + ' .agnative-topnav-right { position:absolute; right:1.15em; top:0; z-index:23; display:inline-flex; align-items:center; gap:.08em; padding:.22em .32em; border-radius:999px; background:rgba(22,24,30,.28); border:1px solid rgba(255,255,255,.10); box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 8px 18px rgba(0,0,0,.12); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%); }',
       'body.' + BODY_CLASS + ' .agnative-topnav-shell__item.selector { appearance:none; -webkit-appearance:none; border:0; background:none; color:rgba(255,255,255,.92); height:2.16em; display:inline-flex; align-items:center; justify-content:center; text-align:center; padding:0 .96em; border-radius:999px; font-size:.83em; font-weight:700; line-height:1; white-space:nowrap; transition:background .2s ease, transform .2s ease, box-shadow .2s ease; }',
       'body.' + BODY_CLASS + ' .agnative-topnav-shell__item--icon.selector { width:2.16em; min-width:2.16em; padding:0; }',
       'body.' + BODY_CLASS + ' .agnative-topnav-shell__item--icon svg { width:1em; height:1em; }',
+      'body.' + BODY_CLASS + ' .agnative-topnav-shell__clock.selector { min-width:4.2em; padding:0 .95em; font-size:.92em; letter-spacing:.01em; }',
+      'body.' + BODY_CLASS + ' .agnative-topnav-shell__clock-time { display:block; min-width:3.4em; text-align:center; }',
+      'body.' + BODY_CLASS + ' .agnative-topnav-right__profile.selector { width:2.16em; min-width:2.16em; padding:0; overflow:hidden; }',
+      'body.' + BODY_CLASS + ' .agnative-topnav-right__profile-img { width:1.56em; height:1.56em; border-radius:999px; object-fit:cover; display:block; }',
       'body.' + BODY_CLASS + ' .agnative-topnav-shell__item.is-active, body.' + BODY_CLASS + ' .agnative-topnav-shell__item.hover, body.' + BODY_CLASS + ' .agnative-topnav-shell__item.focus { background:rgba(255,255,255,.14); box-shadow:inset 0 1px 0 rgba(255,255,255,.10); }',
-      'body.' + BODY_CLASS + ' .agnative-topnav-clock { position:absolute; right:1.15em; top:.46em; z-index:20; display:inline-flex; align-items:center; justify-content:center; min-width:4.2em; height:2.6em; padding:0 .95em; border-radius:999px; background:rgba(22,24,30,.26); border:1px solid rgba(255,255,255,.10); box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 8px 18px rgba(0,0,0,.12); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%); color:rgba(255,255,255,.95); font-size:.92em; font-weight:700; letter-spacing:.01em; }',
+      'body.' + BODY_CLASS + ' .agnative-control-panel { position:absolute; right:1.15em; top:3.7em; z-index:26; width:18.8em; padding:.72em; border-radius:1.18em; background:rgba(40,48,62,.76); border:1px solid rgba(255,255,255,.13); box-shadow:0 18px 48px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.09); backdrop-filter:blur(22px) saturate(136%); -webkit-backdrop-filter:blur(22px) saturate(136%); opacity:0; transform:translateY(-.35em) scale(.98); pointer-events:none; transition:opacity .2s ease, transform .2s ease; }',
+      'body.' + BODY_CLASS + ' .agnative-control-panel.is-open { opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }',
+      'body.' + BODY_CLASS + ' .agnative-control-panel__title { font-size:1.28em; font-weight:600; color:rgba(255,255,255,.94); padding:.18em .15em .52em; }',
+      'body.' + BODY_CLASS + ' .agnative-control-panel__grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.48em; }',
+      'body.' + BODY_CLASS + ' .agnative-control-panel__tile.selector { min-height:5.2em; border-radius:.95em; background:rgba(16,20,28,.82); border:1px solid rgba(255,255,255,.10); display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:.34em; padding:.65em .72em; color:rgba(255,255,255,.95); transition:background .2s ease, box-shadow .2s ease, transform .2s ease; }',
+      'body.' + BODY_CLASS + ' .agnative-control-panel__tile.selector .agnative-control-panel__icon { width:1.3em; height:1.3em; display:inline-flex; align-items:center; justify-content:center; color:rgba(214,230,255,.97); }',
+      'body.' + BODY_CLASS + ' .agnative-control-panel__tile.selector .agnative-control-panel__icon svg { width:1.3em; height:1.3em; }',
+      'body.' + BODY_CLASS + ' .agnative-control-panel__tile.selector .agnative-control-panel__label { font-size:.95em; font-weight:700; line-height:1.15; text-align:left; }',
+      'body.' + BODY_CLASS + ' .agnative-control-panel__tile.selector.hover, body.' + BODY_CLASS + ' .agnative-control-panel__tile.selector.focus { background:rgba(255,255,255,.18); box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 0 0 1px rgba(255,255,255,.12); transform:translateY(-.02em); }',
       'body.' + BODY_CLASS + ' .items-line--type-default { min-height:auto !important; padding-top:0 !important; padding-bottom:.12em !important; margin-bottom:.32em !important; }',
       'body.' + BODY_CLASS + ' .items-line--type-default .items-line__head { margin-bottom:.58em !important; min-height:auto !important; padding-top:0 !important; padding-bottom:0 !important; padding-left:1.05em !important; padding-right:1.05em !important; font-size:1.14em !important; }',
       'body.' + BODY_CLASS + ' .items-line__more.selector { ' + itemsLineMoreRule + ' opacity:.8 !important; }',
@@ -1077,8 +1109,38 @@
     return '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.875 6.27a2.225 2.225 0 0 1 1.125 1.948v7.284c0 .809 -.443 1.555 -1.158 1.948l-6.75 4.27a2.269 2.269 0 0 1 -2.184 0l-6.75 -4.27a2.225 2.225 0 0 1 -1.158 -1.948v-7.285c0 -.809 .443 -1.554 1.158 -1.947l6.75 -3.98a2.33 2.33 0 0 1 2.25 0l6.75 3.98h-.033"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/></svg>';
   }
 
+  function iconProfile() {
+    return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4.1" stroke="currentColor" stroke-width="2"></circle><path d="M4 20c0-3.9 3.8-6 8-6s8 2.1 8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>';
+  }
+
   function iconFavorite() {
     return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 3.5H15.5C17.433 3.5 19 5.067 19 7V21L12 17.1L5 21V7C5 5.067 6.567 3.5 8.5 3.5H7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>';
+  }
+
+  function iconSync() {
+    return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 12a8 8 0 0 0-13.66-5.66" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><path d="M4 5v4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M4 12a8 8 0 0 0 13.66 5.66" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><path d="M20 19v-4h-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+  }
+
+  function iconPlayer() {
+    return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"></rect><path d="M10 9.5L15 12L10 14.5V9.5Z" fill="currentColor"></path></svg>';
+  }
+
+  function iconData() {
+    return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="6" rx="7" ry="3" stroke="currentColor" stroke-width="2"></ellipse><path d="M5 6V18C5 19.66 8.13 21 12 21C15.87 21 19 19.66 19 18V6" stroke="currentColor" stroke-width="2"></path><path d="M5 12C5 13.66 8.13 15 12 15C15.87 15 19 13.66 19 12" stroke="currentColor" stroke-width="2"></path></svg>';
+  }
+
+  function getProfileButtonHtml() {
+    try {
+      var permit = window.Lampa && Lampa.Account && Lampa.Account.Permit ? Lampa.Account.Permit : null;
+      var profile = permit && permit.account ? permit.account.profile : null;
+      var icon = profile && profile.icon ? profile.icon : '';
+      var protocol = window.Lampa && Lampa.Utils && typeof Lampa.Utils.protocol === 'function' ? Lampa.Utils.protocol() : '';
+      var domain = window.Lampa && Lampa.Manifest ? Lampa.Manifest.cub_domain : '';
+      if (icon && protocol && domain) {
+        return '<img class="agnative-topnav-right__profile-img" src="' + protocol + domain + '/img/profiles/' + icon + '.png" alt="profile">';
+      }
+    } catch (e) { }
+    return iconProfile();
   }
 
   function clickNode(node) {
@@ -1090,10 +1152,12 @@
   }
 
   function getMenuItem(action) {
+    action = normalizeTopnavAction(action);
     return qs('.menu .menu__item.selector[data-action="' + action + '"]');
   }
 
   function triggerMenuAction(action) {
+    action = normalizeTopnavAction(action);
     try {
       if (!window.Lampa) return false;
       var Storage = Lampa.Storage;
@@ -1136,6 +1200,7 @@
   }
 
   function triggerSearch() {
+    closeControlPanel(false);
     try {
       if (window.Lampa && Lampa.Search && typeof Lampa.Search.open === 'function') {
         Lampa.Search.open({});
@@ -1146,6 +1211,7 @@
   }
 
   function triggerSettings() {
+    closeControlPanel(false);
     try {
       var menuItem = getMenuItem('settings');
       if (menuItem) {
@@ -1170,7 +1236,43 @@
     return false;
   }
 
+  function openSettingsComponent(componentName) {
+    try {
+      if (!window.Lampa) return false;
+      if (Lampa.Controller && typeof Lampa.Controller.toggle === 'function') {
+        Lampa.Controller.toggle('settings');
+      }
+      if (Lampa.Settings && typeof Lampa.Settings.create === 'function') {
+        setTimeout(function () {
+          try {
+            Lampa.Settings.create(componentName);
+          } catch (e) {
+            if (componentName !== 'more') Lampa.Settings.create('more');
+          }
+        }, 40);
+        return true;
+      }
+    } catch (e) { }
+    return triggerSettings();
+  }
+
+  function triggerSyncSettings() {
+    closeControlPanel(false);
+    return openSettingsComponent('account');
+  }
+
+  function triggerPlayerSettings() {
+    closeControlPanel(false);
+    return openSettingsComponent('player');
+  }
+
+  function triggerCacheDataSettings() {
+    closeControlPanel(false);
+    return openSettingsComponent('data');
+  }
+
   function triggerFavorite() {
+    closeControlPanel(false);
     try {
       if (window.Lampa && Lampa.ParentalControl && typeof Lampa.ParentalControl.personal === 'function' && Lampa.Activity && Lampa.Lang) {
         Lampa.ParentalControl.personal('bookmarks', function () {
@@ -1180,6 +1282,154 @@
       }
     } catch (e) { }
     return false;
+  }
+
+  function langText(key, fallback) {
+    try {
+      if (window.Lampa && Lampa.Lang && typeof Lampa.Lang.translate === 'function') {
+        var value = Lampa.Lang.translate(key);
+        if (value && value !== key) return value;
+      }
+    } catch (e) { }
+    return fallback;
+  }
+
+  function triggerProfile() {
+    closeControlPanel(false);
+    try {
+      var nativeBtn = qs('.head__action.open--profile, .open--profile');
+      if (nativeBtn) {
+        clickNode(nativeBtn);
+        return true;
+      }
+
+      if (window.Lampa && Lampa.Account && Lampa.Account.Profile && typeof Lampa.Account.Profile.select === 'function') {
+        Lampa.Account.Profile.select(function () { });
+        return true;
+      }
+
+      if (window.Lampa && Lampa.Account && typeof Lampa.Account.showProfiles === 'function') {
+        Lampa.Account.showProfiles(function () { });
+        return true;
+      }
+    } catch (e) { }
+    return false;
+  }
+
+  function bindControlPanelOutsideClose() {
+    if (controlPanelDocCloseBound || !document || !document.addEventListener) return;
+    controlPanelDocCloseBound = true;
+    var closeIfOutside = function (e) {
+      if (!controlPanelOpen) return;
+      var target = e && e.target;
+      if (!target) return;
+      if (target.closest && target.closest('.agnative-control-panel')) return;
+      if (target.closest && target.closest('.agnative-topnav-shell__clock')) return;
+      closeControlPanel(true);
+    };
+    document.addEventListener('mousedown', closeIfOutside, true);
+    document.addEventListener('touchstart', closeIfOutside, true);
+  }
+
+  function ensureControlPanelController(panel) {
+    if (controlPanelControllerReady || !window.Lampa || !Lampa.Controller || !Lampa.Controller.add || !window.$) return;
+    controlPanelControllerReady = true;
+
+    Lampa.Controller.add('agnative_control_panel', {
+      toggle: function () {
+        var view = $(panel);
+        var target = qs('.agnative-control-panel__tile.selected', panel) || qs('.agnative-control-panel__tile.selector', panel);
+        Lampa.Controller.collectionSet(view);
+        Lampa.Controller.collectionFocus(target || false, view, true);
+        if (target && typeof target.focus === 'function') target.focus();
+      },
+      up: function () { if (window.Navigator && Navigator.move) Navigator.move('up'); },
+      down: function () { if (window.Navigator && Navigator.move) Navigator.move('down'); },
+      left: function () { if (window.Navigator && Navigator.move) Navigator.move('left'); },
+      right: function () { if (window.Navigator && Navigator.move) Navigator.move('right'); },
+      back: function () { closeControlPanel(true); }
+    });
+  }
+
+  function ensureControlPanel(head) {
+    if (!head) return null;
+    var panel = qs('.agnative-control-panel', head);
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.className = 'agnative-control-panel';
+      panel.setAttribute('aria-hidden', 'true');
+      head.appendChild(panel);
+    }
+
+    panel.innerHTML = '<div class="agnative-control-panel__title">' + escapeHtml(langText('settings_cub_account', 'Account')) + '</div><div class="agnative-control-panel__grid"></div>';
+    var grid = qs('.agnative-control-panel__grid', panel);
+    if (!grid) return panel;
+
+    [
+      { role: 'settings', title: langText('title_settings', 'Settings'), icon: iconSettings(), handler: triggerSettings },
+      { role: 'sync', title: langText('settings_cub_sync', 'Synchronization'), icon: iconSync(), handler: triggerSyncSettings },
+      { role: 'player', title: langText('settings_main_player', 'Player'), icon: iconPlayer(), handler: triggerPlayerSettings },
+      { role: 'data', title: langText('settings_rest_cache_all', 'Cache & Data'), icon: iconData(), handler: triggerCacheDataSettings }
+    ].forEach(function (def) {
+      var tile = document.createElement('div');
+      tile.className = 'agnative-control-panel__tile selector';
+      tile.setAttribute('data-role', def.role);
+      tile.setAttribute('data-selector', 'true');
+      tile.setAttribute('tabindex', '0');
+      tile.innerHTML = '<span class="agnative-control-panel__icon">' + def.icon + '</span><span class="agnative-control-panel__label">' + escapeHtml(def.title) + '</span>';
+      bindAction(tile, function () {
+        closeControlPanel(true);
+        def.handler();
+      });
+      grid.appendChild(tile);
+    });
+
+    ensureControlPanelController(panel);
+    bindControlPanelOutsideClose();
+    return panel;
+  }
+
+  function openControlPanel(head) {
+    var panel = ensureControlPanel(head || qs('.head__body') || qs('.head'));
+    if (!panel) return false;
+    if (controlPanelOpen) return true;
+
+    controlPanelOpen = true;
+    panel.classList.add('is-open');
+    panel.setAttribute('aria-hidden', 'false');
+
+    try {
+      if (window.Lampa && Lampa.Controller && typeof Lampa.Controller.enabled === 'function') {
+        var current = Lampa.Controller.enabled();
+        controlPanelPrevController = current && current.name ? current.name : '';
+      }
+      if (window.Lampa && Lampa.Controller && typeof Lampa.Controller.toggle === 'function') {
+        Lampa.Controller.toggle('agnative_control_panel');
+      }
+    } catch (e) { }
+    return true;
+  }
+
+  function closeControlPanel(restoreController) {
+    var panel = qs('.agnative-control-panel');
+    if (!panel || !controlPanelOpen) return false;
+
+    controlPanelOpen = false;
+    panel.classList.remove('is-open');
+    panel.setAttribute('aria-hidden', 'true');
+
+    try {
+      if (restoreController && controlPanelPrevController && window.Lampa && Lampa.Controller && typeof Lampa.Controller.toggle === 'function') {
+        Lampa.Controller.toggle(controlPanelPrevController);
+      }
+    } catch (e) { }
+
+    return true;
+  }
+
+  function triggerClockActions(head) {
+    if (controlPanelOpen) return closeControlPanel(true);
+    return openControlPanel(head);
   }
 
   function bindAction(btn, fn) {
@@ -1206,6 +1456,7 @@
         $(btn).on('hover:enter.agnativeTopnavAction', run);
         $(btn).on('hover:focus.agnativeTopnavAction hover:hover.agnativeTopnavAction', function () {
           btn.classList.add('focus');
+          if (typeof btn.focus === 'function') btn.focus();
         });
         $(btn).on('hover:blur.agnativeTopnavAction hover:out.agnativeTopnavAction', function () {
           btn.classList.remove('focus');
@@ -1239,6 +1490,7 @@
         $(btn).on('hover:enter.agnativeTopnavMenu', run);
         $(btn).on('hover:focus.agnativeTopnavMenu hover:hover.agnativeTopnavMenu', function () {
           btn.classList.add('focus');
+          if (typeof btn.focus === 'function') btn.focus();
         });
         $(btn).on('hover:blur.agnativeTopnavMenu hover:out.agnativeTopnavMenu', function () {
           btn.classList.remove('focus');
@@ -1254,23 +1506,14 @@
     } catch (e) { }
   }
 
-  function ensureClock(head) {
-    if (!head) return null;
-    var clock = qs('#' + CLOCK_ID, head);
-    if (!clock) {
-      clock = document.createElement('div');
-      clock.id = CLOCK_ID;
-      clock.className = 'agnative-topnav-clock';
-      head.appendChild(clock);
-    }
-    return clock;
-  }
-
   function updateClock() {
-    var clock = document.getElementById(CLOCK_ID);
-    if (!clock) return;
+    var clocks = qsa('.agnative-topnav-shell__clock-time, .agnative-topnav-right__clock-time');
+    if (!clocks.length) return;
     var d = new Date();
-    clock.textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    var value = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    clocks.forEach(function (clock) {
+      clock.textContent = value;
+    });
   }
 
   function startClock() {
@@ -1283,20 +1526,29 @@
     var head = qs('.head__body') || qs('.head');
     if (!head) return false;
 
-    ensureClock(head);
+    closeControlPanel(false);
+    var legacyClock = document.getElementById(CLOCK_ID);
+    if (legacyClock) legacyClock.remove();
+
     startClock();
 
     var shell = qs('.agnative-topnav-shell', head);
     if (!shell) {
       shell = document.createElement('div');
       shell.className = 'agnative-topnav-shell';
-      shell.innerHTML = '<div class="agnative-topnav-shell__inner"><div class="agnative-topnav-shell__items"></div><div class="agnative-topnav-shell__right"></div></div>';
+      shell.innerHTML = '<div class="agnative-topnav-shell__inner"><div class="agnative-topnav-shell__items"></div></div>';
       head.appendChild(shell);
     }
 
     var itemsWrap = qs('.agnative-topnav-shell__items', shell);
-    var rightWrap = qs('.agnative-topnav-shell__right', shell);
-    if (!itemsWrap || !rightWrap) return false;
+    if (!itemsWrap) return false;
+
+    var rightWrap = qs('.agnative-topnav-right', shell);
+    if (!rightWrap) {
+      rightWrap = document.createElement('div');
+      rightWrap.className = 'agnative-topnav-right';
+      shell.appendChild(rightWrap);
+    }
 
     itemsWrap.innerHTML = '';
     rightWrap.innerHTML = '';
@@ -1315,8 +1567,7 @@
 
     [
       { role: 'search', svg: iconSearch(), handler: triggerSearch },
-      { role: 'favorite', svg: iconFavorite(), handler: triggerFavorite },
-      { role: 'settings', svg: iconSettings(), handler: triggerSettings }
+      { role: 'favorite', svg: iconFavorite(), handler: triggerFavorite }
     ].forEach(function (def) {
       var btn = document.createElement('div');
       btn.className = 'agnative-topnav-shell__item agnative-topnav-shell__item--icon selector';
@@ -1325,8 +1576,28 @@
       btn.setAttribute('tabindex', '0');
       btn.innerHTML = def.svg;
       bindAction(btn, def.handler);
-      rightWrap.appendChild(btn);
+      itemsWrap.appendChild(btn);
     });
+
+    var clockBtn = document.createElement('div');
+    clockBtn.className = 'agnative-topnav-shell__item agnative-topnav-shell__clock agnative-topnav-right__clock selector';
+    clockBtn.setAttribute('data-role', 'control');
+    clockBtn.setAttribute('data-selector', 'true');
+    clockBtn.setAttribute('tabindex', '0');
+    clockBtn.innerHTML = '<span class="agnative-topnav-right__clock-time"></span>';
+    bindAction(clockBtn, function () { triggerClockActions(head); });
+    rightWrap.appendChild(clockBtn);
+
+    var profileBtn = document.createElement('div');
+    profileBtn.className = 'agnative-topnav-shell__item agnative-topnav-right__profile selector';
+    profileBtn.setAttribute('data-role', 'profile');
+    profileBtn.setAttribute('data-selector', 'true');
+    profileBtn.setAttribute('tabindex', '0');
+    profileBtn.innerHTML = getProfileButtonHtml();
+    bindAction(profileBtn, triggerProfile);
+    rightWrap.appendChild(profileBtn);
+
+    updateClock();
 
     registerTopnavController(shell);
 
