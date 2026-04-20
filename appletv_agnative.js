@@ -11,9 +11,15 @@
   var ENABLE_KEY = 'appletv_agnative_topnav_enabled';
   var GLARE_KEY = 'appletv_agnative_topnav_glare_enabled';
   var TOPNAV_ITEMS_KEY = 'appletv_agnative_topnav_items';
+  var ITEMS_LINE_FONT_KEY = 'appletv_agnative_items_line_font_size';
+  var LOGO_LANG_KEY = 'appletv_agnative_logo_lang';
+  var BADGE_KEY = 'appletv_agnative_badge';
+  var RATING_KEY = 'appletv_agnative_rating';
   var SETTINGS_COMPONENT = 'agnative';
   var TOPNAV_SETTINGS_COMPONENT = 'agnative_topnav';
+  var ABOUT_SETTINGS_COMPONENT = 'agnative_about';
   var GLARE_CLASS = 'appletv-agnative-topnav-glare';
+  var CONTRIBUTORS = ['nartes_ua', 'GwynnBleiidd', 'ManiacWithAxe'];
 
   var scheduled = false;
   var clockTimer = null;
@@ -23,6 +29,69 @@
   var activityListenerBound = false;
   var fullListenerBound = false;
   var topnavSettingsOpen = false;
+
+  var I18N = {
+    ru: {
+      nav_main: 'Главная', nav_movie: 'Фильмы', nav_tv: 'Сериалы', nav_cartoon: 'Мультфильмы',
+      nav_anime: 'Аниме', nav_release: 'Новинки', nav_collection: 'Подборки', nav_schedule: 'Расписание',
+      nav_history: 'История', nav_bookmarks: 'Избранное', nav_notice: 'Уведомления', nav_feed: 'Лента', nav_console: 'Торренты',
+      about_desc: 'Версия 0.1.2 • Автор llowmikee',
+      about_title: 'О плагине',
+      contributors_title: 'Помогали с разработкой',
+      contributors_more: 'Список пополняется',
+      main_title: 'Основные настройки',
+      enable_name: 'AppleTV AgNative', enable_desc: 'Включает и выключает плагин',
+      glare_name: 'Наклон veoveo.ru', glare_desc: 'от arabian_q',
+      font_name: 'Размер шрифта полок', font_desc: '',
+      topnav_name: 'Пункты Topnav', topnav_desc: 'Меню слева', topnav_title: 'Пункты верхнего меню', topnav_item_desc: 'Пункт menu_list: ',
+      logo_lang_name: 'Язык логотипов', logo_lang_desc: 'Если логотипа на выбранном языке нет — используется английский',
+      badge_name: 'Бейдж Фильм/Сериал', badge_desc: 'Авто отключает бейдж в разделах Фильмы и Сериалы',
+      rating_name: 'Рейтинг TMDB', rating_desc: 'Показывать оценку в правом верхнем углу карточки',
+      val_on: 'Включить', val_off: 'Выключить', val_add: 'Добавить', val_hide: 'Скрыть',
+      val_auto: 'Авто', val_small: 'Мелкий', val_ru: 'Русский', val_en: 'Английский', val_uk: 'Украинский',
+      badge_movie: 'ФИЛЬМ', badge_tv: 'СЕРИАЛ'
+    },
+    en: {
+      nav_main: 'Home', nav_movie: 'Movies', nav_tv: 'TV Shows', nav_cartoon: 'Cartoons',
+      nav_anime: 'Anime', nav_release: 'New', nav_collection: 'Collections', nav_schedule: 'Schedule',
+      nav_history: 'History', nav_bookmarks: 'Favorites', nav_notice: 'Notifications', nav_feed: 'Feed', nav_console: 'Torrents',
+      about_desc: 'Version 0.1.2 • Author llowmikee',
+      about_title: 'About plugin',
+      contributors_title: 'Helped with development',
+      contributors_more: 'The list will grow',
+      main_title: 'Main settings',
+      enable_name: 'AppleTV AgNative', enable_desc: 'Enables and disables the plugin',
+      glare_name: 'Tilt veoveo.ru', glare_desc: 'by arabian_q',
+      font_name: 'Shelf font size', font_desc: '',
+      topnav_name: 'Topnav items', topnav_desc: 'Left menu', topnav_title: 'Top navigation items', topnav_item_desc: 'menu_list item: ',
+      logo_lang_name: 'Logo language', logo_lang_desc: 'If a logo is missing in the selected language, English is used',
+      badge_name: 'Movie/TV badge', badge_desc: 'Auto disables the badge in Movies and TV sections',
+      rating_name: 'TMDB rating', rating_desc: 'Show score in the top-right corner of cards',
+      val_on: 'Enable', val_off: 'Disable', val_add: 'Add', val_hide: 'Hide',
+      val_auto: 'Auto', val_small: 'Small', val_ru: 'Russian', val_en: 'English', val_uk: 'Ukrainian',
+      badge_movie: 'MOVIE', badge_tv: 'TV SHOW'
+    },
+    uk: {
+      nav_main: 'Головна', nav_movie: 'Фільми', nav_tv: 'Серіали', nav_cartoon: 'Мультфільми',
+      nav_anime: 'Аніме', nav_release: 'Новинки', nav_collection: 'Добірки', nav_schedule: 'Розклад',
+      nav_history: 'Історія', nav_bookmarks: 'Обране', nav_notice: 'Сповіщення', nav_feed: 'Стрічка', nav_console: 'Торренти',
+      about_desc: 'Версія 0.1.2 • Автор llowmikee',
+      about_title: 'Про плагін',
+      contributors_title: 'Допомагали з розробкою',
+      contributors_more: 'Список поповнюється',
+      main_title: 'Основні налаштування',
+      enable_name: 'AppleTV AgNative', enable_desc: 'Вмикає та вимикає плагін',
+      glare_name: 'Нахил veoveo.ru', glare_desc: 'від arabian_q',
+      font_name: 'Розмір шрифту полиць', font_desc: '',
+      topnav_name: 'Пункти Topnav', topnav_desc: 'Меню ліворуч', topnav_title: 'Пункти верхнього меню', topnav_item_desc: 'Пункт menu_list: ',
+      logo_lang_name: 'Мова логотипів', logo_lang_desc: 'Якщо логотипа обраною мовою немає — використовується англійський',
+      badge_name: 'Бейдж Фільм/Серіал', badge_desc: 'Авто вимикає бейдж у розділах Фільми та Серіали',
+      rating_name: 'Рейтинг TMDB', rating_desc: 'Показувати оцінку у правому верхньому куті картки',
+      val_on: 'Увімкнути', val_off: 'Вимкнути', val_add: 'Додати', val_hide: 'Приховати',
+      val_auto: 'Авто', val_small: 'Дрібний', val_ru: 'Російська', val_en: 'Англійська', val_uk: 'Українська',
+      badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРІАЛ'
+    }
+  };
 
   function qs(sel, root) {
     return (root || document).querySelector(sel);
@@ -48,6 +117,119 @@
     } catch (e) {
       return true;
     }
+  }
+
+  function getItemsLineFontMode() {
+    try {
+      if (!window.Lampa || !Lampa.Storage) return 'auto';
+      var mode = Lampa.Storage.get(ITEMS_LINE_FONT_KEY, 'auto');
+      if (mode !== 'auto' && mode !== 'small') return 'auto';
+      return mode;
+    } catch (e) {
+      return 'auto';
+    }
+  }
+
+  function detectSystemLang() {
+    try {
+      var lang = '';
+      if (window.Lampa && Lampa.Storage) {
+        lang = (Lampa.Storage.field && Lampa.Storage.field('language')) || Lampa.Storage.get('language') || '';
+      }
+      lang = String(lang || '').toLowerCase();
+      if (lang.indexOf('uk') === 0 || lang === 'ua') return 'uk';
+      if (lang.indexOf('en') === 0) return 'en';
+      return 'ru';
+    } catch (e) {
+      return 'ru';
+    }
+  }
+
+  function t(key) {
+    var dict = I18N[detectSystemLang()] || I18N.ru;
+    return dict[key] || I18N.ru[key] || key;
+  }
+
+  function getLogoLang() {
+    try {
+      if (!window.Lampa || !Lampa.Storage) return detectSystemLang();
+      var value = Lampa.Storage.get(LOGO_LANG_KEY, 'auto');
+      if (!value || value === 'auto') return detectSystemLang();
+      if (value === 'ru' || value === 'uk' || value === 'en') return value;
+      return detectSystemLang();
+    } catch (e) {
+      return detectSystemLang();
+    }
+  }
+
+  function badgeEnabled() {
+    try {
+      if (!window.Lampa || !Lampa.Storage) return true;
+      return Lampa.Storage.get(BADGE_KEY, 'auto') !== 'off';
+    } catch (e) {
+      return true;
+    }
+  }
+
+  function getBadgeMode() {
+    try {
+      if (!window.Lampa || !Lampa.Storage) return 'auto';
+      var mode = Lampa.Storage.get(BADGE_KEY, 'auto');
+      if (mode !== 'auto' && mode !== 'on' && mode !== 'off') return 'auto';
+      return mode;
+    } catch (e) {
+      return 'auto';
+    }
+  }
+
+  function getCurrentMenuAction() {
+    var activeTopnav = qs('.agnative-topnav-shell__item.is-active[data-action]');
+    if (activeTopnav) return activeTopnav.getAttribute('data-action') || '';
+
+    var active = qsa('.menu .menu__item.selector[data-action]').find(function (item) {
+      return item.classList.contains('active') || item.classList.contains('focus') || item.classList.contains('hover') || item.classList.contains('traverse');
+    });
+    if (active) return active.getAttribute('data-action') || '';
+
+    try {
+      var activity = window.Lampa && Lampa.Activity && typeof Lampa.Activity.active === 'function' ? Lampa.Activity.active() : null;
+      if (!activity) return '';
+
+      var url = String(activity.url || '').toLowerCase();
+      if (url === 'movie' || url === 'tv' || url === 'anime') return url;
+      if (activity.component === 'category' && activity.genres === 16) return 'cartoon';
+    } catch (e) { }
+
+    return '';
+  }
+
+  function shouldShowBadge() {
+    var mode = getBadgeMode();
+    if (mode === 'off') return false;
+    if (mode === 'on') return true;
+    var action = getCurrentMenuAction();
+    return action !== 'movie' && action !== 'tv';
+  }
+
+  function ratingEnabled() {
+    try {
+      if (!window.Lampa || !Lampa.Storage) return false;
+      return Lampa.Storage.get(RATING_KEY, 'off') !== 'off';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function resetCardDecor() {
+    qsa('.card[data-nfx-switched]').forEach(function (card) {
+      card.removeAttribute('data-nfx-switched');
+      var overlay = card.querySelector('.nfx-card-overlay');
+      if (overlay) overlay.remove();
+      var badge = card.querySelector('.nfx-card-logo');
+      if (badge) badge.remove();
+      var rating = card.querySelector('.nfx-card-rating');
+      if (rating) rating.remove();
+    });
   }
 
   function sceneActive() {
@@ -95,21 +277,21 @@
 
   function getFallbackTopnavItems() {
     return [
-      { action: 'main', label: 'Главная' },
-      { action: 'movie', label: 'Фильмы' },
-      { action: 'tv', label: 'Сериалы' },
-      { action: 'cartoon', label: 'Мультфильмы' },
-      { action: 'anime', label: 'Аниме' },
-      { action: 'release', label: 'Новинки' },
-      { action: 'releases', label: 'Новинки' },
-      { action: 'collection', label: 'Подборки' },
-      { action: 'collections', label: 'Подборки' },
-      { action: 'schedule', label: 'Расписание' },
-      { action: 'history', label: 'История' },
-      { action: 'bookmarks', label: 'Избранное' },
-      { action: 'notice', label: 'Уведомления' },
-      { action: 'feed', label: 'Лента' },
-      { action: 'console', label: 'Торренты' }
+      { action: 'main', label: t('nav_main') },
+      { action: 'movie', label: t('nav_movie') },
+      { action: 'tv', label: t('nav_tv') },
+      { action: 'cartoon', label: t('nav_cartoon') },
+      { action: 'anime', label: t('nav_anime') },
+      { action: 'release', label: t('nav_release') },
+      { action: 'releases', label: t('nav_release') },
+      { action: 'collection', label: t('nav_collection') },
+      { action: 'collections', label: t('nav_collection') },
+      { action: 'schedule', label: t('nav_schedule') },
+      { action: 'history', label: t('nav_history') },
+      { action: 'bookmarks', label: t('nav_bookmarks') },
+      { action: 'notice', label: t('nav_notice') },
+      { action: 'feed', label: t('nav_feed') },
+      { action: 'console', label: t('nav_console') }
     ];
   }
 
@@ -208,6 +390,7 @@
       if (Lampa.Template && Lampa.Template.add) {
         Lampa.Template.add('settings_' + SETTINGS_COMPONENT, '<div></div>');
         Lampa.Template.add('settings_' + TOPNAV_SETTINGS_COMPONENT, '<div></div>');
+        Lampa.Template.add('settings_' + ABOUT_SETTINGS_COMPONENT, '<div></div>');
       }
 
       Lampa.SettingsApi.addComponent({
@@ -218,17 +401,20 @@
 
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
-        param: { name: 'agnative_about_info', type: 'static' },
+        param: { name: 'agnative_about_info', type: 'button' },
         field: {
           name: 'AppleTV AgNative',
-          description: 'Версия 0.1.1 • Автор llowmikee'
+          description: t('about_desc')
+        },
+        onChange: function () {
+          openSettingsSection(ABOUT_SETTINGS_COMPONENT, SETTINGS_COMPONENT);
         }
       });
 
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
         param: { type: 'title' },
-        field: { name: 'Основные настройки' }
+        field: { name: t('main_title') }
       });
 
       Lampa.SettingsApi.addParam({
@@ -237,14 +423,14 @@
           name: ENABLE_KEY,
           type: 'select',
           values: {
-            on: 'Включить',
-            off: 'Выключить'
+            on: t('val_on'),
+            off: t('val_off')
           },
           default: 'on'
         },
         field: {
-          name: 'AppleTV AgNative',
-          description: 'Включает и выключает плагин'
+          name: t('enable_name'),
+          description: t('enable_desc')
         },
         onChange: function (value) {
           if (value === 'off') {
@@ -266,14 +452,14 @@
           name: GLARE_KEY,
           type: 'select',
           values: {
-            on: 'Включить',
-            off: 'Выключить'
+            on: t('val_on'),
+            off: t('val_off')
           },
           default: 'on'
         },
         field: {
-          name: 'Наклон veoveo.ru',
-          description: 'от arabian_q'
+          name: t('glare_name'),
+          description: t('glare_desc')
         },
         onChange: function () {
           syncGlareClass();
@@ -282,10 +468,90 @@
 
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
+        param: {
+          name: ITEMS_LINE_FONT_KEY,
+          type: 'select',
+          values: {
+            auto: t('val_auto'),
+            small: t('val_small')
+          },
+          default: 'auto'
+        },
+        field: {
+          name: t('font_name'),
+          description: t('font_desc')
+        },
+        onChange: function () {
+          injectStyle();
+        }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
+        param: {
+          name: LOGO_LANG_KEY,
+          type: 'select',
+          values: {
+            auto: t('val_auto'),
+            ru: t('val_ru'),
+            uk: t('val_uk'),
+            en: t('val_en')
+          },
+          default: 'auto'
+        },
+        field: {
+          name: t('logo_lang_name'),
+          description: t('logo_lang_desc')
+        },
+        onChange: function () {
+          logoCache = {};
+          resetCardDecor();
+          setTimeout(function () { schedulePatch(); }, 80);
+        }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
+        param: {
+          name: BADGE_KEY,
+          type: 'select',
+          values: { auto: t('val_auto'), on: t('val_on'), off: t('val_off') },
+          default: 'auto'
+        },
+        field: {
+          name: t('badge_name'),
+          description: t('badge_desc')
+        },
+        onChange: function () {
+          resetCardDecor();
+          setTimeout(function () { schedulePatch(); }, 80);
+        }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
+        param: {
+          name: RATING_KEY,
+          type: 'select',
+          values: { on: t('val_on'), off: t('val_off') },
+          default: 'off'
+        },
+        field: {
+          name: t('rating_name'),
+          description: t('rating_desc')
+        },
+        onChange: function () {
+          resetCardDecor();
+          setTimeout(function () { schedulePatch(); }, 80);
+        }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
         param: { name: 'agnative_open_topnav_settings', type: 'button' },
         field: {
-          name: 'Пункты Topnav',
-          description: 'Меню слева'
+          name: t('topnav_name'),
+          description: t('topnav_desc')
         },
         onChange: function () {
           openTopnavSettingsSection();
@@ -295,7 +561,39 @@
       Lampa.SettingsApi.addParam({
         component: TOPNAV_SETTINGS_COMPONENT,
         param: { type: 'title' },
-        field: { name: 'Пункты верхнего меню' }
+        field: { name: t('topnav_title') }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: ABOUT_SETTINGS_COMPONENT,
+        param: { type: 'title' },
+        field: { name: t('about_title') }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: ABOUT_SETTINGS_COMPONENT,
+        param: { type: 'title' },
+        field: { name: t('contributors_title') }
+      });
+
+      CONTRIBUTORS.forEach(function (name) {
+        Lampa.SettingsApi.addParam({
+          component: ABOUT_SETTINGS_COMPONENT,
+          param: { name: 'agnative_contributor_' + name, type: 'static' },
+          field: {
+            name: name,
+            description: ''
+          }
+        });
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: ABOUT_SETTINGS_COMPONENT,
+        param: { name: 'agnative_contributors_more', type: 'static' },
+        field: {
+          name: t('contributors_more'),
+          description: ''
+        }
       });
 
       getAvailableTopnavItems().forEach(function (item) {
@@ -305,14 +603,14 @@
             name: 'agnative_topnav_item_' + item.action,
             type: 'select',
             values: {
-              on: 'Добавить',
-              off: 'Скрыть'
+              on: t('val_add'),
+              off: t('val_hide')
             },
             default: getStoredTopnavActions().indexOf(item.action) > -1 ? 'on' : 'off'
           },
           field: {
             name: item.label,
-            description: 'Пункт menu_list: ' + item.action
+            description: t('topnav_item_desc') + item.action
           },
           onChange: function (value) {
             setTopnavActionState(item.action, value !== 'off');
@@ -372,6 +670,18 @@
 
         if (e.name === GLARE_KEY) {
           syncGlareClass();
+          return;
+        }
+
+        if (e.name === LOGO_LANG_KEY || e.name === BADGE_KEY || e.name === RATING_KEY) {
+          if (e.name === LOGO_LANG_KEY) logoCache = {};
+          resetCardDecor();
+          setTimeout(function () { schedulePatch(); }, 80);
+          return;
+        }
+
+        if (e.name === ITEMS_LINE_FONT_KEY) {
+          injectStyle();
           return;
         }
 
@@ -446,6 +756,16 @@
     if (!document.head && !document.body) return;
     var old = document.getElementById(STYLE_ID);
     if (old) old.remove();
+    var itemsLineFontMode = getItemsLineFontMode();
+    var itemsLineMoreRule = '';
+    var itemsLineTitleRule = '';
+    if (itemsLineFontMode === 'small') {
+      itemsLineMoreRule = 'font-size:.65em !important; padding:.25em .5em !important;';
+      itemsLineTitleRule = 'font-size:.53em !important;';
+    } else if (itemsLineFontMode === 'auto') {
+      itemsLineMoreRule = 'font-size:.83em !important; padding:.25em .5em !important;';
+      itemsLineTitleRule = 'font-size:.83em !important;';
+    }
 
     var style = document.createElement('style');
     style.id = STYLE_ID;
@@ -661,7 +981,34 @@
       '  display: none !important;',
       '}',
       'body.' + BODY_CLASS + ' .head__menu-icon {',
-      '  transform: translateY(50%) !important;',
+      '  position: absolute !important;',
+      '  left: 1em !important;',
+      '  top: .46em !important;',
+      '  transform: none !important;',
+      '  z-index: 20 !important;',
+      '  width: 2.6em !important;',
+      '  height: 2.6em !important;',
+      '  min-width: 2.6em !important;',
+      '  margin: 0 !important;',
+      '  padding: 0 !important;',
+      '  display: inline-flex !important;',
+      '  align-items: center !important;',
+      '  justify-content: center !important;',
+      '  border-radius: 999px !important;',
+      '  background: rgba(22,24,30,.26) !important;',
+      '  border: 1px solid rgba(255,255,255,.10) !important;',
+      '  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 8px 18px rgba(0,0,0,.12) !important;',
+      '  backdrop-filter: blur(18px) saturate(140%) !important;',
+      '  -webkit-backdrop-filter: blur(18px) saturate(140%) !important;',
+      '  color: rgba(255,255,255,.95) !important;',
+      '}',
+      'body.' + BODY_CLASS + ' .head__menu-icon > *,',
+      'body.' + BODY_CLASS + ' .head__menu-icon svg,',
+      'body.' + BODY_CLASS + ' .head__menu-icon img {',
+      '  width: 1.1em !important;',
+      '  height: 1.1em !important;',
+      '  max-width: 1.1em !important;',
+      '  max-height: 1.1em !important;',
       '}',
       'body.' + BODY_CLASS + ' .head::before,',              //vot i mainer
       'body.' + BODY_CLASS + ' .head::after,',
@@ -690,11 +1037,11 @@
       'body.' + BODY_CLASS + ' .agnative-topnav-clock { position:absolute; right:1.15em; top:.46em; z-index:20; display:inline-flex; align-items:center; justify-content:center; min-width:4.2em; height:2.6em; padding:0 .95em; border-radius:999px; background:rgba(22,24,30,.26); border:1px solid rgba(255,255,255,.10); box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 8px 18px rgba(0,0,0,.12); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%); color:rgba(255,255,255,.95); font-size:.92em; font-weight:700; letter-spacing:.01em; }',
       'body.' + BODY_CLASS + ' .items-line--type-default { min-height:auto !important; padding-top:0 !important; padding-bottom:.12em !important; margin-bottom:.32em !important; }',
       'body.' + BODY_CLASS + ' .items-line--type-default .items-line__head { margin-bottom:.58em !important; min-height:auto !important; padding-top:0 !important; padding-bottom:0 !important; padding-left:1.05em !important; padding-right:1.05em !important; font-size:1.14em !important; }',
-      'body.' + BODY_CLASS + ' .items-line__more.selector { font-size:.65em !important; padding:.25em .5em !important; opacity:.8 !important; }',
+      'body.' + BODY_CLASS + ' .items-line__more.selector { ' + itemsLineMoreRule + ' opacity:.8 !important; }',
       'body.' + BODY_CLASS + ' .items-line--type-default .items-cards { padding-top:0 !important; font-size:.86em !important; }',
       'body.' + BODY_CLASS + ' .items-cards { padding-left:1.05em !important; padding-right:1.05em !important; gap:.62em !important; }',
       'body.' + BODY_CLASS + ' .items-line__body { padding-left:1.15em !important; }',
-      'body.' + BODY_CLASS + ' .items-line__title { font-size:.53em !important; }',
+      'body.' + BODY_CLASS + ' .items-line__title { ' + itemsLineTitleRule + ' }',
       'body.' + BODY_CLASS + ' .card { width:17.6em !important; margin-right:.52em !important; margin-bottom:.45em !important; padding-bottom:0 !important; transform-origin:center center !important; overflow:visible !important; }',
       'body.' + BODY_CLASS + ' .card .card__view { padding-bottom:56.25% !important; margin-bottom:0 !important; border-radius:1.35em !important; overflow:hidden !important; clip-path: inset(0 round 1.35em); -webkit-clip-path: inset(0 round 1.35em); box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(255,255,255,.04), 0 8px 18px rgba(0,0,0,.18) !important; transition: transform .28s cubic-bezier(.22,.61,.36,1), box-shadow .28s ease, filter .28s ease, opacity .18s ease !important; }',
       'body.' + BODY_CLASS + ' .card[data-nfx-switched="1"] .card__view { opacity:1 !important; }',
@@ -715,7 +1062,8 @@
       'body.' + BODY_CLASS + ' .nfx-card-overlay__logo, body.' + BODY_CLASS + ' img.nfx-card-overlay__logo { display:block !important; opacity:1 !important; visibility:visible !important; max-height:2.55em !important; max-width:82% !important; margin-bottom:.28em !important; border-radius:0 !important; clip-path:none !important; -webkit-clip-path:none !important; mask-image:none !important; -webkit-mask-image:none !important; overflow:visible !important; }',
       'body.' + BODY_CLASS + ' .nfx-card-overlay__title { color:#fff; font-size:1.02em !important; line-height:1.14 !important; font-weight:800 !important; text-shadow:0 2px 12px rgba(0,0,0,.5); }',
       'body.' + BODY_CLASS + ' .nfx-card-overlay__meta { color:rgba(255,255,255,.88); font-size:.74em !important; margin-top:.2em !important; line-height:1.28 !important; white-space:normal !important; max-width:100% !important; text-shadow:0 1px 8px rgba(0,0,0,.45); }',
-      'body.' + BODY_CLASS + ' .nfx-card-logo { position:absolute; top:.7em; left:.82em; z-index:4; display:inline-flex !important; opacity:1 !important; visibility:visible !important; align-items:center; justify-content:center; padding:.38em .88em; border-radius:.92em; background:rgba(12,14,20,.62); border:1px solid rgba(255,255,255,.12); color:rgba(255,255,255,.96); font-size:.74em; font-weight:800; letter-spacing:.05em; backdrop-filter: blur(10px) saturate(140%); -webkit-backdrop-filter: blur(10px) saturate(140%); pointer-events:none; }'
+      'body.' + BODY_CLASS + ' .nfx-card-logo { position:absolute; top:.7em; left:.82em; z-index:4; display:inline-flex !important; opacity:1 !important; visibility:visible !important; align-items:center; justify-content:center; padding:.38em .88em; border-radius:.92em; background:rgba(12,14,20,.62); border:1px solid rgba(255,255,255,.12); color:rgba(255,255,255,.96); font-size:.74em; font-weight:800; letter-spacing:.05em; backdrop-filter: blur(10px) saturate(140%); -webkit-backdrop-filter: blur(10px) saturate(140%); pointer-events:none; }',
+      'body.' + BODY_CLASS + ' .nfx-card-rating { position:absolute; top:.7em; right:.82em; z-index:4; display:inline-flex; align-items:center; justify-content:center; padding:.34em .68em; border-radius:.92em; background:rgba(12,14,20,.68); border:1px solid rgba(255,255,255,.12); color:rgba(255,255,255,.96); font-size:.74em; font-weight:800; letter-spacing:.02em; backdrop-filter: blur(10px) saturate(140%); -webkit-backdrop-filter: blur(10px) saturate(140%); pointer-events:none; }'
     ].join('\n');
     if (document.body) document.body.appendChild(style);
     else document.head.appendChild(style);
@@ -995,7 +1343,7 @@
 
   function fetchLogo(id, type, callback) {
     if (!id) return callback(null);
-    var cacheKey = type + '/' + id;
+    var cacheKey = type + '/' + id + '/' + getLogoLang();
 
     if (cacheKey in logoCache) return callback(logoCache[cacheKey]);
 
@@ -1006,16 +1354,24 @@
 
     logoPending[cacheKey] = [callback];
 
+    var logoLang = getLogoLang();
+    var preferredLanguages = [logoLang];
+    if (logoLang !== 'en') preferredLanguages.push('en');
+
+    var includeImageLanguage = preferredLanguages.concat(['null']).join(',');
+
     var url = 'https://api.themoviedb.org/3/' + type + '/' + id +
-      '/images?api_key=' + TMDB_KEY + '&include_image_language=ru,en,null';
+      '/images?api_key=' + TMDB_KEY + '&include_image_language=' + includeImageLanguage;
 
     fetch(url).then(function (r) { return r.json(); }).then(function (data) {
       var logo = null;
       if (data.logos && data.logos.length) {
-        // Prefer Russian, then English, then any
-        var ru = data.logos.filter(function (l) { return l.iso_639_1 === 'ru'; });
-        var en = data.logos.filter(function (l) { return l.iso_639_1 === 'en'; });
-        var picked = ru[0] || en[0] || data.logos[0];
+        var picked = null;
+        preferredLanguages.some(function (lang) {
+          picked = data.logos.find(function (l) { return l.iso_639_1 === lang; }) || null;
+          return !!picked;
+        });
+        if (!picked) picked = data.logos.find(function (l) { return l.iso_639_1 === null || typeof l.iso_639_1 === 'undefined'; }) || data.logos[0];
         if (picked && picked.file_path) {
           logo = {
             path: picked.file_path,
@@ -1113,11 +1469,19 @@
       }
     });
 
-    // Add small "LAMPAC" logo badge (like Netflix logo on cards)
-    var badge = document.createElement('div');
-    badge.className = 'nfx-card-logo';
-    badge.textContent = data.name ? 'СЕРИАЛ' : 'ФИЛЬМ';
-    view.appendChild(badge);
+    if (shouldShowBadge()) {
+      var badge = document.createElement('div');
+      badge.className = 'nfx-card-logo';
+      badge.textContent = data.name ? t('badge_tv') : t('badge_movie');
+      view.appendChild(badge);
+    }
+
+    if (ratingEnabled() && vote > 0) {
+      var rating = document.createElement('div');
+      rating.className = 'nfx-card-rating';
+      rating.textContent = vote.toFixed(1);
+      view.appendChild(rating);
+    }
   }
 
   function processCards(container) {
