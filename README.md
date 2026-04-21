@@ -1,129 +1,145 @@
-# AppleTV AgNative
+# AppleTV AgNative NG
 
-AppleTV AgNative - визуальный плагин для Lampa, который перестраивает верхнюю навигацию, карточки контента и элементы интерфейса в стиле Apple TV.
+A Lampa plugin that reshapes top navigation, content cards, and selected UI parts in Apple TV style.
 
-## Возможности
+## Repository Layout
 
-### Верхняя навигация
+- `src/` - plugin source code
+- `release/appletv_agnative.js` - compiled artifact
+- `appletv_agnative.js` - root-level copy of the build artifact (for compatibility)
+- `.github/workflows/ci-build.yml` - CI build for `main` and pull requests
+- `.github/workflows/pages.yml` - GitHub Pages deployment from `gh-page`
 
-- Компактный центральный topnav вместо стандартной шапки Lampa.
-- Настраиваемые пункты верхнего меню.
-- Поддержка основных разделов:
-  - Главная
-  - Фильмы
-  - Сериалы
-  - Мультфильмы
-  - Аниме
-  - Новинки
-  - Подборки
-  - Расписание
-  - История
-  - Избранное
-  - Уведомления
-  - Лента
-  - Торренты
-- Быстрые кнопки поиска, избранного и настроек.
-- Отдельный правый блок с часами и профилем.
-- Подсветка активного пункта меню.
-- Hover/focus-анимации для элементов topnav, часов и профиля.
+## Branch Strategy
 
-### Часы и профиль
+### `main`
 
-- Отображение времени в правой части шапки.
-- Опциональный показ секунд.
-- Кнопка профиля рядом с часами.
-- Поддержка аватара текущего профиля Lampa, если он доступен.
-- Fallback-иконка профиля, если аватар не найден.
+Primary development branch.
 
-### Панель по клику на часы
+All feature work, fixes, and refactoring should be done here through pull requests.
 
-Опциональная панель быстрых действий, открываемая кликом по часам.
+What runs automatically:
+- `Build` workflow (`npm ci` + `npm run build`)
 
-Пункты панели:
+### `gh-page`
 
-- Settings
-- Synchronization
-- Player
-- Cache & Data
+Publishing branch for GitHub Pages.
 
-По умолчанию панель выключена. Если панель включена, кнопка Settings скрывается из центрального topnav, так как настройки доступны через панель. Если панель выключена, кнопка Settings снова отображается в центральном topnav.
+On every push to this branch, `Deploy GitHub Pages` does the following:
+1. installs dependencies
+2. builds the plugin
+3. prepares `pages-dist`
+4. publishes via GitHub Pages
 
-### Карточки контента
+Important:
+- Do not develop features directly in `gh-page`
+- Treat `gh-page` as a publishing branch only
 
-- Перестройка карточек в горизонтальный формат.
-- Замена постеров на backdrop-изображения TMDB.
-- Возможность отключить backdrop и вернуть постерный формат.
-- Автоматическое восстановление оригинальных изображений при переключении режима.
-- Оверлей с названием, логотипом, годом и жанрами.
-- Загрузка логотипов TMDB с учётом выбранного языка.
-- Fallback на английский логотип, если логотип на выбранном языке недоступен.
-- Кэширование загруженных логотипов и постеров.
-- Бейдж типа контента: `ФИЛЬМ` / `СЕРИАЛ`.
-- Опциональный рейтинг TMDB в правом верхнем углу карточки.
+## Local Development
 
-### Карточки эпизодов
+### Requirements
 
-- Отдельная обработка episode cards.
-- Вывод названия или логотипа сериала на карточке эпизода.
-- Перенос номера эпизода в верхний правый угол.
-- Стилизация изображения, названия, даты и номера эпизода.
-- Поддержка hover/focus-состояний для карточек эпизодов.
+- Node.js 22+
+- npm
 
-### Эффект наклона
+### First Run
 
-- Опциональный glare/tilt-эффект при наведении.
-- Работает для карточек, episode cards и постеров full-start.
-- Использует положение курсора для расчёта наклона и блика.
-- Эффект можно включить или выключить в настройках.
+```bash
+git clone <repo-url>
+cd AppleTVAGNativeNG
+npm ci
+```
 
-### Настройки
+### Development Modes
 
-В настройках AppleTV AgNative доступны:
+```bash
+npm run dev
+```
 
-- Включить / выключить плагин.
-- Язык интерфейса плагина.
-- Язык логотипов.
-- Размер шрифта интерфейса и карточек.
-- Размер названий категорий.
-- Включить / выключить backdrop.
-- Включить / выключить бейдж `Фильм/Сериал`.
-- Включить / выключить рейтинг TMDB.
-- Включить / выключить эффект наклона.
-- Включить / выключить секунды в часах.
-- Включить / выключить панель по клику на часы.
-- Открыть настройки пунктов topnav.
-- Сбросить настройки плагина.
+Starts Rollup in watch mode.
 
-### Локализация
+```bash
+npm run build
+```
 
-Поддерживаются языки интерфейса:
+Creates a production build.
 
-- Русский
-- Английский
-- Украинский
-- Автоматический выбор по языку Lampa
+After `npm run build`:
+- `release/appletv_agnative.js` is updated
+- root `appletv_agnative.js` is synchronized automatically
 
-Также локализованы названия жанров для карточек.
+### Recommended Change Cycle
 
-### Сброс настроек
+1. Create a feature branch from `main`
+2. Implement changes in `src/`
+3. Run `npm run build`
+4. Verify generated artifacts were updated
+5. Commit source + build artifacts
 
-Кнопка сброса возвращает параметры к значениям по умолчанию:
+## Pull Request Flow to Main Repository
 
-- Плагин включён.
-- Glare включён.
-- Язык интерфейса: авто.
-- Язык логотипов: авто.
-- Размер шрифта: обычный.
-- Размер категорий: обычный.
-- Backdrop включён.
-- Бейдж включён.
-- Рейтинг выключен.
-- Секунды в часах выключены.
-- Панель по клику на часы выключена.
-- Topnav: Главная, Фильмы, Сериалы, Мультфильмы.
+### If You Work in the Main Repository
 
-## Версия
+1. Update local `main`
+```bash
+git checkout main
+git pull origin main
+```
 
-Версия 0.3.0
+2. Create a feature branch
+```bash
+git checkout -b feature/<short-name>
+```
 
-Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z
+3. Build after changes
+```bash
+npm run build
+```
+
+4. Commit
+```bash
+git add .
+git commit -m "feat: short description"
+```
+
+5. Push branch
+```bash
+git push -u origin feature/<short-name>
+```
+
+6. Open PR: `feature/<short-name>` -> `main`
+
+### If You Work from a Fork
+
+1. Add `upstream` (main repository)
+```bash
+git remote add upstream <main-repo-url>
+```
+
+2. Sync with upstream `main`
+```bash
+git fetch upstream
+git checkout main
+git rebase upstream/main
+```
+
+3. Continue with the same feature branch flow, then open PR into `upstream/main`
+
+## Updating GitHub Pages After Merge to `main`
+
+After PR merge to `main`, move changes to `gh-page` and push:
+
+```bash
+git checkout gh-page
+git pull origin gh-page
+git merge origin/main
+git push origin gh-page
+```
+
+This triggers `Deploy GitHub Pages`.
+
+## Quality Notes
+
+- Source of truth is `src/`
+- Do not edit `release/*` manually
+- Always run `npm run build` before opening a PR

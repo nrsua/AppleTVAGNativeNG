@@ -1,0 +1,13 @@
+{
+  "name": "appletv-agnative-ng",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/dev.mjs"
+  },
+  "devDependencies": {
+    "rollup": "^4.41.0"
+  }
+}
