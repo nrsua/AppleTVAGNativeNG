@@ -1,7 +1,7 @@
 export const uk = {
   nav_feed: 'Стрічка',
   badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРІАЛ',
-  set_about_desc: 'Версія 0.3.7  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
+  set_about_desc: 'Версія 0.3.8  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
   set_main_title: 'Основні налаштування',
   set_enable_name: 'AppleTV AgNative',
   set_enable_desc: 'Вмикає та вимикає плагін',
@@ -37,5 +37,11 @@ export const uk = {
   set_clock_seconds_name: 'Секунди в годиннику',
   set_clock_seconds_desc: 'Показувати секунди поруч із годинником у шапці',
   set_control_panel_name: 'Панель за кліком на годинник',
-  set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data'
+  set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data',
+  set_perf_mode_name: 'Режим продуктивності',
+  set_perf_mode_desc: 'Зменшує навантаження на слабких пристроях: вимикає блюр, відблиски й важку анімацію',
+  val_perf_auto: 'Автоматично',
+  val_perf_high: 'Максимум (всі ефекти)',
+  val_perf_low: 'Слабкий пристрій',
+  val_perf_ultra: 'Дуже слабкий пристрій'
 };

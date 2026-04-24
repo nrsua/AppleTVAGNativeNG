@@ -17,6 +17,7 @@ export const AGNATIVE_KEYS = {
   CARD_SIZE_KEY: 'appletv_agnative_card_size',
   CLOCK_SECONDS_KEY: 'appletv_agnative_clock_seconds',
   CONTROL_PANEL_KEY: 'appletv_agnative_control_panel',
+  PERF_MODE_KEY: 'appletv_agnative_perf_mode',
   SETTINGS_COMPONENT: 'agnative',
   TOPNAV_SETTINGS_COMPONENT: 'agnative_topnav',
   GLARE_CLASS: 'appletv-agnative-topnav-glare',
@@ -26,5 +27,7 @@ export const AGNATIVE_KEYS = {
   RATING_ATTR: 'data-agnative-rating',
   RATING_STYLE_ATTR: 'data-agnative-rating-style',
   CATEGORY_SIZE_ATTR: 'data-agnative-category',
-  CARD_SIZE_ATTR: 'data-agnative-card-size'
+  CARD_SIZE_ATTR: 'data-agnative-card-size',
+  PERF_ATTR: 'data-agnative-perf',
+  FLEX_GAP_ATTR: 'data-agnative-flex-gap'
 };

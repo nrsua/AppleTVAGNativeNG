@@ -1,7 +1,7 @@
 export const ru = {
   nav_feed: 'Лента',
   badge_movie: 'ФИЛЬМ', badge_tv: 'СЕРИАЛ',
-  set_about_desc: 'Версия 0.3.7  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
+  set_about_desc: 'Версия 0.3.8  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
   set_main_title: 'Основные настройки',
   set_enable_name: 'AppleTV AgNative',
   set_enable_desc: 'Включает и выключает плагин',
@@ -37,5 +37,11 @@ export const ru = {
   set_clock_seconds_name: 'Секунды в часах',
   set_clock_seconds_desc: 'Показывать секунды рядом с часами в шапке',
   set_control_panel_name: 'Панель по клику на часы',
-  set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data'
+  set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data',
+  set_perf_mode_name: 'Режим производительности',
+  set_perf_mode_desc: 'Снижает нагрузку на слабых устройствах: отключает блюр, блики и тяжёлую анимацию',
+  val_perf_auto: 'Автоматически',
+  val_perf_high: 'Максимум (все эффекты)',
+  val_perf_low: 'Слабое устройство',
+  val_perf_ultra: 'Очень слабое устройство'
 };

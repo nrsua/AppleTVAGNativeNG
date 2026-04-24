@@ -12,5 +12,6 @@ export const AGNATIVE_DEFAULTS = {
   categorySize: 'md',
   cardSize: 'md',
   clockSeconds: 'off',
-  controlPanel: 'off'
+  controlPanel: 'off',
+  perfMode: 'auto'
 };

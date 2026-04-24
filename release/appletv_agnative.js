@@ -26,8 +26,10 @@
     RATING_KEY: 'appletv_agnative_rating',
     RATING_STYLE_KEY: 'appletv_agnative_rating_style',
     CATEGORY_SIZE_KEY: 'appletv_agnative_category_size',
+    CARD_SIZE_KEY: 'appletv_agnative_card_size',
     CLOCK_SECONDS_KEY: 'appletv_agnative_clock_seconds',
     CONTROL_PANEL_KEY: 'appletv_agnative_control_panel',
+    PERF_MODE_KEY: 'appletv_agnative_perf_mode',
     SETTINGS_COMPONENT: 'agnative',
     TOPNAV_SETTINGS_COMPONENT: 'agnative_topnav',
     GLARE_CLASS: 'appletv-agnative-topnav-glare',
@@ -36,148 +38,154 @@
     BADGE_ATTR: 'data-agnative-badge',
     RATING_ATTR: 'data-agnative-rating',
     RATING_STYLE_ATTR: 'data-agnative-rating-style',
-    CATEGORY_SIZE_ATTR: 'data-agnative-category'
+    CATEGORY_SIZE_ATTR: 'data-agnative-category',
+    CARD_SIZE_ATTR: 'data-agnative-card-size',
+    PERF_ATTR: 'data-agnative-perf',
+    FLEX_GAP_ATTR: 'data-agnative-flex-gap'
   };
 
   const ru = {
-    nav_main: 'Главная', nav_movie: 'Фильмы', nav_tv: 'Сериалы',
-    nav_cartoon: 'Мультфильмы', nav_anime: 'Аниме', nav_release: 'Новинки',
-    nav_collection: 'Подборки', nav_schedule: 'Расписание',
-    nav_history: 'История', nav_bookmarks: 'Избранное',
-    nav_notice: 'Уведомления', nav_feed: 'Лента', nav_console: 'Торренты',
+    nav_feed: 'Лента',
     badge_movie: 'ФИЛЬМ', badge_tv: 'СЕРИАЛ',
-    set_about_desc: 'Версия 0.3.0  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
+    set_about_desc: 'Версия 0.3.8  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
     set_main_title: 'Основные настройки',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Включает и выключает плагин',
     set_glare_name: 'Наклон veoveo.ru', set_glare_desc: 'от arabian_q',
-    set_topnav_name: 'Пункты Topnav', set_topnav_desc: 'Меню слева',
+    set_topnav_name: 'Пункты Topnav', set_topnav_desc: 'Меню вверху страницы',
     set_topnav_title: 'Пункты верхнего меню',
     set_topnav_item_desc: 'Пункт menu_list: ',
     set_logo_lang_name: 'Язык логотипов',
-    set_logo_lang_desc: 'Если логотипа на выбранном языке нет — используется английский',
+    set_logo_lang_desc: 'Если логотипа на выбранном языке нет, используется английский',
     set_font_size_name: 'Размер шрифта',
-    set_font_size_desc: 'Масштаб текста интерфейса и карточек',
-    set_ui_lang_name: 'Язык интерфейса',
-    set_ui_lang_desc: 'Язык подписей плагина',
+    set_font_size_desc: 'Масштаб текста',
+    set_ui_lang_desc: 'Язык плагина',
     val_on: 'Включить', val_off: 'Выключить',
-    val_add: 'Добавить', val_hide: 'Скрыть',
-    val_ru: 'Русский', val_en: 'Английский', val_uk: 'Украинский',
+    val_hide: 'Скрыть',
     val_auto: 'Автоматически',
     val_size_xs: 'Мелкий', val_size_sm: 'Маленький',
     val_size_md: 'Обычный', val_size_lg: 'Крупный', val_size_xl: 'Огромный',
     val_rating_color: 'Цветной', val_rating_mono: 'Монохромный',
-    set_backdrop_name: 'Горизонтальные кадры',
-    set_backdrop_desc: 'Заменять постер на кадр из фильма (backdrop)',
+    set_backdrop_name: 'Горизонтальные карточки медиаконтента',
+    set_backdrop_desc: 'Если опция включена отображаются горизонтальные карточки, если выключена то вертикальные',
     set_badge_name: 'Бейдж «Фильм/Сериал»',
-    set_badge_desc: 'Метка в левом верхнем углу карточки',
-    set_rating_name: 'Рейтинг TMDB',
-    set_rating_desc: 'Показывать оценку в правом верхнем углу',
+    set_badge_desc: 'Бейдж в левом верхнем углу карточки',
+    set_rating_desc: 'Показывать оценку в правом верхнем углу карточки',
     set_rating_style_name: 'Стиль рейтинга TMDB',
-    set_rating_style_desc: 'Цветной или монохромный вид оценки',
+    set_rating_style_desc: 'Цветной или монохромный вид стиль рейтинга tmdb',
     set_reset_name: 'Сбросить настройки',
     set_reset_desc: 'Вернуть все параметры плагина к значениям по умолчанию',
     set_reset_done: 'Настройки AppleTV AgNative сброшены',
     set_category_size_name: 'Размер названий категорий',
     set_category_size_desc: 'Заголовки полок (Популярное, Новинки и т.д.)',
+    set_card_size_name: 'Размер карточек',
+    set_card_size_desc: 'Ширина карточек в лентах',
     set_clock_seconds_name: 'Секунды в часах',
     set_clock_seconds_desc: 'Показывать секунды рядом с часами в шапке',
     set_control_panel_name: 'Панель по клику на часы',
-    set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data'
+    set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data',
+    set_perf_mode_name: 'Режим производительности',
+    set_perf_mode_desc: 'Снижает нагрузку на слабых устройствах: отключает блюр, блики и тяжёлую анимацию',
+    val_perf_auto: 'Автоматически',
+    val_perf_high: 'Максимум (все эффекты)',
+    val_perf_low: 'Слабое устройство',
+    val_perf_ultra: 'Очень слабое устройство'
   };
 
   const en = {
-    nav_main: 'Home', nav_movie: 'Movies', nav_tv: 'TV Shows',
-    nav_cartoon: 'Cartoons', nav_anime: 'Anime', nav_release: 'New',
-    nav_collection: 'Collections', nav_schedule: 'Schedule',
-    nav_history: 'History', nav_bookmarks: 'Favorites',
-    nav_notice: 'Notifications', nav_feed: 'Feed', nav_console: 'Torrents',
+    nav_feed: 'Feed',
     badge_movie: 'MOVIE', badge_tv: 'TV SHOW',
-    set_about_desc: 'Версия 0.3.0  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
+    set_about_desc: 'Version 0.3.8  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
     set_main_title: 'Main settings',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Enables and disables the plugin',
     set_glare_name: 'Tilt veoveo.ru', set_glare_desc: 'by arabian_q',
-    set_topnav_name: 'Topnav items', set_topnav_desc: 'Left menu',
+    set_topnav_name: 'Topnav items', set_topnav_desc: 'Top page menu',
     set_topnav_title: 'Top navigation items',
     set_topnav_item_desc: 'menu_list item: ',
     set_logo_lang_name: 'Logo language',
-    set_logo_lang_desc: 'If no logo in chosen language — English is used',
+    set_logo_lang_desc: 'If no logo in chosen language, English is used',
     set_font_size_name: 'Font size',
-    set_font_size_desc: 'Interface and card text scale',
-    set_ui_lang_name: 'Interface language',
-    set_ui_lang_desc: 'Plugin label language',
+    set_font_size_desc: 'Text scale',
+    set_ui_lang_desc: 'Plugin language',
     val_on: 'Enable', val_off: 'Disable',
-    val_add: 'Add', val_hide: 'Hide',
-    val_ru: 'Russian', val_en: 'English', val_uk: 'Ukrainian',
+    val_hide: 'Hide',
     val_auto: 'Auto',
     val_size_xs: 'Extra small', val_size_sm: 'Small',
     val_size_md: 'Normal', val_size_lg: 'Large', val_size_xl: 'Extra large',
     val_rating_color: 'Colored', val_rating_mono: 'Monochrome',
-    set_backdrop_name: 'Landscape stills',
-    set_backdrop_desc: 'Replace poster with backdrop image',
+    set_backdrop_name: 'Landscape media cards',
+    set_backdrop_desc: 'If enabled shows landscape cards, if disabled shows portrait cards',
     set_badge_name: '"Movie/TV" badge',
-    set_badge_desc: 'Label in the top-left corner of the card',
-    set_rating_name: 'TMDB rating',
-    set_rating_desc: 'Show score in the top-right corner',
+    set_badge_desc: 'Badge in the top-left corner of the card',
+    set_rating_desc: 'Show score in the top-right corner of the card',
     set_rating_style_name: 'TMDB rating style',
-    set_rating_style_desc: 'Colored or monochrome score style',
+    set_rating_style_desc: 'Colored or monochrome tmdb rating style',
     set_reset_name: 'Reset settings',
     set_reset_desc: 'Restore all plugin options to defaults',
     set_reset_done: 'AppleTV AgNative settings reset',
     set_category_size_name: 'Category title size',
     set_category_size_desc: 'Section titles (Popular, New, etc.)',
+    set_card_size_name: 'Card size',
+    set_card_size_desc: 'Card width in rows',
     set_clock_seconds_name: 'Seconds in clock',
     set_clock_seconds_desc: 'Show seconds next to the header clock',
     set_control_panel_name: 'Clock click panel',
-    set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data'
+    set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data',
+    set_perf_mode_name: 'Performance mode',
+    set_perf_mode_desc: 'Reduces load on weak devices: disables blur, glare and heavy animations',
+    val_perf_auto: 'Auto',
+    val_perf_high: 'Maximum (all effects)',
+    val_perf_low: 'Weak device',
+    val_perf_ultra: 'Very weak device'
   };
 
   const uk = {
-    nav_main: 'Головна', nav_movie: 'Фільми', nav_tv: 'Серіали',
-    nav_cartoon: 'Мультфільми', nav_anime: 'Аніме', nav_release: 'Новинки',
-    nav_collection: 'Добірки', nav_schedule: 'Розклад',
-    nav_history: 'Історія', nav_bookmarks: 'Обране',
-    nav_notice: 'Сповіщення', nav_feed: 'Стрічка', nav_console: 'Торренти',
+    nav_feed: 'Стрічка',
     badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРІАЛ',
-    set_about_desc: 'Версия 0.3.0  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
+    set_about_desc: 'Версія 0.3.8  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
     set_main_title: 'Основні налаштування',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Вмикає та вимикає плагін',
     set_glare_name: 'Нахил veoveo.ru', set_glare_desc: 'від arabian_q',
-    set_topnav_name: 'Пункти Topnav', set_topnav_desc: 'Меню ліворуч',
+    set_topnav_name: 'Пункти Topnav', set_topnav_desc: 'Меню вгорі сторінки',
     set_topnav_title: 'Пункти верхнього меню',
     set_topnav_item_desc: 'Пункт menu_list: ',
     set_logo_lang_name: 'Мова логотипів',
-    set_logo_lang_desc: 'Якщо логотип обраною мовою відсутній — використовується англійський',
+    set_logo_lang_desc: 'Якщо логотип обраною мовою відсутній, використовується англійська',
     set_font_size_name: 'Розмір шрифту',
-    set_font_size_desc: 'Масштаб тексту інтерфейсу та карток',
-    set_ui_lang_name: 'Мова інтерфейсу',
-    set_ui_lang_desc: 'Мова підписів плагіна',
+    set_font_size_desc: 'Масштаб тексту',
+    set_ui_lang_desc: 'Мова плагіна',
     val_on: 'Увімкнути', val_off: 'Вимкнути',
-    val_add: 'Додати', val_hide: 'Приховати',
-    val_ru: 'Російська', val_en: 'Англійська', val_uk: 'Українська',
+    val_hide: 'Приховати',
     val_auto: 'Автоматично',
     val_size_xs: 'Дрібний', val_size_sm: 'Малий',
     val_size_md: 'Звичайний', val_size_lg: 'Великий', val_size_xl: 'Величезний',
     val_rating_color: 'Кольоровий', val_rating_mono: 'Монохромний',
-    set_backdrop_name: 'Горизонтальні кадри',
-    set_backdrop_desc: 'Заміняти постер на кадр з фільму (backdrop)',
+    set_backdrop_name: 'Горизонтальні картки медіаконтенту',
+    set_backdrop_desc: 'Якщо опція увімкнена відображаються горизонтальні картки, якщо вимкнена то вертикальні',
     set_badge_name: 'Бейдж «Фільм/Серіал»',
-    set_badge_desc: 'Мітка у лівому верхньому куті картки',
-    set_rating_name: 'Рейтинг TMDB',
-    set_rating_desc: 'Показувати оцінку у правому верхньому куті',
+    set_badge_desc: 'Бейдж у лівому верхньому куті картки',
+    set_rating_desc: 'Показувати оцінку у правому верхньому куті картки',
     set_rating_style_name: 'Стиль рейтингу TMDB',
-    set_rating_style_desc: 'Кольоровий або монохромний вигляд оцінки',
+    set_rating_style_desc: 'Кольоровий або монохромний вигляд стилю рейтингу tmdb',
     set_reset_name: 'Скинути налаштування',
     set_reset_desc: 'Повернути всі параметри плагіна до значень за замовчуванням',
     set_reset_done: 'Налаштування AppleTV AgNative скинуто',
     set_category_size_name: 'Розмір назв категорій',
     set_category_size_desc: 'Заголовки поличок (Популярне, Новинки тощо)',
+    set_card_size_name: 'Розмір карточок',
+    set_card_size_desc: 'Ширина карточок у стрічках',
     set_clock_seconds_name: 'Секунди в годиннику',
     set_clock_seconds_desc: 'Показувати секунди поруч із годинником у шапці',
     set_control_panel_name: 'Панель за кліком на годинник',
-    set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data'
+    set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data',
+    set_perf_mode_name: 'Режим продуктивності',
+    set_perf_mode_desc: 'Зменшує навантаження на слабких пристроях: вимикає блюр, відблиски й важку анімацію',
+    val_perf_auto: 'Автоматично',
+    val_perf_high: 'Максимум (всі ефекти)',
+    val_perf_low: 'Слабкий пристрій',
+    val_perf_ultra: 'Дуже слабкий пристрій'
   };
 
   const GENRE_MAP_LOCALIZED = {
@@ -205,11 +213,35 @@
   };
 
   const I18N = { ru, en, uk };
+  const I18N_CODES = Object.keys(I18N);
+
+  function hasI18nCode(code) {
+    return I18N_CODES.indexOf(code) !== -1;
+  }
+
+  function registerI18nToLampa() {
+    if (!window.Lampa || !Lampa.Lang || typeof Lampa.Lang.add !== 'function') return;
+    if (window.__APPLETV_AGNATIVE_I18N_REGISTERED__) return;
+
+    var payload = {};
+
+    I18N_CODES.forEach(function (code) {
+      var dict = I18N[code] || {};
+      Object.keys(dict).forEach(function (key) {
+        if (!payload[key]) payload[key] = {};
+        payload[key][code] = dict[key];
+      });
+    });
+
+    Lampa.Lang.add(payload);
+    window.__APPLETV_AGNATIVE_I18N_REGISTERED__ = true;
+  }
 
   (function () {
     'use strict';
 
     if (!canBootPlugin()) return;
+    registerI18nToLampa();
 
     var {
       STYLE_ID,
@@ -227,8 +259,10 @@
       RATING_KEY,
       RATING_STYLE_KEY,
       CATEGORY_SIZE_KEY,
+      CARD_SIZE_KEY,
       CLOCK_SECONDS_KEY,
       CONTROL_PANEL_KEY,
+      PERF_MODE_KEY,
       SETTINGS_COMPONENT,
       TOPNAV_SETTINGS_COMPONENT,
       GLARE_CLASS,
@@ -237,7 +271,10 @@
       BADGE_ATTR,
       RATING_ATTR,
       RATING_STYLE_ATTR,
-      CATEGORY_SIZE_ATTR
+      CATEGORY_SIZE_ATTR,
+      CARD_SIZE_ATTR,
+      PERF_ATTR,
+      FLEX_GAP_ATTR
     } = AGNATIVE_KEYS;
 
     var scheduled = false;
@@ -250,11 +287,16 @@
     var activityListenerBound = false;
     var fullListenerBound = false;
     var topnavSettingsOpen = false;
+    var perfModeDirty = false;
     var controlPanelOpen = false;
     var controlPanelPrevController = '';
     var controlPanelControllerReady = false;
     var controlPanelDocCloseBound = false;
     var swallowClickUntil = 0;
+    var styleSignature = '';
+    var detectedPerfLevel = null;
+    var flexGapSupport = null;
+    var cardPatchTimer = 0;
 
     function qs(sel, root) {
       return (root || document).querySelector(sel);
@@ -292,7 +334,7 @@
         if (!window.Lampa || !Lampa.Storage) return detectLampaLang();
         var v = Lampa.Storage.get(UI_LANG_KEY, 'auto');
         if (!v || v === 'auto') return detectLampaLang();
-        if (I18N[v]) return v;
+        if (hasI18nCode(v)) return v;
         return 'ru';
       } catch (e) { return 'ru'; }
     }
@@ -320,6 +362,13 @@
       } catch (e) { return 'md'; }
     }
 
+    function getCardSize() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return 'md';
+        return Lampa.Storage.get(CARD_SIZE_KEY, 'md') || 'md';
+      } catch (e) { return 'md'; }
+    }
+
     function getRatingStyle() {
       try {
         if (!window.Lampa || !Lampa.Storage) return 'color';
@@ -341,11 +390,68 @@
     function clockSecondsEnabled() { return storageFlagOn(CLOCK_SECONDS_KEY, 'off'); }
     function controlPanelEnabled() { return storageFlagOn(CONTROL_PANEL_KEY, 'off'); }
 
+    function getPerfMode() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return 'auto';
+        var v = Lampa.Storage.get(PERF_MODE_KEY, 'auto') || 'auto';
+        if (v === 'high' || v === 'low' || v === 'ultra' || v === 'auto') return v;
+        return 'auto';
+      } catch (e) { return 'auto'; }
+    }
+
+    function detectPerfLevel() {
+      if (detectedPerfLevel) return detectedPerfLevel;
+      try {
+        var nav = window.navigator || {};
+        var dm = typeof nav.deviceMemory === 'number' ? nav.deviceMemory : 0;
+        var hc = typeof nav.hardwareConcurrency === 'number' ? nav.hardwareConcurrency : 0;
+        var ua = (nav.userAgent || '').toLowerCase();
+        var chromeVer = 999;
+        var m = ua.match(/chrome\/(\d+)/);
+        if (m) chromeVer = parseInt(m[1], 10) || 999;
+        var isAndroid = ua.indexOf('android') > -1;
+        var isTV = ua.indexOf('tv') > -1 || ua.indexOf('webos') > -1 || ua.indexOf('tizen') > -1;
+
+        if ((dm > 0 && dm <= 1) || chromeVer < 80 || (hc > 0 && hc <= 2)) {
+          detectedPerfLevel = 'ultra';
+        } else if ((dm > 0 && dm <= 2) || chromeVer < 88 || (isAndroid && hc > 0 && hc <= 4) || isTV) {
+          detectedPerfLevel = 'low';
+        } else {
+          detectedPerfLevel = 'high';
+        }
+      } catch (e) { detectedPerfLevel = 'high'; }
+      return detectedPerfLevel;
+    }
+
+    function resolvePerfLevel() {
+      var mode = getPerfMode();
+      if (mode === 'auto') return detectPerfLevel();
+      return mode;
+    }
+
+    function detectFlexGapSupport() {
+      if (flexGapSupport !== null) return flexGapSupport;
+      try {
+        if (!document.body) return true;
+        var test = document.createElement('div');
+        test.style.cssText = 'display:flex;flex-direction:column;row-gap:1px;position:absolute;visibility:hidden;';
+        test.appendChild(document.createElement('div'));
+        test.appendChild(document.createElement('div'));
+        document.body.appendChild(test);
+        flexGapSupport = test.scrollHeight === 1;
+        document.body.removeChild(test);
+      } catch (e) { flexGapSupport = true; }
+      return flexGapSupport;
+    }
+
     function t(key) {
-      var lang = getUiLang();
-      var dict = I18N[lang] || I18N.ru;
-      if (dict[key]) return dict[key];
-      return (I18N.ru[key] || key);
+      try {
+        if (window.Lampa && Lampa.Lang && typeof Lampa.Lang.translate === 'function') {
+          registerI18nToLampa();
+          return Lampa.Lang.translate(key, getUiLang());
+        }
+      } catch (e) { }
+      return key;
     }
 
     function glareEnabled() {
@@ -368,12 +474,16 @@
           document.body.classList.remove(GLARE_CLASS);
           document.body.removeAttribute(FONT_SIZE_ATTR);
           document.body.removeAttribute(CATEGORY_SIZE_ATTR);
+          document.body.removeAttribute(CARD_SIZE_ATTR);
           document.body.removeAttribute(BACKDROP_ATTR);
           document.body.removeAttribute(BADGE_ATTR);
           document.body.removeAttribute(RATING_ATTR);
+          document.body.removeAttribute(PERF_ATTR);
+          document.body.removeAttribute(FLEX_GAP_ATTR);
         }
         var style = document.getElementById(STYLE_ID);
         if (style) style.remove();
+        styleSignature = '';
         var shell = document.querySelector('.agnative-topnav-shell');
         if (shell) shell.remove();
         var dock = document.querySelector('.agnative-topnav-rightdock');
@@ -414,21 +524,21 @@
 
     function getFallbackTopnavItems() {
       return [
-        { action: 'main', label: t('nav_main') },
-        { action: 'movie', label: t('nav_movie') },
-        { action: 'tv', label: t('nav_tv') },
-        { action: 'cartoon', label: t('nav_cartoon') },
-        { action: 'anime', label: t('nav_anime') },
-        { action: 'release', label: t('nav_release') },
-        { action: 'releases', label: t('nav_release') },
-        { action: 'collection', label: t('nav_collection') },
-        { action: 'collections', label: t('nav_collection') },
-        { action: 'schedule', label: t('nav_schedule') },
-        { action: 'history', label: t('nav_history') },
-        { action: 'bookmarks', label: t('nav_bookmarks') },
-        { action: 'notice', label: t('nav_notice') },
+        { action: 'main', label: langText('menu_main', t('nav_main')) },
+        { action: 'movie', label: langText('menu_movies', t('nav_movie')) },
+        { action: 'tv', label: langText('menu_tv', t('nav_tv')) },
+        { action: 'cartoon', label: langText('menu_multmovie', t('nav_cartoon')) },
+        { action: 'anime', label: langText('menu_anime', t('nav_anime')) },
+        { action: 'release', label: langText('title_new', t('nav_release')) },
+        { action: 'releases', label: langText('title_new', t('nav_release')) },
+        { action: 'collection', label: langText('menu_collections', t('nav_collection')) },
+        { action: 'collections', label: langText('menu_collections', t('nav_collection')) },
+        { action: 'schedule', label: langText('menu_timeline', t('nav_schedule')) },
+        { action: 'history', label: langText('menu_history', t('nav_history')) },
+        { action: 'bookmarks', label: langText('menu_bookmark', t('nav_bookmarks')) },
+        { action: 'notice', label: langText('title_notice', t('nav_notice')) },
         { action: 'feed', label: t('nav_feed') },
-        { action: 'console', label: t('nav_console') }
+        { action: 'console', label: langText('menu_torrents', t('nav_console')) }
       ];
     }
 
@@ -495,12 +605,29 @@
       document.body.setAttribute(CATEGORY_SIZE_ATTR, getCategorySize());
     }
 
+    function syncCardSize() {
+      if (!document.body) return;
+      document.body.setAttribute(CARD_SIZE_ATTR, getCardSize());
+    }
+
     function syncCardFlags() {
       if (!document.body) return;
       document.body.setAttribute(BACKDROP_ATTR, backdropEnabled() ? 'on' : 'off');
       document.body.setAttribute(BADGE_ATTR, badgeEnabled() ? 'on' : 'off');
       document.body.setAttribute(RATING_ATTR, ratingEnabled() ? 'on' : 'off');
       document.body.setAttribute(RATING_STYLE_ATTR, getRatingStyle());
+    }
+
+    function syncPerfMode() {
+      if (!document.body) return;
+      var level = resolvePerfLevel();
+      document.body.setAttribute(PERF_ATTR, level);
+      if (level === 'ultra') document.body.classList.remove(GLARE_CLASS);
+    }
+
+    function syncFlexGapFlag() {
+      if (!document.body) return;
+      document.body.setAttribute(FLEX_GAP_ATTR, detectFlexGapSupport() ? 'yes' : 'no');
     }
 
     function restoreOriginalImg(cardEl) {
@@ -548,11 +675,13 @@
         Lampa.Storage.set(RATING_STYLE_KEY, 'color');
         Lampa.Storage.set(CLOCK_SECONDS_KEY, 'off');
         Lampa.Storage.set(CONTROL_PANEL_KEY, 'off');
+        Lampa.Storage.set(PERF_MODE_KEY, 'auto');
         Lampa.Storage.set(TOPNAV_ITEMS_KEY, ['main', 'movie', 'tv', 'cartoon']);
         logoCache = {};
         syncGlareClass();
         syncFontSize();
         syncCardFlags();
+        syncPerfMode();
         resetCardSwitches();
         setTimeout(function () { schedulePatch(); }, 80);
         try {
@@ -632,7 +761,7 @@
           param: {
             name: ENABLE_KEY,
             type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
+            values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
             default: 'off'
           },
           field: {
@@ -656,18 +785,42 @@
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
           param: {
-            name: UI_LANG_KEY,
+            name: PERF_MODE_KEY,
             type: 'select',
             values: {
-              auto: t('val_auto'),
-              ru: t('val_ru'),
-              en: t('val_en'),
-              uk: t('val_uk')
+              auto: t('val_perf_auto'),
+              high: t('val_perf_high'),
+              low: t('val_perf_low'),
+              ultra: t('val_perf_ultra')
             },
             default: 'auto'
           },
           field: {
-            name: t('set_ui_lang_name'),
+            name: t('set_perf_mode_name'),
+            description: t('set_perf_mode_desc')
+          },
+          onChange: function () {
+            syncPerfMode();
+            initGlareRuntime();
+            perfModeDirty = true;
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_COMPONENT,
+          param: {
+            name: UI_LANG_KEY,
+            type: 'select',
+            values: {
+              auto: t('val_auto'),
+              ru: langText('filter_lang_ru', t('val_ru')),
+              en: langText('filter_lang_en', t('val_en')),
+              uk: langText('filter_lang_uk', t('val_uk'))
+            },
+            default: 'auto'
+          },
+          field: {
+            name: langText('settings_interface_lang', t('set_ui_lang_name')),
             description: t('set_ui_lang_desc')
           },
           onChange: function () {
@@ -682,9 +835,9 @@
             type: 'select',
             values: {
               auto: t('val_auto'),
-              ru: t('val_ru'),
-              en: t('val_en'),
-              uk: t('val_uk')
+              ru: langText('filter_lang_ru', t('val_ru')),
+              en: langText('filter_lang_en', t('val_en')),
+              uk: langText('filter_lang_uk', t('val_uk'))
             },
             default: 'auto'
           },
@@ -747,9 +900,32 @@
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
           param: {
+            name: CARD_SIZE_KEY,
+            type: 'select',
+            values: {
+              xs: t('val_size_xs'),
+              sm: t('val_size_sm'),
+              md: t('val_size_md'),
+              lg: t('val_size_lg'),
+              xl: t('val_size_xl')
+            },
+            default: 'md'
+          },
+          field: {
+            name: t('set_card_size_name'),
+            description: t('set_card_size_desc')
+          },
+          onChange: function () {
+            syncCardSize();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_COMPONENT,
+          param: {
             name: BACKDROP_KEY,
             type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
+            values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
             default: 'on'
           },
           field: {
@@ -768,7 +944,7 @@
           param: {
             name: BADGE_KEY,
             type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
+            values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
             default: 'on'
           },
           field: {
@@ -789,11 +965,11 @@
           param: {
             name: RATING_KEY,
             type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
+            values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
             default: 'off'
           },
           field: {
-            name: t('set_rating_name'),
+            name: langText('title_rating', t('set_rating_name')),
             description: t('set_rating_desc')
           },
           onChange: function () {
@@ -827,7 +1003,7 @@
           param: {
             name: GLARE_KEY,
             type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
+            values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
             default: 'on'
           },
           field: {
@@ -844,7 +1020,7 @@
           param: {
             name: CLOCK_SECONDS_KEY,
             type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
+            values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
             default: 'off'
           },
           field: {
@@ -861,7 +1037,7 @@
           param: {
             name: CONTROL_PANEL_KEY,
             type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
+            values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
             default: 'off'
           },
           field: {
@@ -910,7 +1086,7 @@
             param: {
               name: 'agnative_topnav_item_' + item.action,
               type: 'select',
-              values: { on: t('val_add'), off: t('val_hide') },
+              values: { on: langText('settings_add', t('val_add')), off: t('val_hide') },
               default: getStoredTopnavActions().indexOf(item.action) > -1 ? 'on' : 'off'
             },
             field: {
@@ -933,6 +1109,11 @@
         Lampa.Listener.follow('activity', function (e) {
           if (!pluginEnabled()) return;
           if (e.type === 'start' || e.type === 'activity') {
+            if (perfModeDirty) {
+              perfModeDirty = false;
+              resetCardSwitches();
+              setTimeout(function () { schedulePatch(); }, 80);
+            }
             setTimeout(function () {
               try {
                 var render = e.object && e.object.activity ? e.object.activity.render() : null;
@@ -1008,6 +1189,13 @@
             return;
           }
 
+          if (e.name === PERF_MODE_KEY) {
+            syncPerfMode();
+            initGlareRuntime();
+            perfModeDirty = true;
+            return;
+          }
+
           if (e.name === TOPNAV_ITEMS_KEY) {
             if (topnavSettingsOpen) return;
             setTimeout(function () { startPlugin(); }, 50);
@@ -1069,12 +1257,12 @@
 
     function injectStyle() {
       if (!document.head && !document.body) return;
-      var old = document.getElementById(STYLE_ID);
-      if (old) old.remove();
+      var existing = document.getElementById(STYLE_ID);
+      if (existing && styleSignature === STYLE_ID) return;
 
-      var style = document.createElement('style');
+      var style = existing || document.createElement('style');
       style.id = STYLE_ID;
-      style.textContent = [
+      var text = [
         'body.' + BODY_CLASS + ' .head,',
         'body.' + BODY_CLASS + ' .head__body,',
         'body.' + BODY_CLASS + ' .head__wrapper,',
@@ -1399,6 +1587,9 @@
         '  background: transparent !important;',
         '  box-shadow: none !important;',
         '}',
+        'body.' + BODY_CLASS + ' .head__logo-icon {',
+        '  display: none !important;',
+        '}',
         'body.' + BODY_CLASS + ' .agnative-topnav-shell { position:absolute; left:50%; top:.46em; transform:translateX(-50%); z-index:20; width:max-content; max-width:calc(100vw - 24em); height:2.6em; display:inline-flex; align-items:center; box-sizing:border-box; }',
         'body.' + BODY_CLASS + ' .agnative-topnav-shell__inner { height:2.6em; box-sizing:border-box; display:inline-flex; align-items:center; gap:.18em; padding:.21em .32em; border-radius:999px; background:rgba(22,24,30,.28); border:1px solid rgba(255,255,255,.10); box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 8px 18px rgba(0,0,0,.12); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%); }',
         'body.' + BODY_CLASS + ' .agnative-topnav-shell__items { display:flex; align-items:center; justify-content:center; gap:.08em; }',
@@ -1428,17 +1619,61 @@
         'body.' + BODY_CLASS + ' .items-line__more.selector { font-size:.7em !important; padding:.3em .6em !important; opacity:.85 !important; }',
         'body.' + BODY_CLASS + ' .items-line--type-default .items-cards { padding-top:0 !important; font-size:.86em !important; }',
         'body.' + BODY_CLASS + ' .items-cards { padding-left:1.05em !important; padding-right:1.05em !important; gap:.62em !important; }',
-        'body.' + BODY_CLASS + ' .items-line__body { padding-left:1.15em !important; }',
+        'body.' + BODY_CLASS + ' .items-line__body { padding-left:0 !important; }',
         'body.' + BODY_CLASS + ' .items-line__title { font-size:1em !important; line-height:1.2 !important; font-weight:700 !important; }',
-        'body.' + BODY_CLASS + ' .scroll__body.mapping--line { display:flex !important; gap:1.5em !important; }',
+        'body.' + BODY_CLASS + ' .scroll__body.mapping--line { display:flex !important; gap:1.5em !important; padding-left:1.15em !important; padding-right:1.15em !important; }',
         'body.' + BODY_CLASS + ' .scroll__body.mapping--line .full-person { padding: 1em !important; }',
-        'body.' + BODY_CLASS + ' .mapping--grid { display:grid !important; grid-template-columns:repeat(5, minmax(0, 1fr)) !important; gap:.52em !important; align-items:start !important; }',
-        '@media (max-width: 1279px) { body.' + BODY_CLASS + ' .mapping--grid { grid-template-columns:repeat(4, minmax(0, 1fr)) !important; } }',
-        '@media (max-width: 767px) { body.' + BODY_CLASS + ' .mapping--grid { grid-template-columns:repeat(3, minmax(0, 1fr)) !important; } }',
+        'body.' + BODY_CLASS + ' .mapping--grid { display:grid !important; grid-template-columns:repeat(auto-fit, minmax(17.6em, 1fr)) !important; gap: 1em .52em !important; align-items:start !important; }',
+        'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(13em, 1fr)) !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(14em, 1fr)) !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(10.4em, 1fr)) !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(15.8em, 1fr)) !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(11.7em, 1fr)) !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="md"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(17.6em, 1fr)) !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="md"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(13em, 1fr)) !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(19.4em, 1fr)) !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(14.3em, 1fr)) !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(21.2em, 1fr)) !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(15.6em, 1fr)) !important; }',
+        '@media (max-width: 1279px) { body.' + BODY_CLASS + ' .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(15em, 1fr)) !important; } }',
+        '@media (max-width: 1279px) { body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(11.1em, 1fr)) !important; } }',
+        '@media (max-width: 1279px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(11.9em, 1fr)) !important; } }',
+        '@media (max-width: 1279px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(8.8em, 1fr)) !important; } }',
+        '@media (max-width: 1279px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(13.4em, 1fr)) !important; } }',
+        '@media (max-width: 1279px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(9.9em, 1fr)) !important; } }',
+        '@media (max-width: 1279px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="md"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(15em, 1fr)) !important; } }',
+        '@media (max-width: 1279px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="md"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(11.1em, 1fr)) !important; } }',
+        '@media (max-width: 1279px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(16.5em, 1fr)) !important; } }',
+        '@media (max-width: 1279px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(12.2em, 1fr)) !important; } }',
+        '@media (max-width: 1279px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(18em, 1fr)) !important; } }',
+        '@media (max-width: 1279px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(13.3em, 1fr)) !important; } }',
+        '@media (max-width: 767px) { body.' + BODY_CLASS + ' .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(15em, 1fr)) !important; } }',
+        '@media (max-width: 767px) { body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(11.1em, 1fr)) !important; } }',
+        '@media (max-width: 767px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(11.9em, 1fr)) !important; } }',
+        '@media (max-width: 767px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(8.8em, 1fr)) !important; } }',
+        '@media (max-width: 767px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(13.4em, 1fr)) !important; } }',
+        '@media (max-width: 767px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(9.9em, 1fr)) !important; } }',
+        '@media (max-width: 767px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="md"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(15em, 1fr)) !important; } }',
+        '@media (max-width: 767px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="md"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(11.1em, 1fr)) !important; } }',
+        '@media (max-width: 767px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(16.5em, 1fr)) !important; } }',
+        '@media (max-width: 767px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(12.2em, 1fr)) !important; } }',
+        '@media (max-width: 767px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(18em, 1fr)) !important; } }',
+        '@media (max-width: 767px) { body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"][' + BACKDROP_ATTR + '="off"] .mapping--grid { grid-template-columns:repeat(auto-fit, minmax(13.3em, 1fr)) !important; } }',
         'body.' + BODY_CLASS + ' .card { width:auto !important; margin:0 !important; padding-bottom:0 !important; transform-origin:center center !important; overflow:visible !important; }',
         'body.' + BODY_CLASS + ' .items-line .card { width:17.6em !important; flex:0 0 auto !important; }',
+        'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .items-line .card { width:13em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"] .items-line .card { width:14em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"][' + BACKDROP_ATTR + '="off"] .items-line .card { width:10.4em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"] .items-line .card { width:15.8em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"][' + BACKDROP_ATTR + '="off"] .items-line .card { width:11.7em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="md"] .items-line .card { width:17.6em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="md"][' + BACKDROP_ATTR + '="off"] .items-line .card { width:13em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"] .items-line .card { width:19.4em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"][' + BACKDROP_ATTR + '="off"] .items-line .card { width:14.3em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .items-line .card { width:21.2em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"][' + BACKDROP_ATTR + '="off"] .items-line .card { width:15.6em !important; }',
         'body.' + BODY_CLASS + ' .card .card-watched { transform: scale(.8) !important; bottom: 0 !important; max-height: 100% !important; overflow: hidden !important; }',
-        'body.' + BODY_CLASS + ' .card .card__view { padding-bottom:56.25% !important; margin-bottom:0 !important; border-radius:1.35em !important; overflow:hidden !important; clip-path: inset(0 round 1.35em); -webkit-clip-path: inset(0 round 1.35em); box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(255,255,255,.04), 0 8px 18px rgba(0,0,0,.18) !important; transition: transform .28s cubic-bezier(.22,.61,.36,1), box-shadow .28s ease, filter .28s ease, opacity .18s ease !important; }',
+        'body.' + BODY_CLASS + ' .card .card__view { padding-bottom:56.25% !important; margin-bottom:0 !important; border-radius:1.35em !important; overflow:hidden !important; clip-path: inset(0 round 1.35em); -webkit-clip-path: inset(0 round 1.35em); box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(255,255,255,.04), 0 8px 18px rgba(0,0,0,.18) !important; transition: transform .28s cubic-bezier(.22,.61,.36,1), box-shadow .28s ease, filter .28s ease, opacity .18s ease !important; border: 0.1em solid transparent !important; box-sizing: border-box !important; }',
         'body.' + BODY_CLASS + ' .card[data-nfx-switched="1"] .card__view { opacity:1 !important; }',
         'body.' + BODY_CLASS + ' .card__view > *, body.' + BODY_CLASS + ' .card__view img, body.' + BODY_CLASS + ' .card__view .card__img, body.' + BODY_CLASS + ' .card__view .card__image, body.' + BODY_CLASS + ' .card__img, body.' + BODY_CLASS + ' .card__image, body.' + BODY_CLASS + ' .card__filter, body.' + BODY_CLASS + ' .card__filter::before, body.' + BODY_CLASS + ' .card__filter::after { border-radius:1.35em !important; }',
         'body.' + BODY_CLASS + ' .card__img, body.' + BODY_CLASS + ' .card__image { object-fit:cover !important; object-position:center 20% !important; border:none !important; box-shadow:none !important; background-clip:padding-box !important; }',
@@ -1446,10 +1681,15 @@
         'body.' + BODY_CLASS + ' .card.hover .card__view { transform: translateY(-.04em) scale(1.03) !important; filter: saturate(1.02) brightness(1.01) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 10px 24px rgba(0,0,0,.16) !important; }',
         'body.' + BODY_CLASS + ' .card.focus::after, body.' + BODY_CLASS + ' .card.hover::after, body.' + BODY_CLASS + ' .card__view::before, body.' + BODY_CLASS + ' .card__view::after { display:none !important; content:none !important; }',
         'body.' + BODY_CLASS + ' .card-episode { width:17.6em !important; flex:0 0 auto !important; margin:0 !important; padding:0 !important; background:transparent !important; border:0 !important; outline:0 !important; box-shadow:none !important; transform:none !important; transform-origin:center center !important; overflow:visible !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"] .card-episode { width:14em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"] .card-episode { width:15.8em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="md"] .card-episode { width:17.6em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"] .card-episode { width:19.4em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .card-episode { width:21.2em !important; }',
         'body.' + BODY_CLASS + ' .card-episode.focus, body.' + BODY_CLASS + ' .card-episode.hover, body.' + BODY_CLASS + ' .card-episode.focus .card-episode__body, body.' + BODY_CLASS + ' .card-episode.hover .card-episode__body { border:0 !important; outline:0 !important; box-shadow:none !important; background:transparent !important; }',
         'body.' + BODY_CLASS + ' .card-episode__body { background:transparent !important; border:0 !important; outline:0 !important; box-shadow:none !important; padding:0 !important; margin:0 !important; display:block !important; overflow:visible !important; }',
         'body.' + BODY_CLASS + ' .card-episode .full-episode { position:relative !important; display:block !important; background:transparent !important; border:0 !important; box-shadow:none !important; padding:0 !important; margin:0 !important; overflow:visible !important; transform-origin:center center !important; transition: transform .28s cubic-bezier(.22,.61,.36,1) !important; }',
-        'body.' + BODY_CLASS + ' .card-episode .full-episode__img { position:relative !important; width:100% !important; height:0 !important; padding-bottom:56.25% !important; margin:0 !important; border-radius:1.35em !important; overflow:hidden !important; clip-path: inset(0 round 1.35em); -webkit-clip-path: inset(0 round 1.35em); box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(255,255,255,.04), 0 8px 18px rgba(0,0,0,.18) !important; transition: box-shadow .28s ease, filter .28s ease !important; }',
+        'body.' + BODY_CLASS + ' .card-episode .full-episode__img { position:relative !important; width:100% !important; height:0 !important; padding-bottom:56.25% !important; margin:0 !important; border-radius:1.35em !important; overflow:hidden !important; clip-path: inset(0 round 1.35em); -webkit-clip-path: inset(0 round 1.35em); box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(255,255,255,.04), 0 8px 18px rgba(0,0,0,.18) !important; transition: box-shadow .28s ease, filter .28s ease !important; border: 0.1em solid transparent !important; box-sizing: border-box !important; }',
         'body.' + BODY_CLASS + ' .card-episode .full-episode__img > *, body.' + BODY_CLASS + ' .card-episode .full-episode__img img { border-radius:1.35em !important; }',
         'body.' + BODY_CLASS + ' .card-episode .full-episode__img img { position:absolute !important; top:0 !important; left:0 !important; width:100% !important; height:100% !important; object-fit:cover !important; object-position:center center !important; }',
         'body.' + BODY_CLASS + ' .card-episode .full-episode__img::before { content:"" !important; position:absolute !important; inset:auto 0 0 0 !important; height:62% !important; background:linear-gradient(0deg, rgba(6,8,14,.92) 0%, rgba(6,8,14,.62) 36%, rgba(6,8,14,.22) 70%, rgba(6,8,14,0) 100%) !important; z-index:2 !important; pointer-events:none !important; border-radius:0 0 1.35em 1.35em !important; }',
@@ -1476,7 +1716,7 @@
         'body.' + BODY_CLASS + ' .nfx-card-overlay { position:absolute; left:0; right:0; bottom:0; z-index:0; display:block !important; opacity:1 !important; visibility:visible !important; border-radius:0 0 1.35em 1.35em !important; background:linear-gradient(0deg, rgba(6,8,14,.88) 0%, rgba(6,8,14,.56) 38%, rgba(6,8,14,.16) 68%, rgba(6,8,14,0) 100%) !important; padding:2.15em 1.02em .92em !important; transform: translateZ(14px); transition: transform .28s cubic-bezier(.22,.61,.36,1), opacity .24s ease; pointer-events:none; }',
         'body.' + BODY_CLASS + ' .card.focus .nfx-card-overlay { transform: translateZ(18px) translateY(-.02em); }',
         'body.' + BODY_CLASS + ' .nfx-card-overlay__logo, body.' + BODY_CLASS + ' img.nfx-card-overlay__logo { display:block !important; opacity:1 !important; visibility:visible !important; max-height:2.55em !important; max-width:82% !important; margin-bottom:.28em !important; border-radius:0 !important; clip-path:none !important; -webkit-clip-path:none !important; mask-image:none !important; -webkit-mask-image:none !important; overflow:visible !important; }',
-        'body.' + BODY_CLASS + ' .nfx-card-overlay__title { color:#fff; font-size:1.02em !important; line-height:1.14 !important; font-weight:800 !important; text-shadow:0 2px 12px rgba(0,0,0,.5); }',
+        'body.' + BODY_CLASS + ' .nfx-card-overlay__title { color:#fff; font-size:1.02em !important; line-height:1.14 !important; font-weight:800 !important; text-shadow:0 2px 12px rgba(0,0,0,.5); white-space:normal !important; display:-webkit-box !important; -webkit-line-clamp:2 !important; -webkit-box-orient:vertical !important; overflow:hidden !important; }',
         'body.' + BODY_CLASS + ' .nfx-card-overlay__meta { color:rgba(255,255,255,.88); font-size:.74em !important; margin-top:.2em !important; line-height:1.28 !important; white-space:normal !important; max-width:100% !important; text-shadow:0 1px 8px rgba(0,0,0,.45); }',
         'body.' + BODY_CLASS + ' .nfx-card-logo { position:absolute; top:.7em; left:.82em; z-index:4; display:inline-flex !important; opacity:1 !important; visibility:visible !important; align-items:center; justify-content:center; padding:.38em .88em; border-radius:.92em; background:rgba(12,14,20,.62); border:1px solid rgba(255,255,255,.12); color:rgba(255,255,255,.96); font-size:.74em; font-weight:800; letter-spacing:.05em; backdrop-filter: blur(10px) saturate(140%); -webkit-backdrop-filter: blur(10px) saturate(140%); pointer-events:none; }',
         'body.' + BODY_CLASS + ' { --agnative-scale: 1; --agnative-category-scale: 1; }',
@@ -1523,18 +1763,118 @@
         '  letter-spacing: .01em !important;',
         '  margin: 0 !important;',
         '}',
+        'body.' + BODY_CLASS + ' .navigation-bar { position: fixed !important; left: 50% !important; bottom: 1.2em !important; transform: translateX(-50%) !important; z-index: 30 !important; width: 100% !important; max-width: calc(100vw - 2em) !important; font-size: 1.15em !important; padding: 0 1.5em 1em 1.5em !important; z-index: 10 !important;}',
+        'body.' + BODY_CLASS + ' .navigation-bar__body { width: 100% !important; height: 3.6em !important; box-sizing: border-box !important; display: flex !important; align-items: center !important; justify-content: space-around !important; padding: .28em .38em !important; border-radius: 999px !important; background: rgba(22,24,30,.82) !important; border: 1px solid rgba(255,255,255,.12) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 12px 32px rgba(0,0,0,.28) !important; backdrop-filter: blur(22px) saturate(145%) !important; -webkit-backdrop-filter: blur(22px) saturate(145%) !important; font-size: 1.6em !important; }',
+        'body.' + BODY_CLASS + ' .navigation-bar__item { appearance: none !important; -webkit-appearance: none !important; border: 0 !important; background: none !important; color: rgba(255,255,255,.88) !important; width: 3.04em !important; height: 3.04em !important; min-width: 3.04em !important; display: inline-flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; text-align: center !important; padding: 0 !important; border-radius: 999px !important; font-size: 1em !important; font-weight: 700 !important; line-height: 1 !important; white-space: nowrap !important; transition: background .2s ease, transform .2s ease, box-shadow .2s ease, color .2s ease !important; cursor: pointer !important; }',
+        'body.' + BODY_CLASS + ' .navigation-bar__icon { width: 1.48em !important; height: 1.48em !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; color: inherit !important; }',
+        'body.' + BODY_CLASS + ' .navigation-bar__icon svg { width: 1.48em !important; height: 1.48em !important; stroke-width: 2 !important; }',
+        'body.' + BODY_CLASS + ' .navigation-bar__label { display: none !important; }',
+        'body.' + BODY_CLASS + ' .navigation-bar__item.is-active, body.' + BODY_CLASS + ' .navigation-bar__item.hover, body.' + BODY_CLASS + ' .navigation-bar__item.focus, body.' + BODY_CLASS + ' .navigation-bar__item:hover, body.' + BODY_CLASS + ' .navigation-bar__item:focus { background: rgba(255,255,255,.16) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.14) !important; color: rgba(255,255,255,.98) !important; transform: translateY(-.04em) !important; }',
+
+        'body.' + BODY_CLASS + '[' + FLEX_GAP_ATTR + '="no"] .agnative-topnav-shell__inner { gap: 0 !important; }',
+        'body.' + BODY_CLASS + '[' + FLEX_GAP_ATTR + '="no"] .agnative-topnav-shell__inner > * + * { margin-left: .18em !important; }',
+        'body.' + BODY_CLASS + '[' + FLEX_GAP_ATTR + '="no"] .agnative-topnav-shell__items { gap: 0 !important; }',
+        'body.' + BODY_CLASS + '[' + FLEX_GAP_ATTR + '="no"] .agnative-topnav-shell__items > * + * { margin-left: .08em !important; }',
+        'body.' + BODY_CLASS + '[' + FLEX_GAP_ATTR + '="no"] .agnative-topnav-shell__right { gap: 0 !important; }',
+        'body.' + BODY_CLASS + '[' + FLEX_GAP_ATTR + '="no"] .agnative-topnav-shell__right > * + * { margin-left: .08em !important; }',
+        'body.' + BODY_CLASS + '[' + FLEX_GAP_ATTR + '="no"] .agnative-topnav-rightdock { gap: 0 !important; }',
+        'body.' + BODY_CLASS + '[' + FLEX_GAP_ATTR + '="no"] .agnative-topnav-rightdock > * + * { margin-left: .08em !important; }',
+        'body.' + BODY_CLASS + '[' + FLEX_GAP_ATTR + '="no"] .items-cards { gap: 0 !important; }',
+        'body.' + BODY_CLASS + '[' + FLEX_GAP_ATTR + '="no"] .items-cards > * + * { margin-left: .62em !important; }',
+        'body.' + BODY_CLASS + '[' + FLEX_GAP_ATTR + '="no"] .scroll__body.mapping--line { gap: 0 !important; }',
+        'body.' + BODY_CLASS + '[' + FLEX_GAP_ATTR + '="no"] .scroll__body.mapping--line > * + * { margin-left: 1.5em !important; }',
+        'body.' + BODY_CLASS + '[' + FLEX_GAP_ATTR + '="no"] .full-episode__date { gap: 0 !important; }',
+        'body.' + BODY_CLASS + '[' + FLEX_GAP_ATTR + '="no"] .full-episode__date > * + * { margin-left: .5em !important; }',
+
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .head__navigator,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .head__menu-icon,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .agnative-topnav-shell__inner,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .agnative-topnav-rightdock,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .agnative-topnav-clock,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .agnative-control-panel,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .agnative-control-panel__tile,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .navigation-bar__body,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .settings__content.layer--height,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .selectbox__content.layer--height,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .settings-input__content.layer--height,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .nfx-card-logo,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .nfx-card-rating,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .card-episode .full-episode__num { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .head__navigator,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .head__menu-icon,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .agnative-topnav-shell__inner,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .agnative-topnav-rightdock,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .agnative-topnav-clock { background: rgba(22,24,30,.86) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .agnative-control-panel { background: rgba(40,48,62,.95) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .navigation-bar__body { background: rgba(22,24,30,.94) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .settings__content.layer--height { background: rgba(28,30,34,.96) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .selectbox__content.layer--height,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .settings-input__content.layer--height { background: rgba(26,29,34,.97) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .nfx-card-logo,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .nfx-card-rating,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .card-episode .full-episode__num { background: rgba(12,14,20,.88) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .card .card__view::after,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .card-episode .full-episode__img::after,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .full-start-new__poster::after { display: none !important; content: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .nfx-card-overlay,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .navigation-bar__item,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .agnative-topnav-shell__item { transition-duration: .12s !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .card.focus .card__view { filter: none !important; box-shadow: 0 0 0 2px rgba(86,141,255,.92), 0 6px 14px rgba(0,0,0,.22) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .card.hover .card__view { filter: none !important; box-shadow: 0 0 0 2px rgba(86,141,255,.60), 0 6px 14px rgba(0,0,0,.18) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .card-episode.focus .full-episode__img { filter: none !important; box-shadow: 0 0 0 2px rgba(86,141,255,.92), 0 6px 14px rgba(0,0,0,.22) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .card-episode.hover .full-episode__img { filter: none !important; box-shadow: 0 0 0 2px rgba(86,141,255,.60), 0 6px 14px rgba(0,0,0,.18) !important; }',
+
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card .card__view::after,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card-episode .full-episode__img::after,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .full-start-new__poster::after { display: none !important; content: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card-episode,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .full-start-new__poster { will-change: auto !important; transform-style: flat !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .nfx-card-overlay,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .navigation-bar__item,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .agnative-topnav-shell__item,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card__view,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card-episode .full-episode__img,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card-episode .full-episode { transition: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card .card__view, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card-episode .full-episode__img { clip-path: none !important; -webkit-clip-path: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card.focus .card__view { transform: none !important; filter: none !important; box-shadow: 0 2px 6px rgba(0,0,0,.4) !important; box-sizing: border-box !important; border-color: rgba(86,141,255,.95) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card.hover .card__view { transform: none !important; filter: none !important; box-shadow: 0 2px 6px rgba(0,0,0,.4) !important; box-sizing: border-box !important; border-color: rgba(86,141,255,.65) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card-episode.focus .full-episode__img { filter: none !important; box-shadow: 0 2px 6px rgba(0,0,0,.4) !important; box-sizing: border-box !important; border-color: rgba(86,141,255,.95) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card-episode.hover .full-episode__img { filter: none !important; box-shadow: 0 2px 6px rgba(0,0,0,.4) !important; box-sizing: border-box !important; border-color: rgba(86,141,255,.65) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card-episode.focus .full-episode, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card-episode.hover .full-episode { transform: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .head__navigator,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .head__menu-icon,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .agnative-topnav-shell__inner,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .agnative-topnav-rightdock,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .agnative-topnav-clock { background: rgba(22,24,30,.96) !important; box-shadow: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .agnative-control-panel { background: rgba(28,30,34,.98) !important; box-shadow: 0 4px 10px rgba(0,0,0,.4) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .navigation-bar__body { background: rgba(22,24,30,.98) !important; box-shadow: 0 4px 10px rgba(0,0,0,.35) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .settings__content.layer--height,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .selectbox__content.layer--height,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .settings-input__content.layer--height { background: rgba(22,24,30,.98) !important; box-shadow: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .nfx-card-logo,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .nfx-card-rating,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card-episode .full-episode__num { background: rgba(12,14,20,.94) !important; box-shadow: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card .card__view,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card-episode .full-episode__img { box-shadow: 0 2px 6px rgba(0,0,0,.4) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .nfx-card-overlay { background: linear-gradient(0deg, rgba(6,8,14,.92) 0%, rgba(6,8,14,.4) 60%, rgba(6,8,14,0) 100%) !important; }',
+
         '@media (max-width: 767px) {',
-        '  body.' + BODY_CLASS + ' .agnative-topnav-shell__items { display: none !important; }',
-        '  body.' + BODY_CLASS + ' .agnative-topnav-shell__item--icon[data-role="search"],',
-        '  body.' + BODY_CLASS + ' .agnative-topnav-shell__item--icon[data-role="favorite"],',
-        '  body.' + BODY_CLASS + ' .agnative-topnav-shell__item--icon[data-role="settings"],',
-        '  body.' + BODY_CLASS + ' .agnative-topnav-right__profile[data-role="profile"] { display: none !important; }',
-        '  body.' + BODY_CLASS + ' .agnative-topnav-shell__right { margin-left: 0 !important; padding-left: 0 !important; }',
-        '  body.' + BODY_CLASS + ' .agnative-topnav-shell__inner { padding: .18em .22em !important; }',
+        '  body.' + BODY_CLASS + ' .agnative-topnav-shell { display: none !important; }',
+        '  body.' + BODY_CLASS + ' .agnative-topnav-rightdock { font-size: 1.3em !important; }',
+        '  body.' + BODY_CLASS + ' .head__menu-icon { font-size: 1.3em !important; }',
+        '  body.' + BODY_CLASS + ' .head__navigator { position: absolute !important; top: 0 !important; left: 1em !important; font-size: 1.3em !important; }',
+        '  body.' + BODY_CLASS + ' .activity.layer--width.activity--active { padding-top: 2em !important; }',
+        '  body.' + BODY_CLASS + ' .head__navigator:empty { display: none !important; }',
         '}'
       ].join('\n');
-      if (document.body) document.body.appendChild(style);
-      else document.head.appendChild(style);
+      if (style.textContent !== text) style.textContent = text;
+      if (!style.parentNode) {
+        if (document.body) document.body.appendChild(style);
+        else document.head.appendChild(style);
+      }
+      styleSignature = STYLE_ID;
     }
 
     function iconSearch() {
@@ -1563,6 +1903,14 @@
 
     function iconData() {
       return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="6" rx="7" ry="3" stroke="currentColor" stroke-width="2"></ellipse><path d="M5 6V18C5 19.66 8.13 21 12 21C15.87 21 19 19.66 19 18V6" stroke="currentColor" stroke-width="2"></path><path d="M5 12C5 13.66 8.13 15 12 15C15.87 15 19 13.66 19 12" stroke="currentColor" stroke-width="2"></path></svg>';
+    }
+
+    function iconBackward() {
+      return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+    }
+
+    function iconHome() {
+      return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
     }
 
     function getProfileButtonHtml() {
@@ -2258,10 +2606,12 @@
       var data = extractCardData(cardEl);
       if (!data) return;
 
+      var perfLevel = resolvePerfLevel();
+      var isUltra = perfLevel === 'ultra';
       var useBackdrop = backdropEnabled();
 
       var imgEl = cardEl.querySelector('.card__img');
-      if (imgEl && data.backdrop_path && useBackdrop && !isMobile()) {
+      if (imgEl && data.backdrop_path && useBackdrop) {
         if (imgEl.tagName === 'IMG') {
           if (!imgEl.hasAttribute('data-nfx-original-src')) {
             imgEl.setAttribute('data-nfx-original-src', imgEl.getAttribute('src') || '');
@@ -2310,19 +2660,21 @@
       view.appendChild(overlay);
 
       var tmdbType = data.name ? 'tv' : 'movie';
-      fetchLogo(data.id, tmdbType, function (logo) {
-        if (!logo) return;
-        var titleDiv = overlay.querySelector('.nfx-card-overlay__title');
-        if (titleDiv) {
-          var img = document.createElement('img');
-          img.className = 'nfx-card-overlay__logo';
-          img.src = logoImgUrl(logo.path);
-          img.alt = title;
-          img.loading = 'lazy';
-          img.onerror = function () { img.style.display = 'none'; };
-          titleDiv.replaceWith(img);
-        }
-      });
+      if (!isUltra) {
+        fetchLogo(data.id, tmdbType, function (logo) {
+          if (!logo) return;
+          var titleDiv = overlay.querySelector('.nfx-card-overlay__title');
+          if (titleDiv) {
+            var img = document.createElement('img');
+            img.className = 'nfx-card-overlay__logo';
+            img.src = logoImgUrl(logo.path);
+            img.alt = title;
+            img.loading = 'lazy';
+            img.onerror = function () { img.style.display = 'none'; };
+            titleDiv.replaceWith(img);
+          }
+        });
+      }
 
       if (badgeEnabled()) {
         var badge = document.createElement('div');
@@ -2375,6 +2727,7 @@
       if (!cardEl || cardEl.getAttribute('data-nfx-ep-switched')) return;
       cardEl.setAttribute('data-nfx-ep-switched', '1');
       if (isMobile()) return;
+      if (resolvePerfLevel() === 'ultra') return;
 
       var body = cardEl.querySelector('.full-episode__body');
       if (!body) return;
@@ -2423,29 +2776,48 @@
 
     function observeCards() {
       if (!window.MutationObserver) return;
+      if (window.__AGNATIVE_CARD_OBSERVER__) return;
+      window.__AGNATIVE_CARD_OBSERVER__ = true;
+
+      var pendingNodes = [];
+      var flushing = false;
+
+      function flushPending() {
+        flushing = false;
+        cardPatchTimer = 0;
+        var nodes = pendingNodes;
+        pendingNodes = [];
+        for (var i = 0; i < nodes.length; i++) {
+          var node = nodes[i];
+          if (!node || node.nodeType !== 1) continue;
+          if (node.classList && node.classList.contains('card')) {
+            switchCardToBackdrop(node);
+          } else if (node.classList && node.classList.contains('card-episode')) {
+            switchEpisodeCardToBackdrop(node);
+          } else if (node.querySelectorAll) {
+            var cards = node.querySelectorAll('.card');
+            for (var k = 0; k < cards.length; k++) switchCardToBackdrop(cards[k]);
+            var eps = node.querySelectorAll('.card-episode');
+            for (var m = 0; m < eps.length; m++) switchEpisodeCardToBackdrop(eps[m]);
+          }
+        }
+      }
+
       new MutationObserver(function (mutations) {
         for (var i = 0; i < mutations.length; i++) {
           var added = mutations[i].addedNodes;
-          for (var j = 0; j < added.length; j++) {
-            var node = added[j];
-            if (node.nodeType !== 1) continue;
-            if (node.classList && node.classList.contains('card')) {
-              switchCardToBackdrop(node);
-            } else if (node.classList && node.classList.contains('card-episode')) {
-              switchEpisodeCardToBackdrop(node);
-            } else if (node.querySelectorAll) {
-              var cards = node.querySelectorAll('.card');
-              for (var k = 0; k < cards.length; k++) switchCardToBackdrop(cards[k]);
-              var eps = node.querySelectorAll('.card-episode');
-              for (var m = 0; m < eps.length; m++) switchEpisodeCardToBackdrop(eps[m]);
-            }
-          }
+          for (var j = 0; j < added.length; j++) pendingNodes.push(added[j]);
         }
+        if (flushing) return;
+        flushing = true;
+        var delay = resolvePerfLevel() === 'ultra' ? 160 : 60;
+        cardPatchTimer = setTimeout(flushPending, delay);
       }).observe(document.body, { childList: true, subtree: true });
     }
 
     function initGlareRuntime() {
       if (window.__AGNATIVE_TOPNAV_GLARE_RUNTIME__) return;
+      if (resolvePerfLevel() === 'ultra') return;
       window.__AGNATIVE_TOPNAV_GLARE_RUNTIME__ = true;
       if (!document.body) return;
 
@@ -2488,7 +2860,7 @@
       }
 
       document.body.addEventListener('mouseover', function (e) {
-        if (!glareOn) { activeCard = null; activeRect = null; return; }
+        if (!glareOn || resolvePerfLevel() === 'ultra') { activeCard = null; activeRect = null; return; }
         var card = e.target.closest ? e.target.closest(GLARE_SEL) : null;
         setActiveCard(card);
       });
@@ -2535,13 +2907,12 @@
       if (document.body) document.body.classList.add(BODY_CLASS);
       syncFontSize();
       syncCardFlags();
+      syncPerfMode();
 
       var content = qs('.activity--active .scroll__content') || qs('.scroll__content');
       patchTopnav();
       if (!content) return;
       processCards(content);
-      setTimeout(function () { processCards(content); }, 400);
-      setTimeout(function () { processCards(content); }, 1200);
     }
 
     function schedulePatch() {
@@ -2562,31 +2933,19 @@
       if (document.body) document.body.classList.add(BODY_CLASS);
       syncGlareClass();
       syncFontSize();
+      syncCardSize();
       syncCardFlags();
+      syncPerfMode();
+      syncFlexGapFlag();
       observeCards();
       initGlareRuntime();
       processCards(document.body);
       schedulePatch();
-      setTimeout(function () { injectStyle(); }, 1000);
-      setTimeout(function () { injectStyle(); }, 3000);
-      setTimeout(function () {
-        var actBody = qs('.activity--active .activity__body') || qs('.activity__body');
-        if (actBody) {
-          processCards(actBody);
-        }
-      }, 600);
-
-      schedulePatch();
-      setTimeout(function () { schedulePatch(); }, 400);
-      setTimeout(function () { schedulePatch(); }, 1200);
     }
 
     function bootPlugin() {
       registerSettings();
       startPlugin();
-      setTimeout(function () { startPlugin(); }, 250);
-      setTimeout(function () { startPlugin(); }, 900);
-      setTimeout(function () { startPlugin(); }, 1800);
     }
 
     if (window.appready) bootPlugin();

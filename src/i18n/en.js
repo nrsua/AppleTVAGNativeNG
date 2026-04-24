@@ -1,7 +1,7 @@
 export const en = {
   nav_feed: 'Feed',
   badge_movie: 'MOVIE', badge_tv: 'TV SHOW',
-  set_about_desc: 'Version 0.3.7  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
+  set_about_desc: 'Version 0.3.8  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
   set_main_title: 'Main settings',
   set_enable_name: 'AppleTV AgNative',
   set_enable_desc: 'Enables and disables the plugin',
@@ -37,5 +37,11 @@ export const en = {
   set_clock_seconds_name: 'Seconds in clock',
   set_clock_seconds_desc: 'Show seconds next to the header clock',
   set_control_panel_name: 'Clock click panel',
-  set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data'
+  set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data',
+  set_perf_mode_name: 'Performance mode',
+  set_perf_mode_desc: 'Reduces load on weak devices: disables blur, glare and heavy animations',
+  val_perf_auto: 'Auto',
+  val_perf_high: 'Maximum (all effects)',
+  val_perf_low: 'Weak device',
+  val_perf_ultra: 'Very weak device'
 };
