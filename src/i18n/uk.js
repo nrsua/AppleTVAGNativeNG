@@ -1,7 +1,7 @@
 export const uk = {
   nav_feed: 'Стрічка',
   badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРІАЛ',
-  set_about_desc: 'Версія 0.3.9.1  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
+  set_about_desc: 'Версія 0.3.11  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
   set_main_title: 'Основні налаштування',
   set_enable_name: 'AppleTV AgNative',
   set_enable_desc: 'Вмикає та вимикає плагін',
@@ -42,6 +42,9 @@ export const uk = {
   set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data',
   set_perf_mode_name: 'Режим продуктивності',
   set_perf_mode_desc: 'Зменшує навантаження на слабких пристроях: вимикає блюр, відблиски й важку анімацію',
+  val_unlimited: 'Без обмежень',
+  set_cache_size_name: 'Розмір кешу зображень',
+  set_cache_size_desc: 'Максимальний обсяг зображень у локальному кеші. При перевищенні видаляються найстаріші записи',
   val_perf_auto: 'Автоматично',
   val_perf_high: 'Максимум (всі ефекти)',
   val_perf_low: 'Слабкий пристрій',

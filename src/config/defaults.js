@@ -12,6 +12,7 @@ export const AGNATIVE_DEFAULTS = {
   categorySize: 'md',
   cardSize: 'md',
   logoSize: 'md',
+  cacheSize: '100',
   clockSeconds: 'off',
   controlPanel: 'off',
   perfMode: 'auto'

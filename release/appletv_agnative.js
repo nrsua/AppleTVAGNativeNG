@@ -42,6 +42,7 @@
     CARD_SIZE_ATTR: 'data-agnative-card-size',
     LOGO_SIZE_KEY: 'appletv_agnative_logo_size',
     LOGO_SIZE_ATTR: 'data-agnative-logo-size',
+    CACHE_SIZE_KEY: 'appletv_agnative_cache_size',
     PERF_ATTR: 'data-agnative-perf',
     FLEX_GAP_ATTR: 'data-agnative-flex-gap'
   };
@@ -49,7 +50,7 @@
   const ru = {
     nav_feed: 'Лента',
     badge_movie: 'ФИЛЬМ', badge_tv: 'СЕРИАЛ',
-    set_about_desc: 'Версия 0.3.9.1  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
+    set_about_desc: 'Версия 0.3.11  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
     set_main_title: 'Основные настройки',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Включает и выключает плагин',
@@ -90,6 +91,9 @@
     set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data',
     set_perf_mode_name: 'Режим производительности',
     set_perf_mode_desc: 'Снижает нагрузку на слабых устройствах: отключает блюр, блики и тяжёлую анимацию',
+    val_unlimited: 'Без ограничений',
+    set_cache_size_name: 'Размер кеша изображений',
+    set_cache_size_desc: 'Максимальный объём изображений в локальном кеше. При превышении удаляются самые старые записи',
     val_perf_auto: 'Автоматически',
     val_perf_high: 'Максимум (все эффекты)',
     val_perf_low: 'Слабое устройство',
@@ -99,7 +103,7 @@
   const en = {
     nav_feed: 'Feed',
     badge_movie: 'MOVIE', badge_tv: 'TV SHOW',
-    set_about_desc: 'Version 0.3.9.1  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
+    set_about_desc: 'Version 0.3.11  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
     set_main_title: 'Main settings',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Enables and disables the plugin',
@@ -140,6 +144,9 @@
     set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data',
     set_perf_mode_name: 'Performance mode',
     set_perf_mode_desc: 'Reduces load on weak devices: disables blur, glare and heavy animations',
+    val_unlimited: 'Unlimited',
+    set_cache_size_name: 'Image cache size',
+    set_cache_size_desc: 'Maximum size of locally cached images. Oldest entries are removed when the limit is exceeded',
     val_perf_auto: 'Auto',
     val_perf_high: 'Maximum (all effects)',
     val_perf_low: 'Weak device',
@@ -149,7 +156,7 @@
   const uk = {
     nav_feed: 'Стрічка',
     badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРІАЛ',
-    set_about_desc: 'Версія 0.3.9.1  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
+    set_about_desc: 'Версія 0.3.11  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
     set_main_title: 'Основні налаштування',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Вмикає та вимикає плагін',
@@ -190,6 +197,9 @@
     set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data',
     set_perf_mode_name: 'Режим продуктивності',
     set_perf_mode_desc: 'Зменшує навантаження на слабких пристроях: вимикає блюр, відблиски й важку анімацію',
+    val_unlimited: 'Без обмежень',
+    set_cache_size_name: 'Розмір кешу зображень',
+    set_cache_size_desc: 'Максимальний обсяг зображень у локальному кеші. При перевищенні видаляються найстаріші записи',
     val_perf_auto: 'Автоматично',
     val_perf_high: 'Максимум (всі ефекти)',
     val_perf_low: 'Слабкий пристрій',
@@ -245,6 +255,199 @@
     window.__APPLETV_AGNATIVE_I18N_REGISTERED__ = true;
   }
 
+  var DB_NAME = 'agnative-cache';
+  var DB_VERSION = 1;
+  var STORE_META = 'meta';
+  var STORE_IMG = 'img';
+  var FAILED_TTL = 24 * 60 * 60 * 1000;
+
+  var _db = null;
+  var _dbQueue = [];
+  var _dbOpening = false;
+
+  function openDB(callback) {
+    if (_db) { callback(_db); return; }
+    _dbQueue.push(callback);
+    if (_dbOpening) return;
+    _dbOpening = true;
+
+    try {
+      var req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = function (e) {
+        var db = e.target.result;
+        if (!db.objectStoreNames.contains(STORE_META)) db.createObjectStore(STORE_META, { keyPath: 'key' });
+        if (!db.objectStoreNames.contains(STORE_IMG)) db.createObjectStore(STORE_IMG, { keyPath: 'key' });
+      };
+      req.onsuccess = function (e) {
+        _db = e.target.result;
+        _dbOpening = false;
+        var q = _dbQueue.splice(0);
+        q.forEach(function (cb) { cb(_db); });
+      };
+      req.onerror = function () {
+        _dbOpening = false;
+        var q = _dbQueue.splice(0);
+        q.forEach(function (cb) { cb(null); });
+      };
+    } catch (e) {
+      _dbOpening = false;
+      var q = _dbQueue.splice(0);
+      q.forEach(function (cb) { cb(null); });
+    }
+  }
+
+  function idbGet(store, key, callback) {
+    openDB(function (db) {
+      if (!db) { callback(undefined); return; }
+      try {
+        var req = db.transaction(store, 'readonly').objectStore(store).get(key);
+        req.onsuccess = function () {
+          var entry = req.result;
+          if (!entry) { callback(undefined); return; }
+          callback(entry.v);
+        };
+        req.onerror = function () { callback(undefined); };
+      } catch (e) { callback(undefined); }
+    });
+  }
+
+  function idbSet(store, key, value, extra) {
+    openDB(function (db) {
+      if (!db) return;
+      try {
+        var record = { key: key, v: value, t: Date.now() };
+        if (extra) Object.keys(extra).forEach(function (k) { record[k] = extra[k]; });
+        db.transaction(store, 'readwrite').objectStore(store).put(record);
+      } catch (e) {}
+    });
+  }
+
+  function idbPruneMeta() {
+  }
+
+  function idbPruneImg(maxBytes) {
+    openDB(function (db) {
+      if (!db) return;
+      try {
+        var now = Date.now();
+        var surviving = [];
+        db.transaction(STORE_IMG, 'readwrite').objectStore(STORE_IMG).openCursor().onsuccess = function (e) {
+          var cursor = e.target.result;
+          if (!cursor) {
+            if (maxBytes === Infinity) return;
+            var total = surviving.reduce(function (s, r) { return s + r.s; }, 0);
+            if (total <= maxBytes) return;
+            surviving.sort(function (a, b) { return a.t - b.t; });
+            try {
+              var tx2 = db.transaction(STORE_IMG, 'readwrite');
+              var store2 = tx2.objectStore(STORE_IMG);
+              for (var i = 0; i < surviving.length && total > maxBytes; i++) {
+                store2.delete(surviving[i].key);
+                total -= surviving[i].s;
+              }
+            } catch (e2) {}
+            return;
+          }
+          if (cursor.value.failed && now - cursor.value.t > FAILED_TTL) {
+            cursor.delete();
+          } else {
+            surviving.push({ key: cursor.value.key, t: cursor.value.t, s: cursor.value.s || 0 });
+          }
+          cursor.continue();
+        };
+      } catch (e) {}
+    });
+  }
+
+  function metaGet(key, callback) {
+    idbGet(STORE_META, key, callback);
+  }
+
+  function metaSet(key, value) {
+    idbSet(STORE_META, key, value);
+  }
+
+  function prune(maxImgBytes) {
+    idbPruneMeta();
+    idbPruneImg(maxImgBytes === undefined ? Infinity : maxImgBytes);
+  }
+
+  function clearAll() {
+    openDB(function (db) {
+      if (!db) return;
+      try {
+        var tx = db.transaction([STORE_META, STORE_IMG], 'readwrite');
+        tx.objectStore(STORE_META).clear();
+        tx.objectStore(STORE_IMG).clear();
+      } catch (e) {}
+    });
+  }
+
+  var _fetchTried = {};
+
+  function imgKey(url) {
+    if (typeof url !== 'string') return url;
+    var i = url.indexOf('/t/p/');
+    if (i < 0) return url;
+    var key = url.substring(i);
+    var q = key.indexOf('?');
+    if (q >= 0) key = key.substring(0, q);
+    return key;
+  }
+
+  function getImgEntry(key, callback) {
+    openDB(function (db) {
+      if (!db) { callback(null); return; }
+      try {
+        var req = db.transaction(STORE_IMG, 'readonly').objectStore(STORE_IMG).get(key);
+        req.onsuccess = function () {
+          var entry = req.result;
+          if (!entry) { callback(null); return; }
+          if (entry.failed && Date.now() - entry.t > FAILED_TTL) { callback(null); return; }
+          callback(entry);
+        };
+        req.onerror = function () { callback(null); };
+      } catch (e) { callback(null); }
+    });
+  }
+
+  function attemptStore(url, key) {
+    if (_fetchTried[key]) return;
+    _fetchTried[key] = true;
+    fetch(url).then(function (r) {
+      if (!r.ok) { idbSet(STORE_IMG, key, null, { s: 0, failed: true }); return; }
+      r.blob().then(function (b) { idbSet(STORE_IMG, key, b, { s: b.size }); });
+    }).catch(function () {
+      idbSet(STORE_IMG, key, null, { s: 0, failed: true });
+    });
+  }
+
+  function imgLoad(url, callback) {
+    var key = imgKey(url);
+    getImgEntry(key, function (entry) {
+      if (entry && entry.v) {
+        try {
+          callback(URL.createObjectURL(entry.v));
+          return;
+        } catch (e) {}
+      }
+      callback(url);
+      if (entry && entry.failed) {
+        _fetchTried[key] = true;
+        return;
+      }
+      attemptStore(url, key);
+    });
+  }
+
+  function imgPreload(url) {
+    var key = imgKey(url);
+    getImgEntry(key, function (entry) {
+      if (entry && (entry.v || entry.failed)) return;
+      attemptStore(url, key);
+    });
+  }
+
   (function () {
     'use strict';
 
@@ -269,6 +472,7 @@
       CATEGORY_SIZE_KEY,
       CARD_SIZE_KEY,
       LOGO_SIZE_KEY,
+      CACHE_SIZE_KEY,
       CLOCK_SECONDS_KEY,
       CONTROL_PANEL_KEY,
       PERF_MODE_KEY,
@@ -384,6 +588,15 @@
         if (!window.Lampa || !Lampa.Storage) return 'md';
         return Lampa.Storage.get(LOGO_SIZE_KEY, 'md') || 'md';
       } catch (e) { return 'md'; }
+    }
+
+    function getCacheMaxBytes() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return 100 * 1024 * 1024;
+        var v = Lampa.Storage.get(CACHE_SIZE_KEY, '100');
+        if (v === 'unlimited') return Infinity;
+        return (parseInt(v, 10) || 100) * 1024 * 1024;
+      } catch (e) { return 100 * 1024 * 1024; }
     }
 
     function getRatingStyle() {
@@ -702,6 +915,8 @@
         Lampa.Storage.set(LOGO_SIZE_KEY, 'md');
         Lampa.Storage.set(TOPNAV_ITEMS_KEY, ['main', 'movie', 'tv', 'cartoon']);
         logoCache = {};
+        posterCache = {};
+        clearAll();
         syncGlareClass();
         syncFontSize();
         syncLogoSize();
@@ -872,6 +1087,7 @@
           },
           onChange: function () {
             logoCache = {};
+            clearAll();
             setTimeout(function () { schedulePatch(); }, 80);
           }
         });
@@ -965,6 +1181,29 @@
           },
           onChange: function () {
             syncLogoSize();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_COMPONENT,
+          param: {
+            name: CACHE_SIZE_KEY,
+            type: 'select',
+            values: {
+              '50': '50 MB',
+              '100': '100 MB',
+              '200': '200 MB',
+              '500': '500 MB',
+              'unlimited': t('val_unlimited')
+            },
+            default: '100'
+          },
+          field: {
+            name: t('set_cache_size_name'),
+            description: t('set_cache_size_desc')
+          },
+          onChange: function () {
+            prune(getCacheMaxBytes());
           }
         });
 
@@ -1219,6 +1458,7 @@
 
           if (e.name === LOGO_LANG_KEY) {
             logoCache = {};
+            clearAll();
             setTimeout(function () { schedulePatch(); }, 80);
             return;
           }
@@ -2588,36 +2828,48 @@
 
       logoPending[cacheKey] = [callback];
 
-      var langs = [lang];
-      if (lang !== 'en') langs.push('en');
-      langs.push('null');
-
-      var url = 'https://api.themoviedb.org/3/' + type + '/' + id +
-        '/images?api_key=' + TMDB_KEY + '&include_image_language=' + langs.join(',');
-
-      fetch(url).then(function (r) { return r.json(); }).then(function (data) {
-        var logo = null;
-        if (data.logos && data.logos.length) {
-          var preferred = data.logos.filter(function (l) { return l.iso_639_1 === lang; });
-          var english = data.logos.filter(function (l) { return l.iso_639_1 === 'en'; });
-          var picked = preferred[0] || english[0] || data.logos[0];
-          if (picked && picked.file_path) {
-            logo = {
-              path: picked.file_path,
-              width: picked.width,
-              height: picked.height
-            };
-          }
+      metaGet(cacheKey, function (persisted) {
+        if (persisted !== undefined) {
+          logoCache[cacheKey] = persisted;
+          var cbs = logoPending[cacheKey] || [];
+          delete logoPending[cacheKey];
+          for (var i = 0; i < cbs.length; i++) cbs[i](persisted);
+          return;
         }
-        logoCache[cacheKey] = logo;
-        var cbs = logoPending[cacheKey] || [];
-        delete logoPending[cacheKey];
-        for (var i = 0; i < cbs.length; i++) cbs[i](logo);
-      }).catch(function () {
-        logoCache[cacheKey] = null;
-        var cbs = logoPending[cacheKey] || [];
-        delete logoPending[cacheKey];
-        for (var i = 0; i < cbs.length; i++) cbs[i](null);
+
+        var langs = [lang];
+        if (lang !== 'en') langs.push('en');
+        langs.push('null');
+
+        var url = 'https://api.themoviedb.org/3/' + type + '/' + id +
+          '/images?api_key=' + TMDB_KEY + '&include_image_language=' + langs.join(',');
+
+        fetch(url).then(function (r) { return r.json(); }).then(function (data) {
+          var logo = null;
+          if (data.logos && data.logos.length) {
+            var preferred = data.logos.filter(function (l) { return l.iso_639_1 === lang; });
+            var english = data.logos.filter(function (l) { return l.iso_639_1 === 'en'; });
+            var picked = preferred[0] || english[0] || data.logos[0];
+            if (picked && picked.file_path) {
+              logo = {
+                path: picked.file_path,
+                width: picked.width,
+                height: picked.height
+              };
+            }
+          }
+          logoCache[cacheKey] = logo;
+          metaSet(cacheKey, logo);
+          if (logo) imgPreload(logoImgUrl(logo.path));
+          var cbs = logoPending[cacheKey] || [];
+          delete logoPending[cacheKey];
+          for (var i = 0; i < cbs.length; i++) cbs[i](logo);
+        }).catch(function () {
+          logoCache[cacheKey] = null;
+          var cbs = logoPending[cacheKey] || [];
+          delete logoPending[cacheKey];
+          for (var i = 0; i < cbs.length; i++) cbs[i](null);
+        });
       });
     }
 
@@ -2628,28 +2880,41 @@
     function fetchCleanPoster(id, type, callback) {
       var cacheKey = 'poster/' + type + '/' + id;
       if (cacheKey in posterCache) return callback(posterCache[cacheKey]);
+
       if (posterPending[cacheKey]) { posterPending[cacheKey].push(callback); return; }
       posterPending[cacheKey] = [callback];
 
-      var url = 'https://api.themoviedb.org/3/' + type + '/' + id +
-        '/images?api_key=' + TMDB_KEY + '&include_image_language=null';
-
-      fetch(url).then(function (r) { return r.json(); }).then(function (data) {
-        var path = null;
-        if (data.posters && data.posters.length) {
-          var neutrals = data.posters.filter(function (p) { return !p.iso_639_1; });
-          var picked = neutrals[0] || data.posters[0];
-          if (picked && picked.file_path) path = picked.file_path;
+      metaGet(cacheKey, function (persisted) {
+        if (persisted !== undefined) {
+          posterCache[cacheKey] = persisted;
+          var cbs = posterPending[cacheKey] || [];
+          delete posterPending[cacheKey];
+          for (var i = 0; i < cbs.length; i++) cbs[i](persisted);
+          return;
         }
-        posterCache[cacheKey] = path;
-        var cbs = posterPending[cacheKey] || [];
-        delete posterPending[cacheKey];
-        for (var i = 0; i < cbs.length; i++) cbs[i](path);
-      }).catch(function () {
-        posterCache[cacheKey] = null;
-        var cbs = posterPending[cacheKey] || [];
-        delete posterPending[cacheKey];
-        for (var i = 0; i < cbs.length; i++) cbs[i](null);
+
+        var url = 'https://api.themoviedb.org/3/' + type + '/' + id +
+          '/images?api_key=' + TMDB_KEY + '&include_image_language=null';
+
+        fetch(url).then(function (r) { return r.json(); }).then(function (data) {
+          var path = null;
+          if (data.posters && data.posters.length) {
+            var neutrals = data.posters.filter(function (p) { return !p.iso_639_1; });
+            var picked = neutrals[0] || data.posters[0];
+            if (picked && picked.file_path) path = picked.file_path;
+          }
+          posterCache[cacheKey] = path;
+          metaSet(cacheKey, path);
+          if (path) imgPreload(Lampa.TMDB.image('t/p/w500' + path));
+          var cbs = posterPending[cacheKey] || [];
+          delete posterPending[cacheKey];
+          for (var i = 0; i < cbs.length; i++) cbs[i](path);
+        }).catch(function () {
+          posterCache[cacheKey] = null;
+          var cbs = posterPending[cacheKey] || [];
+          delete posterPending[cacheKey];
+          for (var i = 0; i < cbs.length; i++) cbs[i](null);
+        });
       });
     }
 
@@ -2675,13 +2940,22 @@
         }
         var backdropUrl = Lampa.TMDB.image('t/p/w500' + data.backdrop_path);
         if (imgEl.tagName === 'IMG') {
-          imgEl.src = backdropUrl;
-          imgEl.style.objectFit = 'cover';
-          imgEl.style.objectPosition = 'center';
+          imgLoad(backdropUrl, function (src) {
+            imgEl.onload = function () { if (src !== backdropUrl) URL.revokeObjectURL(src); };
+            imgEl.onerror = function () { if (src !== backdropUrl) URL.revokeObjectURL(src); };
+            imgEl.src = src;
+            imgEl.style.objectFit = 'cover';
+            imgEl.style.objectPosition = 'center';
+          });
         } else {
-          imgEl.style.backgroundImage = 'url(' + backdropUrl + ')';
-          imgEl.style.backgroundSize = 'cover';
-          imgEl.style.backgroundPosition = 'center';
+          imgLoad(backdropUrl, function (src) {
+            var prev = imgEl.getAttribute('data-nfx-blob');
+            if (prev) URL.revokeObjectURL(prev);
+            if (src !== backdropUrl) imgEl.setAttribute('data-nfx-blob', src);
+            imgEl.style.backgroundImage = 'url(' + src + ')';
+            imgEl.style.backgroundSize = 'cover';
+            imgEl.style.backgroundPosition = 'center';
+          });
         }
       }
 
@@ -2721,10 +2995,14 @@
           if (titleDiv) {
             var img = document.createElement('img');
             img.className = 'nfx-card-overlay__logo';
-            img.src = logoImgUrl(logo.path);
             img.alt = title;
             img.loading = 'lazy';
-            img.onerror = function () { img.style.display = 'none'; };
+            var logoUrl = logoImgUrl(logo.path);
+            imgLoad(logoUrl, function (src) {
+              img.onload = function () { if (src !== logoUrl) URL.revokeObjectURL(src); };
+              img.onerror = function () { if (src !== logoUrl) URL.revokeObjectURL(src); img.style.display = 'none'; };
+              img.src = src;
+            });
             titleDiv.replaceWith(img);
           }
         });
@@ -2749,11 +3027,20 @@
           if (!posterPath) return;
           var url = Lampa.TMDB.image('t/p/w500' + posterPath);
           if (imgEl.tagName === 'IMG') {
-            imgEl.src = url;
+            imgLoad(url, function (src) {
+              imgEl.onload = function () { if (src !== url) URL.revokeObjectURL(src); };
+              imgEl.onerror = function () { if (src !== url) URL.revokeObjectURL(src); };
+              imgEl.src = src;
+            });
           } else {
-            imgEl.style.backgroundImage = 'url(' + url + ')';
-            imgEl.style.backgroundSize = 'cover';
-            imgEl.style.backgroundPosition = 'center';
+            imgLoad(url, function (src) {
+              var prev = imgEl.getAttribute('data-nfx-blob');
+              if (prev) URL.revokeObjectURL(prev);
+              if (src !== url) imgEl.setAttribute('data-nfx-blob', src);
+              imgEl.style.backgroundImage = 'url(' + src + ')';
+              imgEl.style.backgroundSize = 'cover';
+              imgEl.style.backgroundPosition = 'center';
+            });
           }
         });
       }
@@ -2810,10 +3097,14 @@
           var existing = host.querySelector('.nfx-episode-title');
           var img = document.createElement('img');
           img.className = 'nfx-episode-logo';
-          img.src = logoImgUrl(logo.path);
           img.alt = showInfo.name || '';
           img.loading = 'lazy';
-          img.onerror = function () { img.style.display = 'none'; };
+          var epLogoUrl = logoImgUrl(logo.path);
+          imgLoad(epLogoUrl, function (src) {
+            img.onload = function () { if (src !== epLogoUrl) URL.revokeObjectURL(src); };
+            img.onerror = function () { if (src !== epLogoUrl) URL.revokeObjectURL(src); img.style.display = 'none'; };
+            img.src = src;
+          });
           if (existing) existing.replaceWith(img);
           else host.insertBefore(img, host.firstChild);
         });
@@ -2983,6 +3274,7 @@
         return;
       }
 
+      prune(getCacheMaxBytes());
       injectStyle();
       if (document.body) document.body.classList.add(BODY_CLASS);
       syncGlareClass();

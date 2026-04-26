@@ -1,6 +1,7 @@
 import { canBootPlugin } from './bootstrap/guard.js';
 import { AGNATIVE_KEYS } from './config/keys.js';
 import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/index.js';
+import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/persist.js';
 
 (function () {
   'use strict';
@@ -26,6 +27,7 @@ import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/in
     CATEGORY_SIZE_KEY,
     CARD_SIZE_KEY,
     LOGO_SIZE_KEY,
+    CACHE_SIZE_KEY,
     CLOCK_SECONDS_KEY,
     CONTROL_PANEL_KEY,
     PERF_MODE_KEY,
@@ -141,6 +143,15 @@ import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/in
       if (!window.Lampa || !Lampa.Storage) return 'md';
       return Lampa.Storage.get(LOGO_SIZE_KEY, 'md') || 'md';
     } catch (e) { return 'md'; }
+  }
+
+  function getCacheMaxBytes() {
+    try {
+      if (!window.Lampa || !Lampa.Storage) return 100 * 1024 * 1024;
+      var v = Lampa.Storage.get(CACHE_SIZE_KEY, '100');
+      if (v === 'unlimited') return Infinity;
+      return (parseInt(v, 10) || 100) * 1024 * 1024;
+    } catch (e) { return 100 * 1024 * 1024; }
   }
 
   function getRatingStyle() {
@@ -459,6 +470,8 @@ import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/in
       Lampa.Storage.set(LOGO_SIZE_KEY, 'md');
       Lampa.Storage.set(TOPNAV_ITEMS_KEY, ['main', 'movie', 'tv', 'cartoon']);
       logoCache = {};
+      posterCache = {};
+      clearAll();
       syncGlareClass();
       syncFontSize();
       syncLogoSize();
@@ -629,6 +642,7 @@ import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/in
         },
         onChange: function () {
           logoCache = {};
+          clearAll();
           setTimeout(function () { schedulePatch(); }, 80);
         }
       });
@@ -722,6 +736,29 @@ import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/in
         },
         onChange: function () {
           syncLogoSize();
+        }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
+        param: {
+          name: CACHE_SIZE_KEY,
+          type: 'select',
+          values: {
+            '50': '50 MB',
+            '100': '100 MB',
+            '200': '200 MB',
+            '500': '500 MB',
+            'unlimited': t('val_unlimited')
+          },
+          default: '100'
+        },
+        field: {
+          name: t('set_cache_size_name'),
+          description: t('set_cache_size_desc')
+        },
+        onChange: function () {
+          prune(getCacheMaxBytes());
         }
       });
 
@@ -976,6 +1013,7 @@ import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/in
 
         if (e.name === LOGO_LANG_KEY) {
           logoCache = {};
+          clearAll();
           setTimeout(function () { schedulePatch(); }, 80);
           return;
         }
@@ -2345,36 +2383,48 @@ import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/in
 
     logoPending[cacheKey] = [callback];
 
-    var langs = [lang];
-    if (lang !== 'en') langs.push('en');
-    langs.push('null');
-
-    var url = 'https://api.themoviedb.org/3/' + type + '/' + id +
-      '/images?api_key=' + TMDB_KEY + '&include_image_language=' + langs.join(',');
-
-    fetch(url).then(function (r) { return r.json(); }).then(function (data) {
-      var logo = null;
-      if (data.logos && data.logos.length) {
-        var preferred = data.logos.filter(function (l) { return l.iso_639_1 === lang; });
-        var english = data.logos.filter(function (l) { return l.iso_639_1 === 'en'; });
-        var picked = preferred[0] || english[0] || data.logos[0];
-        if (picked && picked.file_path) {
-          logo = {
-            path: picked.file_path,
-            width: picked.width,
-            height: picked.height
-          };
-        }
+    metaGet(cacheKey, function (persisted) {
+      if (persisted !== undefined) {
+        logoCache[cacheKey] = persisted;
+        var cbs = logoPending[cacheKey] || [];
+        delete logoPending[cacheKey];
+        for (var i = 0; i < cbs.length; i++) cbs[i](persisted);
+        return;
       }
-      logoCache[cacheKey] = logo;
-      var cbs = logoPending[cacheKey] || [];
-      delete logoPending[cacheKey];
-      for (var i = 0; i < cbs.length; i++) cbs[i](logo);
-    }).catch(function () {
-      logoCache[cacheKey] = null;
-      var cbs = logoPending[cacheKey] || [];
-      delete logoPending[cacheKey];
-      for (var i = 0; i < cbs.length; i++) cbs[i](null);
+
+      var langs = [lang];
+      if (lang !== 'en') langs.push('en');
+      langs.push('null');
+
+      var url = 'https://api.themoviedb.org/3/' + type + '/' + id +
+        '/images?api_key=' + TMDB_KEY + '&include_image_language=' + langs.join(',');
+
+      fetch(url).then(function (r) { return r.json(); }).then(function (data) {
+        var logo = null;
+        if (data.logos && data.logos.length) {
+          var preferred = data.logos.filter(function (l) { return l.iso_639_1 === lang; });
+          var english = data.logos.filter(function (l) { return l.iso_639_1 === 'en'; });
+          var picked = preferred[0] || english[0] || data.logos[0];
+          if (picked && picked.file_path) {
+            logo = {
+              path: picked.file_path,
+              width: picked.width,
+              height: picked.height
+            };
+          }
+        }
+        logoCache[cacheKey] = logo;
+        metaSet(cacheKey, logo);
+        if (logo) imgPreload(logoImgUrl(logo.path));
+        var cbs = logoPending[cacheKey] || [];
+        delete logoPending[cacheKey];
+        for (var i = 0; i < cbs.length; i++) cbs[i](logo);
+      }).catch(function () {
+        logoCache[cacheKey] = null;
+        var cbs = logoPending[cacheKey] || [];
+        delete logoPending[cacheKey];
+        for (var i = 0; i < cbs.length; i++) cbs[i](null);
+      });
     });
   }
 
@@ -2385,28 +2435,41 @@ import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/in
   function fetchCleanPoster(id, type, callback) {
     var cacheKey = 'poster/' + type + '/' + id;
     if (cacheKey in posterCache) return callback(posterCache[cacheKey]);
+
     if (posterPending[cacheKey]) { posterPending[cacheKey].push(callback); return; }
     posterPending[cacheKey] = [callback];
 
-    var url = 'https://api.themoviedb.org/3/' + type + '/' + id +
-      '/images?api_key=' + TMDB_KEY + '&include_image_language=null';
-
-    fetch(url).then(function (r) { return r.json(); }).then(function (data) {
-      var path = null;
-      if (data.posters && data.posters.length) {
-        var neutrals = data.posters.filter(function (p) { return !p.iso_639_1; });
-        var picked = neutrals[0] || data.posters[0];
-        if (picked && picked.file_path) path = picked.file_path;
+    metaGet(cacheKey, function (persisted) {
+      if (persisted !== undefined) {
+        posterCache[cacheKey] = persisted;
+        var cbs = posterPending[cacheKey] || [];
+        delete posterPending[cacheKey];
+        for (var i = 0; i < cbs.length; i++) cbs[i](persisted);
+        return;
       }
-      posterCache[cacheKey] = path;
-      var cbs = posterPending[cacheKey] || [];
-      delete posterPending[cacheKey];
-      for (var i = 0; i < cbs.length; i++) cbs[i](path);
-    }).catch(function () {
-      posterCache[cacheKey] = null;
-      var cbs = posterPending[cacheKey] || [];
-      delete posterPending[cacheKey];
-      for (var i = 0; i < cbs.length; i++) cbs[i](null);
+
+      var url = 'https://api.themoviedb.org/3/' + type + '/' + id +
+        '/images?api_key=' + TMDB_KEY + '&include_image_language=null';
+
+      fetch(url).then(function (r) { return r.json(); }).then(function (data) {
+        var path = null;
+        if (data.posters && data.posters.length) {
+          var neutrals = data.posters.filter(function (p) { return !p.iso_639_1; });
+          var picked = neutrals[0] || data.posters[0];
+          if (picked && picked.file_path) path = picked.file_path;
+        }
+        posterCache[cacheKey] = path;
+        metaSet(cacheKey, path);
+        if (path) imgPreload(Lampa.TMDB.image('t/p/w500' + path));
+        var cbs = posterPending[cacheKey] || [];
+        delete posterPending[cacheKey];
+        for (var i = 0; i < cbs.length; i++) cbs[i](path);
+      }).catch(function () {
+        posterCache[cacheKey] = null;
+        var cbs = posterPending[cacheKey] || [];
+        delete posterPending[cacheKey];
+        for (var i = 0; i < cbs.length; i++) cbs[i](null);
+      });
     });
   }
 
@@ -2432,13 +2495,22 @@ import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/in
       }
       var backdropUrl = Lampa.TMDB.image('t/p/w500' + data.backdrop_path);
       if (imgEl.tagName === 'IMG') {
-        imgEl.src = backdropUrl;
-        imgEl.style.objectFit = 'cover';
-        imgEl.style.objectPosition = 'center';
+        imgLoad(backdropUrl, function (src) {
+          imgEl.onload = function () { if (src !== backdropUrl) URL.revokeObjectURL(src); };
+          imgEl.onerror = function () { if (src !== backdropUrl) URL.revokeObjectURL(src); };
+          imgEl.src = src;
+          imgEl.style.objectFit = 'cover';
+          imgEl.style.objectPosition = 'center';
+        });
       } else {
-        imgEl.style.backgroundImage = 'url(' + backdropUrl + ')';
-        imgEl.style.backgroundSize = 'cover';
-        imgEl.style.backgroundPosition = 'center';
+        imgLoad(backdropUrl, function (src) {
+          var prev = imgEl.getAttribute('data-nfx-blob');
+          if (prev) URL.revokeObjectURL(prev);
+          if (src !== backdropUrl) imgEl.setAttribute('data-nfx-blob', src);
+          imgEl.style.backgroundImage = 'url(' + src + ')';
+          imgEl.style.backgroundSize = 'cover';
+          imgEl.style.backgroundPosition = 'center';
+        });
       }
     }
 
@@ -2478,10 +2550,14 @@ import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/in
         if (titleDiv) {
           var img = document.createElement('img');
           img.className = 'nfx-card-overlay__logo';
-          img.src = logoImgUrl(logo.path);
           img.alt = title;
           img.loading = 'lazy';
-          img.onerror = function () { img.style.display = 'none'; };
+          var logoUrl = logoImgUrl(logo.path);
+          imgLoad(logoUrl, function (src) {
+            img.onload = function () { if (src !== logoUrl) URL.revokeObjectURL(src); };
+            img.onerror = function () { if (src !== logoUrl) URL.revokeObjectURL(src); img.style.display = 'none'; };
+            img.src = src;
+          });
           titleDiv.replaceWith(img);
         }
       });
@@ -2506,11 +2582,20 @@ import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/in
         if (!posterPath) return;
         var url = Lampa.TMDB.image('t/p/w500' + posterPath);
         if (imgEl.tagName === 'IMG') {
-          imgEl.src = url;
+          imgLoad(url, function (src) {
+            imgEl.onload = function () { if (src !== url) URL.revokeObjectURL(src); };
+            imgEl.onerror = function () { if (src !== url) URL.revokeObjectURL(src); };
+            imgEl.src = src;
+          });
         } else {
-          imgEl.style.backgroundImage = 'url(' + url + ')';
-          imgEl.style.backgroundSize = 'cover';
-          imgEl.style.backgroundPosition = 'center';
+          imgLoad(url, function (src) {
+            var prev = imgEl.getAttribute('data-nfx-blob');
+            if (prev) URL.revokeObjectURL(prev);
+            if (src !== url) imgEl.setAttribute('data-nfx-blob', src);
+            imgEl.style.backgroundImage = 'url(' + src + ')';
+            imgEl.style.backgroundSize = 'cover';
+            imgEl.style.backgroundPosition = 'center';
+          });
         }
       });
     }
@@ -2567,10 +2652,14 @@ import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/in
         var existing = host.querySelector('.nfx-episode-title');
         var img = document.createElement('img');
         img.className = 'nfx-episode-logo';
-        img.src = logoImgUrl(logo.path);
         img.alt = showInfo.name || '';
         img.loading = 'lazy';
-        img.onerror = function () { img.style.display = 'none'; };
+        var epLogoUrl = logoImgUrl(logo.path);
+        imgLoad(epLogoUrl, function (src) {
+          img.onload = function () { if (src !== epLogoUrl) URL.revokeObjectURL(src); };
+          img.onerror = function () { if (src !== epLogoUrl) URL.revokeObjectURL(src); img.style.display = 'none'; };
+          img.src = src;
+        });
         if (existing) existing.replaceWith(img);
         else host.insertBefore(img, host.firstChild);
       });
@@ -2740,6 +2829,7 @@ import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/in
       return;
     }
 
+    prune(getCacheMaxBytes());
     injectStyle();
     if (document.body) document.body.classList.add(BODY_CLASS);
     syncGlareClass();

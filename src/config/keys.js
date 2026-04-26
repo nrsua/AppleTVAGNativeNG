@@ -30,6 +30,7 @@ export const AGNATIVE_KEYS = {
   CARD_SIZE_ATTR: 'data-agnative-card-size',
   LOGO_SIZE_KEY: 'appletv_agnative_logo_size',
   LOGO_SIZE_ATTR: 'data-agnative-logo-size',
+  CACHE_SIZE_KEY: 'appletv_agnative_cache_size',
   PERF_ATTR: 'data-agnative-perf',
   FLEX_GAP_ATTR: 'data-agnative-flex-gap'
 };

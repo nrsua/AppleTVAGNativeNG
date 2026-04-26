@@ -1,7 +1,7 @@
 export const en = {
   nav_feed: 'Feed',
   badge_movie: 'MOVIE', badge_tv: 'TV SHOW',
-  set_about_desc: 'Version 0.3.9.1  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
+  set_about_desc: 'Version 0.3.11  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
   set_main_title: 'Main settings',
   set_enable_name: 'AppleTV AgNative',
   set_enable_desc: 'Enables and disables the plugin',
@@ -42,6 +42,9 @@ export const en = {
   set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data',
   set_perf_mode_name: 'Performance mode',
   set_perf_mode_desc: 'Reduces load on weak devices: disables blur, glare and heavy animations',
+  val_unlimited: 'Unlimited',
+  set_cache_size_name: 'Image cache size',
+  set_cache_size_desc: 'Maximum size of locally cached images. Oldest entries are removed when the limit is exceeded',
   val_perf_auto: 'Auto',
   val_perf_high: 'Maximum (all effects)',
   val_perf_low: 'Weak device',

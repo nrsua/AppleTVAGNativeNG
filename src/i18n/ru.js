@@ -1,7 +1,7 @@
 export const ru = {
   nav_feed: 'Лента',
   badge_movie: 'ФИЛЬМ', badge_tv: 'СЕРИАЛ',
-  set_about_desc: 'Версия 0.3.9.1  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
+  set_about_desc: 'Версия 0.3.11  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
   set_main_title: 'Основные настройки',
   set_enable_name: 'AppleTV AgNative',
   set_enable_desc: 'Включает и выключает плагин',
@@ -42,6 +42,9 @@ export const ru = {
   set_control_panel_desc: 'Settings, Synchronization, Player, Cache & Data',
   set_perf_mode_name: 'Режим производительности',
   set_perf_mode_desc: 'Снижает нагрузку на слабых устройствах: отключает блюр, блики и тяжёлую анимацию',
+  val_unlimited: 'Без ограничений',
+  set_cache_size_name: 'Размер кеша изображений',
+  set_cache_size_desc: 'Максимальный объём изображений в локальном кеше. При превышении удаляются самые старые записи',
   val_perf_auto: 'Автоматически',
   val_perf_high: 'Максимум (все эффекты)',
   val_perf_low: 'Слабое устройство',
