@@ -2577,7 +2577,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       } else if (!imgEl.hasAttribute('data-nfx-original-bg')) {
         imgEl.setAttribute('data-nfx-original-bg', imgEl.style.backgroundImage || '');
       }
-      var backdropUrl = Lampa.TMDB.image('t/p/w500' + data.backdrop_path);
+      var backdropUrl = Lampa.TMDB.image('t/p/' + getPosterQuality() + data.backdrop_path);
       if (imgEl.tagName === 'IMG') {
         imgLoad(backdropUrl, function (src) {
           imgEl.onload = function () { if (src !== backdropUrl) URL.revokeObjectURL(src); };
@@ -2666,7 +2666,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     if (!useBackdrop && data.id && imgEl) {
       fetchCleanPoster(data.id, tmdbType, function (posterPath) {
         if (!posterPath) return;
-        var url = Lampa.TMDB.image('t/p/w500' + posterPath);
+        var url = Lampa.TMDB.image('t/p/' + getPosterQuality() + posterPath);
         if (imgEl.tagName === 'IMG') {
           imgLoad(url, function (src) {
             imgEl.onload = function () { if (src !== url) URL.revokeObjectURL(src); };
