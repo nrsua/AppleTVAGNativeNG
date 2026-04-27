@@ -2568,10 +2568,12 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     var overlay = document.createElement('div');
     overlay.className = 'nfx-card-overlay';
 
-    var metaParts = [];
-    if (vote > 0) metaParts.push('<span class="nfx-card-overlay__match">' + Math.round(vote * 10) + '%</span>');
-    if (year) metaParts.push('<span>' + year + '</span>');
+    var metaLeft = [];
+    if (vote > 0) metaLeft.push('<span class="nfx-card-overlay__match">' + Math.round(vote * 10) + '%</span>');
+    if (year) metaLeft.push('<span>' + year + '</span>');
     var genreNames = getGenreNames(data);
+    var metaParts = [];
+    if (metaLeft.length) metaParts.push(metaLeft.join(' '));
     if (genreNames.length) metaParts.push('<span>' + escapeHtml(genreNames.slice(0, 2).join(', ')) + '</span>');
     var metaHtml = metaParts.length ? '<div class="nfx-card-overlay__meta">' + metaParts.join('<span style="opacity:0.4"> · </span>') + '</div>' : '';
 
