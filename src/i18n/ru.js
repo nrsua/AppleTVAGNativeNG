@@ -55,5 +55,9 @@ export const ru = {
   set_overlay_align_desc: 'Горизонтальное выравнивание названия и метаданных на карточке',
   val_overlay_align_start: 'По левому краю',
   val_overlay_align_center: 'По центру',
-  val_overlay_align_end: 'По правому краю'
+  val_overlay_align_end: 'По правому краю',
+  set_card_image_mode_name: 'Тип изображения карточки',
+  set_card_image_mode_desc: 'Бекдроп + логотип или постер без логотипа',
+  val_card_image_backdrop: 'Бекдроп + Логотип',
+  val_card_image_poster: 'Постер'
 };

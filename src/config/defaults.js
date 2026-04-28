@@ -15,5 +15,6 @@ export const AGNATIVE_DEFAULTS = {
   cacheSize: '100',
   clockSeconds: 'off',
   controlPanel: 'off',
-  perfMode: 'auto'
+  perfMode: 'auto',
+  cardImageMode: 'backdrop'
 };

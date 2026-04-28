@@ -55,5 +55,9 @@ export const en = {
   set_overlay_align_desc: 'Horizontal alignment of title and metadata on the card',
   val_overlay_align_start: 'Left',
   val_overlay_align_center: 'Center',
-  val_overlay_align_end: 'Right'
+  val_overlay_align_end: 'Right',
+  set_card_image_mode_name: 'Card image type',
+  set_card_image_mode_desc: 'Backdrop + logo or poster without logo',
+  val_card_image_backdrop: 'Backdrop + Logo',
+  val_card_image_poster: 'Poster'
 };

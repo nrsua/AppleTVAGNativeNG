@@ -55,5 +55,9 @@ export const uk = {
   set_overlay_align_desc: 'Горизонтальне вирівнювання назви та метаданих на картці',
   val_overlay_align_start: 'Ліворуч',
   val_overlay_align_center: 'По центру',
-  val_overlay_align_end: 'Праворуч'
+  val_overlay_align_end: 'Праворуч',
+  set_card_image_mode_name: 'Тип зображення картки',
+  set_card_image_mode_desc: 'Бекдроп + логотип або постер без логотипу',
+  val_card_image_backdrop: 'Бекдроп + Логотип',
+  val_card_image_poster: 'Постер'
 };

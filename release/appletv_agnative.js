@@ -47,7 +47,9 @@
     PERF_ATTR: 'data-agnative-perf',
     FLEX_GAP_ATTR: 'data-agnative-flex-gap',
     OVERLAY_ALIGN_KEY: 'appletv_agnative_overlay_align',
-    OVERLAY_ALIGN_ATTR: 'data-agnative-overlay-align'
+    OVERLAY_ALIGN_ATTR: 'data-agnative-overlay-align',
+    CARD_IMAGE_MODE_KEY: 'appletv_agnative_card_image_mode',
+    CARD_IMAGE_MODE_ATTR: 'data-agnative-card-image-mode'
   };
 
   const ru = {
@@ -107,7 +109,11 @@
     set_overlay_align_desc: 'Горизонтальное выравнивание названия и метаданных на карточке',
     val_overlay_align_start: 'По левому краю',
     val_overlay_align_center: 'По центру',
-    val_overlay_align_end: 'По правому краю'
+    val_overlay_align_end: 'По правому краю',
+    set_card_image_mode_name: 'Тип изображения карточки',
+    set_card_image_mode_desc: 'Бекдроп + логотип или постер без логотипа',
+    val_card_image_backdrop: 'Бекдроп + Логотип',
+    val_card_image_poster: 'Постер'
   };
 
   const en = {
@@ -167,7 +173,11 @@
     set_overlay_align_desc: 'Horizontal alignment of title and metadata on the card',
     val_overlay_align_start: 'Left',
     val_overlay_align_center: 'Center',
-    val_overlay_align_end: 'Right'
+    val_overlay_align_end: 'Right',
+    set_card_image_mode_name: 'Card image type',
+    set_card_image_mode_desc: 'Backdrop + logo or poster without logo',
+    val_card_image_backdrop: 'Backdrop + Logo',
+    val_card_image_poster: 'Poster'
   };
 
   const uk = {
@@ -227,7 +237,11 @@
     set_overlay_align_desc: 'Горизонтальне вирівнювання назви та метаданих на картці',
     val_overlay_align_start: 'Ліворуч',
     val_overlay_align_center: 'По центру',
-    val_overlay_align_end: 'Праворуч'
+    val_overlay_align_end: 'Праворуч',
+    set_card_image_mode_name: 'Тип зображення картки',
+    set_card_image_mode_desc: 'Бекдроп + логотип або постер без логотипу',
+    val_card_image_backdrop: 'Бекдроп + Логотип',
+    val_card_image_poster: 'Постер'
   };
 
   const GENRE_MAP_LOCALIZED = {
@@ -515,7 +529,9 @@
       PERF_ATTR,
       FLEX_GAP_ATTR,
       OVERLAY_ALIGN_KEY,
-      OVERLAY_ALIGN_ATTR
+      OVERLAY_ALIGN_ATTR,
+      CARD_IMAGE_MODE_KEY,
+      CARD_IMAGE_MODE_ATTR
     } = AGNATIVE_KEYS;
 
     var scheduled = false;
@@ -524,6 +540,8 @@
     var logoPending = {};
     var posterCache = {};
     var posterPending = {};
+    var titledBackdropCache = {};
+    var titledBackdropPending = {};
     var storageListenerBound = false;
     var activityListenerBound = false;
     var fullListenerBound = false;
@@ -633,6 +651,22 @@
         var valid = ['w185', 'w342', 'w500', 'w780', 'original'];
         return valid.indexOf(v) > -1 ? v : 'w500';
       } catch (e) { return 'w500'; }
+    }
+
+    function getCardImageMode() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return 'backdrop';
+        var v = Lampa.Storage.get(CARD_IMAGE_MODE_KEY, 'backdrop') || 'backdrop';
+        return v === 'poster' ? 'poster' : 'backdrop';
+      } catch (e) { return 'backdrop'; }
+    }
+
+    function getBackdropQuality() {
+      var q = getPosterQuality();
+      if (q === 'w185' || q === 'w342') return 'w300';
+      if (q === 'w500') return 'w780';
+      if (q === 'w780') return 'w1280';
+      return 'original';
     }
 
     function getRatingStyle() {
@@ -747,6 +781,7 @@
           document.body.removeAttribute(RATING_ATTR);
           document.body.removeAttribute(PERF_ATTR);
           document.body.removeAttribute(FLEX_GAP_ATTR);
+          document.body.removeAttribute(CARD_IMAGE_MODE_ATTR);
         }
         var style = document.getElementById(STYLE_ID);
         if (style) style.remove();
@@ -888,6 +923,7 @@
       document.body.setAttribute(BADGE_ATTR, badgeEnabled() ? 'on' : 'off');
       document.body.setAttribute(RATING_ATTR, ratingEnabled() ? 'on' : 'off');
       document.body.setAttribute(RATING_STYLE_ATTR, getRatingStyle());
+      document.body.setAttribute(CARD_IMAGE_MODE_ATTR, getCardImageMode());
     }
 
     function syncPerfMode() {
@@ -964,8 +1000,10 @@
         Lampa.Storage.set(LOGO_SIZE_KEY, 'md');
         Lampa.Storage.set(POSTER_QUALITY_KEY, 'w500');
         Lampa.Storage.set(OVERLAY_ALIGN_KEY, 'start');
+        Lampa.Storage.set(CARD_IMAGE_MODE_KEY, 'backdrop');
         Lampa.Storage.set(TOPNAV_ITEMS_KEY, ['main', 'movie', 'tv', 'cartoon']);
         logoCache = {};
+        titledBackdropCache = {};
         posterCache = {};
         clearAll();
         syncGlareClass();
@@ -1139,6 +1177,7 @@
           },
           onChange: function () {
             logoCache = {};
+            titledBackdropCache = {};
             clearAll();
             setTimeout(function () { schedulePatch(); }, 80);
           }
@@ -1233,6 +1272,32 @@
           },
           onChange: function () {
             syncLogoSize();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_COMPONENT,
+          param: {
+            name: CARD_IMAGE_MODE_KEY,
+            type: 'select',
+            values: {
+              backdrop: t('val_card_image_backdrop'),
+              poster: t('val_card_image_poster')
+            },
+            default: 'backdrop'
+          },
+          field: {
+            name: t('set_card_image_mode_name'),
+            description: t('set_card_image_mode_desc')
+          },
+          onChange: function () {
+            posterCache = {};
+            logoCache = {};
+            titledBackdropCache = {};
+            clearAll();
+            syncCardFlags();
+            resetCardSwitches();
+            setTimeout(function () { schedulePatch(); }, 80);
           }
         });
 
@@ -1557,6 +1622,7 @@
 
           if (e.name === LOGO_LANG_KEY) {
             logoCache = {};
+            titledBackdropCache = {};
             clearAll();
             setTimeout(function () { schedulePatch(); }, 80);
             return;
@@ -2985,6 +3051,60 @@
       return Lampa.TMDB.image('t/p/w300' + logoPath);
     }
 
+    function fetchTitledBackdrop(id, type, callback) {
+      if (!id) return callback(null);
+      var lang = getLogoLang();
+      var cacheKey = 'titled_backdrop/' + type + '/' + id + '/' + lang;
+
+      if (cacheKey in titledBackdropCache) return callback(titledBackdropCache[cacheKey]);
+
+      if (titledBackdropPending[cacheKey]) {
+        titledBackdropPending[cacheKey].push(callback);
+        return;
+      }
+      titledBackdropPending[cacheKey] = [callback];
+
+      metaGet(cacheKey, function (persisted) {
+        if (persisted !== undefined) {
+          titledBackdropCache[cacheKey] = persisted;
+          var cbs = titledBackdropPending[cacheKey] || [];
+          delete titledBackdropPending[cacheKey];
+          for (var i = 0; i < cbs.length; i++) cbs[i](persisted);
+          return;
+        }
+
+        var langs = [lang];
+        if (lang !== 'en') langs.push('en');
+
+        var url = 'https://api.themoviedb.org/3/' + type + '/' + id +
+          '/images?api_key=' + TMDB_KEY + '&include_image_language=' + langs.join(',');
+
+        fetch(url).then(function (r) { return r.json(); }).then(function (data) {
+          var path = null;
+          if (data.backdrops && data.backdrops.length) {
+            var preferred = data.backdrops.filter(function (b) { return b.iso_639_1 === lang; });
+            var english = data.backdrops.filter(function (b) { return b.iso_639_1 === 'en'; });
+            var candidates = preferred.length ? preferred : english;
+            if (candidates.length) {
+              candidates.sort(function (a, b) { return (b.vote_average || 0) - (a.vote_average || 0); });
+              path = candidates[0].file_path;
+            }
+          }
+          titledBackdropCache[cacheKey] = path;
+          metaSet(cacheKey, path);
+          if (path) imgPreload(Lampa.TMDB.image('t/p/' + getBackdropQuality() + path));
+          var cbs = titledBackdropPending[cacheKey] || [];
+          delete titledBackdropPending[cacheKey];
+          for (var i = 0; i < cbs.length; i++) cbs[i](path);
+        }).catch(function () {
+          titledBackdropCache[cacheKey] = null;
+          var cbs = titledBackdropPending[cacheKey] || [];
+          delete titledBackdropPending[cacheKey];
+          for (var i = 0; i < cbs.length; i++) cbs[i](null);
+        });
+      });
+    }
+
     function fetchCleanPoster(id, type, callback) {
       var cacheKey = 'poster/' + type + '/' + id;
       if (cacheKey in posterCache) return callback(posterCache[cacheKey]);
@@ -3035,10 +3155,34 @@
 
       var perfLevel = resolvePerfLevel();
       var isUltra = perfLevel === 'ultra';
-      var useBackdrop = backdropEnabled();
+      var cardImageMode = getCardImageMode();
 
       var imgEl = cardEl.querySelector('.card__img');
-      if (imgEl && data.backdrop_path && useBackdrop) {
+      var useHorizontal = backdropEnabled();
+
+      function setImgUrl(url) {
+        if (!imgEl) return;
+        if (imgEl.tagName === 'IMG') {
+          imgLoad(url, function (src) {
+            imgEl.onload = function () { if (src !== url) URL.revokeObjectURL(src); };
+            imgEl.onerror = function () { if (src !== url) URL.revokeObjectURL(src); };
+            imgEl.src = src;
+            imgEl.style.objectFit = 'cover';
+            imgEl.style.objectPosition = 'center';
+          });
+        } else {
+          imgLoad(url, function (src) {
+            var prev = imgEl.getAttribute('data-nfx-blob');
+            if (prev) URL.revokeObjectURL(prev);
+            if (src !== url) imgEl.setAttribute('data-nfx-blob', src);
+            imgEl.style.backgroundImage = 'url(' + src + ')';
+            imgEl.style.backgroundSize = 'cover';
+            imgEl.style.backgroundPosition = 'center';
+          });
+        }
+      }
+
+      if (imgEl && cardImageMode === 'backdrop') {
         if (imgEl.tagName === 'IMG') {
           if (!imgEl.hasAttribute('data-nfx-original-src')) {
             imgEl.setAttribute('data-nfx-original-src', imgEl.getAttribute('src') || '');
@@ -3046,25 +3190,72 @@
         } else if (!imgEl.hasAttribute('data-nfx-original-bg')) {
           imgEl.setAttribute('data-nfx-original-bg', imgEl.style.backgroundImage || '');
         }
-        var backdropUrl = Lampa.TMDB.image('t/p/' + getPosterQuality() + data.backdrop_path);
-        if (imgEl.tagName === 'IMG') {
-          imgLoad(backdropUrl, function (src) {
-            imgEl.onload = function () { if (src !== backdropUrl) URL.revokeObjectURL(src); };
-            imgEl.onerror = function () { if (src !== backdropUrl) URL.revokeObjectURL(src); };
-            imgEl.src = src;
-            imgEl.style.objectFit = 'cover';
-            imgEl.style.objectPosition = 'center';
+        if (data.backdrop_path) {
+          setImgUrl(Lampa.TMDB.image('t/p/' + getBackdropQuality() + data.backdrop_path));
+        }
+      }
+
+      if (cardImageMode === 'poster') {
+        if (imgEl) {
+          if (imgEl.tagName === 'IMG') {
+            if (!imgEl.hasAttribute('data-nfx-original-src')) {
+              imgEl.setAttribute('data-nfx-original-src', imgEl.getAttribute('src') || '');
+            }
+          } else if (!imgEl.hasAttribute('data-nfx-original-bg')) {
+            imgEl.setAttribute('data-nfx-original-bg', imgEl.style.backgroundImage || '');
+          }
+        }
+
+        var pTmdbType = data.name ? 'tv' : 'movie';
+        var pView = cardEl.querySelector('.card__view');
+        var pVote = data.vote_average ? parseFloat(data.vote_average) : 0;
+        var pYear = '';
+        if (data.release_date) pYear = data.release_date.substring(0, 4);
+        else if (data.first_air_date) pYear = data.first_air_date.substring(0, 4);
+        var pGenreNames = getGenreNames(data);
+        var pMetaLeft = [];
+        if (pVote > 0) pMetaLeft.push('<span class="nfx-card-overlay__match">' + Math.round(pVote * 10) + '%</span>');
+        if (pYear) pMetaLeft.push('<span>' + pYear + '</span>');
+        var pMetaParts = [];
+        if (pMetaLeft.length) pMetaParts.push(pMetaLeft.join(' '));
+        if (pGenreNames.length) pMetaParts.push('<span>' + escapeHtml(pGenreNames.slice(0, 2).join(', ')) + '</span>');
+        var pMetaHtml = pMetaParts.length ? '<div class="nfx-card-overlay__meta">' + pMetaParts.join('<span style="opacity:0.4"> · </span>') + '</div>' : '';
+
+        function buildPosterOverlay() {
+          if (!pView || pView.querySelector('.nfx-card-overlay')) return;
+          if (pMetaHtml) {
+            var pOverlay = document.createElement('div');
+            pOverlay.className = 'nfx-card-overlay';
+            pOverlay.innerHTML = pMetaHtml;
+            pView.appendChild(pOverlay);
+          }
+          if (badgeEnabled() && (data.title || data.name)) {
+            var pBadge = document.createElement('div');
+            pBadge.className = 'nfx-card-logo';
+            pBadge.textContent = data.name ? t('badge_tv') : t('badge_movie');
+            pView.appendChild(pBadge);
+          }
+          if (ratingEnabled() && pVote > 0) {
+            var pRating = document.createElement('div');
+            pRating.className = 'nfx-card-rating';
+            pRating.textContent = pVote.toFixed(1);
+            pView.appendChild(pRating);
+          }
+        }
+
+        if (useHorizontal && data.id && !isUltra) {
+          if (data.poster_path) setImgUrl(Lampa.TMDB.image('t/p/' + getPosterQuality() + data.poster_path));
+          fetchTitledBackdrop(data.id, pTmdbType, function (titledPath) {
+            if (titledPath) {
+              setImgUrl(Lampa.TMDB.image('t/p/' + getBackdropQuality() + titledPath));
+            }
+            buildPosterOverlay();
           });
         } else {
-          imgLoad(backdropUrl, function (src) {
-            var prev = imgEl.getAttribute('data-nfx-blob');
-            if (prev) URL.revokeObjectURL(prev);
-            if (src !== backdropUrl) imgEl.setAttribute('data-nfx-blob', src);
-            imgEl.style.backgroundImage = 'url(' + src + ')';
-            imgEl.style.backgroundSize = 'cover';
-            imgEl.style.backgroundPosition = 'center';
-          });
+          if (data.poster_path) setImgUrl(Lampa.TMDB.image('t/p/' + getPosterQuality() + data.poster_path));
+          buildPosterOverlay();
         }
+        return;
       }
 
       var view = cardEl.querySelector('.card__view');
@@ -3098,6 +3289,7 @@
       view.appendChild(overlay);
 
       var tmdbType = data.name ? 'tv' : 'movie';
+
       if (!isUltra) {
         fetchLogo(data.id, tmdbType, function (logo) {
           if (!logo) return;
@@ -3130,29 +3322,6 @@
         rating.className = 'nfx-card-rating';
         rating.textContent = vote.toFixed(1);
         view.appendChild(rating);
-      }
-
-      if (!useBackdrop && data.id && imgEl) {
-        fetchCleanPoster(data.id, tmdbType, function (posterPath) {
-          if (!posterPath) return;
-          var url = Lampa.TMDB.image('t/p/' + getPosterQuality() + posterPath);
-          if (imgEl.tagName === 'IMG') {
-            imgLoad(url, function (src) {
-              imgEl.onload = function () { if (src !== url) URL.revokeObjectURL(src); };
-              imgEl.onerror = function () { if (src !== url) URL.revokeObjectURL(src); };
-              imgEl.src = src;
-            });
-          } else {
-            imgLoad(url, function (src) {
-              var prev = imgEl.getAttribute('data-nfx-blob');
-              if (prev) URL.revokeObjectURL(prev);
-              if (src !== url) imgEl.setAttribute('data-nfx-blob', src);
-              imgEl.style.backgroundImage = 'url(' + src + ')';
-              imgEl.style.backgroundSize = 'cover';
-              imgEl.style.backgroundPosition = 'center';
-            });
-          }
-        });
       }
     }
 
