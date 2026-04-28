@@ -562,7 +562,9 @@
     var controlPanelOpen = false;
     var controlPanelPrevController = '';
     var controlPanelControllerReady = false;
-    var controlPanelDocCloseBound = false;
+    var controlPanelOutsideHandler = null;
+    var controlPanelSwallowHandler = null;
+    var topnavControllerReady = false;
     var swallowClickUntil = 0;
     var styleSignature = '';
     var detectedPerfLevel = null;
@@ -807,6 +809,12 @@
         var panel = document.querySelector('.agnative-control-panel');
         if (panel) panel.remove();
         controlPanelOpen = false;
+        unbindControlPanelOutsideClose();
+        var headEl = document.querySelector('.head');
+        if (headEl && headEl.__agnativeWheelBound) {
+          headEl.removeEventListener('wheel', forwardWheelBelowTopnav, { passive: false });
+          headEl.__agnativeWheelBound = false;
+        }
       } catch (e) { }
     }
 
@@ -2458,10 +2466,7 @@
 
     function triggerSelectorEnter(node) {
       if (!node) return false;
-      var entered = false;
-      entered = triggerSelectorEvent(node, 'hover:focus') || entered;
-      entered = triggerSelectorEvent(node, 'hover:enter') || entered;
-      if (entered) return true;
+      if (triggerSelectorEvent(node, 'hover:enter')) return true;
       clickNode(node);
       return true;
     }
@@ -2689,26 +2694,12 @@
     }
 
     function bindControlPanelOutsideClose() {
-      if (controlPanelDocCloseBound || !document || !document.addEventListener) return;
-      controlPanelDocCloseBound = true;
-      var closeIfOutside = function (e) {
+      if (controlPanelOutsideHandler || !document || !document.addEventListener) return;
+
+      controlPanelOutsideHandler = function (e) {
+        if (!controlPanelOpen) return;
         var target = e && e.target;
         if (!target) return;
-
-        if (document.body && document.body.classList.contains('settings--open')) {
-          if (!(target.closest && target.closest('.settings'))) {
-            try {
-              if (window.Lampa && Lampa.Controller && typeof Lampa.Controller.back === 'function') {
-                Lampa.Controller.back();
-              }
-            } catch (err) { }
-            markSwallowClick(280);
-            consumeEvent(e);
-            return;
-          }
-        }
-
-        if (!controlPanelOpen) return;
         if (target.closest && target.closest('.agnative-control-panel')) return;
         if (target.closest && target.closest('.agnative-topnav-clock')) return;
         closeControlPanel(true);
@@ -2716,14 +2707,23 @@
         consumeEvent(e);
       };
 
-      var swallowClick = function (e) {
+      controlPanelSwallowHandler = function (e) {
         if (Date.now() >= swallowClickUntil) return;
         consumeEvent(e);
       };
 
-      document.addEventListener('mousedown', closeIfOutside, true);
-      document.addEventListener('touchstart', closeIfOutside, true);
-      document.addEventListener('click', swallowClick, true);
+      document.addEventListener('mousedown', controlPanelOutsideHandler, true);
+      document.addEventListener('touchstart', controlPanelOutsideHandler, true);
+      document.addEventListener('click', controlPanelSwallowHandler, true);
+    }
+
+    function unbindControlPanelOutsideClose() {
+      if (!controlPanelOutsideHandler) return;
+      document.removeEventListener('mousedown', controlPanelOutsideHandler, true);
+      document.removeEventListener('touchstart', controlPanelOutsideHandler, true);
+      document.removeEventListener('click', controlPanelSwallowHandler, true);
+      controlPanelOutsideHandler = null;
+      controlPanelSwallowHandler = null;
     }
 
     function ensureControlPanelController(panel) {
@@ -2780,7 +2780,6 @@
       });
 
       ensureControlPanelController(panel);
-      bindControlPanelOutsideClose();
       return panel;
     }
 
@@ -2792,6 +2791,7 @@
       controlPanelOpen = true;
       panel.classList.add('is-open');
       panel.setAttribute('aria-hidden', 'false');
+      bindControlPanelOutsideClose();
 
       try {
         if (window.Lampa && Lampa.Controller && typeof Lampa.Controller.enabled === 'function') {
@@ -2812,6 +2812,7 @@
       controlPanelOpen = false;
       panel.classList.remove('is-open');
       panel.setAttribute('aria-hidden', 'true');
+      unbindControlPanelOutsideClose();
 
       try {
         if (restoreController && controlPanelPrevController && window.Lampa && Lampa.Controller && typeof Lampa.Controller.toggle === 'function') {
@@ -2896,11 +2897,89 @@
       }
     }
 
+    function forwardWheelBelowTopnav(e) {
+      if (e.__agnativeForwardedWheel) return;
+      var head = qs('.head');
+      if (!head) return;
+      var prev = head.style.pointerEvents;
+      head.style.pointerEvents = 'none';
+      var below = null;
+      try { below = document.elementFromPoint(e.clientX, e.clientY); } catch (err) { }
+      head.style.pointerEvents = prev;
+      if (!below || head.contains(below)) return;
+      var WE = window.WheelEvent;
+      if (typeof WE !== 'function') return;
+      try {
+        var clone = new WE('wheel', {
+          bubbles: true,
+          cancelable: true,
+          deltaX: e.deltaX,
+          deltaY: e.deltaY,
+          deltaZ: e.deltaZ,
+          deltaMode: e.deltaMode,
+          clientX: e.clientX,
+          clientY: e.clientY,
+          ctrlKey: e.ctrlKey,
+          shiftKey: e.shiftKey,
+          altKey: e.altKey,
+          metaKey: e.metaKey
+        });
+        clone.__agnativeForwardedWheel = true;
+        below.dispatchEvent(clone);
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+      } catch (err) { }
+    }
+
+    function attachTopnavWheelForwarding() {
+      var head = qs('.head');
+      if (!head || head.__agnativeWheelBound) return;
+      head.__agnativeWheelBound = true;
+      head.addEventListener('wheel', forwardWheelBelowTopnav, { passive: false });
+    }
+
     function registerTopnavController(shell) {
       if (!shell || !window.Lampa || !Lampa.Controller || !window.$) return;
+      if (topnavControllerReady || typeof Lampa.Controller.add !== 'function') return;
+      topnavControllerReady = true;
       try {
-        Lampa.Controller.collectionSet($(shell));
-      } catch (e) { }
+        Lampa.Controller.add('head', {
+          toggle: function () {
+            var headEl = qs('.head__body') || qs('.head');
+            if (!headEl) return;
+            var view = $(headEl);
+            var firstItem = qs('.agnative-topnav-shell__item.selector', headEl)
+              || qs('.agnative-topnav-shell .selector', headEl)
+              || qs('.selector', headEl);
+            Lampa.Controller.collectionSet(view);
+            Lampa.Controller.collectionFocus(firstItem || false, view, true);
+          },
+          update: function () { },
+          left: function () {
+            if (window.Navigator && Navigator.canmove && !Navigator.canmove('left')) {
+              try { Lampa.Controller.toggle('menu'); } catch (e) { }
+              return;
+            }
+            if (window.Navigator && Navigator.move) Navigator.move('left');
+          },
+          right: function () {
+            if (window.Navigator && Navigator.move) Navigator.move('right');
+          },
+          up: function () { },
+          down: function () {
+            if (window.Navigator && Navigator.canmove && Navigator.canmove('down')) {
+              Navigator.move('down');
+              return;
+            }
+            try { Lampa.Controller.toggle('content'); } catch (e) { }
+          },
+          back: function () {
+            try { Lampa.Controller.toggle('menu'); } catch (e) { }
+          }
+        });
+      } catch (e) {
+        topnavControllerReady = false;
+      }
     }
 
     function ensureRightDock(head) {
@@ -2975,6 +3054,7 @@
       var head = qs('.head__body') || qs('.head');
       if (!head) return false;
 
+      attachTopnavWheelForwarding();
       ensureClock(head);
       ensureProfileButton(head);
       startClock();
@@ -2984,7 +3064,9 @@
         shell = document.createElement('div');
         shell.className = 'agnative-topnav-shell';
         shell.innerHTML = '<div class="agnative-topnav-shell__inner"><div class="agnative-topnav-shell__items"></div><div class="agnative-topnav-shell__right"></div></div>';
-        head.appendChild(shell);
+      }
+      if (shell.parentNode !== head || head.firstChild !== shell) {
+        head.insertBefore(shell, head.firstChild);
       }
 
       var itemsWrap = qs('.agnative-topnav-shell__items', shell);
