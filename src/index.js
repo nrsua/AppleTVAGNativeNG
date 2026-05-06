@@ -694,6 +694,37 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
           syncPerfMode();
           initGlareRuntime();
           perfModeDirty = true;
+          try {
+            if (window.Lampa && Lampa.Modal && Lampa.Lang) {
+              Lampa.Modal.open({
+
+                html: $('<div style="padding: 20px; text-align: center;">' +
+                  '<div style="margin-bottom: 15px;">' + Lampa.Lang.translate('plugins_need_reload') + '</div>' +
+                '</div>'),
+                buttons: [
+                  {
+                    name: Lampa.Lang.translate('settings_param_yes'),
+                    onSelect: function () {
+                      Lampa.Modal.close();
+                      window.location.reload();
+                    }
+                  },
+                  {
+                    name: Lampa.Lang.translate('settings_param_no'),
+                    onSelect: function () {
+                      Lampa.Modal.close();
+                      Lampa.Controller.toggle('settings_component');
+                    }
+                  }
+                ],
+                onBack: function () {
+                  Lampa.Controller.toggle('settings_component');
+                }
+              });
+            }
+          } catch (e) {
+            console.error('Error showing reload dialog:', e);
+          }
         }
       });
 
