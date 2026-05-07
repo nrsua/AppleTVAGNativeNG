@@ -337,7 +337,12 @@
     set_card_image_mode_name: 'Тып выявы карткі',
     set_card_image_mode_desc: 'Бэкдроп + лагатып ці постэр без лагатыпа',
     val_card_image_backdrop: 'Бэкдроп + Лагатып',
-    val_card_image_poster: 'Постэр'
+    val_card_image_poster: 'Постэр',
+    set_logo_title_name: 'Назва на мясцовай мове',
+    set_logo_title_desc: 'Паказваць назву на мясцовай мове, калі лагатып загружаны толькі на англійскай',
+    val_logo_title_off: 'Не',
+    val_logo_title_below: 'Так, пад лагатыкам',
+    val_logo_title_above: 'Так, над лагатыкам'
   };
 
   const GENRE_MAP_LOCALIZED = {
