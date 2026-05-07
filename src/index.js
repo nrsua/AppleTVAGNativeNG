@@ -116,7 +116,8 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       l = (l || '').toLowerCase();
       if (l.indexOf('uk') === 0 || l === 'ua') return 'uk';
       if (l.indexOf('en') === 0) return 'en';
-      if (l.indexOf('ru') === 0 || l === 'be') return 'ru';
+      if (l.indexOf('ru') === 0) return 'ru';
+      if (l.indexOf('be') === 0) return 'be';
       return 'ru';
     } catch (e) { return 'ru'; }
   }
@@ -652,7 +653,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         param: {
           name: ENABLE_KEY,
           type: 'select',
-          values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
+          values: { on: t('val_on'), off: t('val_off') },
           default: 'off'
         },
         field: {
@@ -733,7 +734,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         param: {
           name: GLARE_KEY,
           type: 'select',
-          values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
+          values: { on: t('val_on'), off: t('val_off') },
           default: 'on'
         },
         field: {
@@ -754,7 +755,8 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
             auto: t('val_auto'),
             ru: langText('filter_lang_ru', t('val_ru')),
             en: langText('filter_lang_en', t('val_en')),
-            uk: langText('filter_lang_uk', t('val_uk'))
+            uk: langText('filter_lang_uk', t('val_uk')),
+            be: langText('filter_lang_be', t('val_be'))
           },
           default: 'auto'
         },
@@ -790,7 +792,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         param: {
           name: BACKDROP_KEY,
           type: 'select',
-          values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
+          values: { on: t('val_on'), off: t('val_off') },
           default: 'on'
         },
         field: {
@@ -888,7 +890,8 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
             auto: t('val_auto'),
             ru: langText('filter_lang_ru', t('val_ru')),
             en: langText('filter_lang_en', t('val_en')),
-            uk: langText('filter_lang_uk', t('val_uk'))
+            uk: langText('filter_lang_uk', t('val_uk')),
+            be: langText('filter_lang_be', t('val_be'))
           },
           default: 'auto'
         },
@@ -977,7 +980,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         param: {
           name: BADGE_KEY,
           type: 'select',
-          values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
+          values: { on: t('val_on'), off: t('val_off') },
           default: 'on'
         },
         field: {
@@ -998,7 +1001,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         param: {
           name: RATING_KEY,
           type: 'select',
-          values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
+          values: { on: t('val_on'), off: t('val_off') },
           default: 'off'
         },
         field: {
@@ -1094,7 +1097,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         param: {
           name: CLOCK_SECONDS_KEY,
           type: 'select',
-          values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
+          values: { on: t('val_on'), off: t('val_off') },
           default: 'off'
         },
         field: {
@@ -1111,7 +1114,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         param: {
           name: CONTROL_PANEL_KEY,
           type: 'select',
-          values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
+          values: { on: t('val_on'), off: t('val_off') },
           default: 'off'
         },
         field: {

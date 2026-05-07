@@ -272,6 +272,79 @@
     val_logo_title_above: 'Так, зверху логотипу'
   };
 
+  const be = {
+    nav_feed: 'Стужка',
+    badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРЫЯЛ',
+    set_about_desc: 'Версія 0.3.14 Аўтары: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z',
+    set_main_title: 'Асноўныя налады',
+    set_enable_name: 'AppleTV AgNative',
+    set_enable_desc: 'Уключае і выключае плагін',
+    set_glare_name: 'Нахіл veoveo.ru', set_glare_desc: 'ад arabian_q',
+    set_topnav_name: 'Пункты Topnav', set_topnav_desc: 'Меню ўверсе старонкі',
+    set_topnav_title: 'Пункты верхняга меню',
+    set_topnav_item_desc: 'Пункт menu_list: ',
+    set_logo_lang_name: 'Мова лагатыпаў',
+    set_logo_lang_desc: 'Калі лагатыпа на выбранай мове няма, выкарыстоўваецца англійская',
+    set_font_size_name: 'Памер шрыфту',
+    set_font_size_desc: 'Маштаб тэксту',
+    set_ui_lang_desc: 'Мова плагіна',
+    val_on: 'Уключыць', val_off: 'Выключыць',
+    val_hide: 'Схаваць',
+    val_auto: 'Аўтаматычна',
+    val_size_xs: 'Дробны', val_size_sm: 'Маленькі',
+    val_size_md: 'Звычайны', val_size_lg: 'Крупны', val_size_xl: 'Велізарны',
+    val_rating_color: 'Каляровы', val_rating_mono: 'Манахромны',
+    set_backdrop_name: 'Гарызантальныя карткі медыякантэнту',
+    set_backdrop_desc: 'Калі опцыя ўключана адлюстроўваюцца гарызантальныя карткі, калі выключана то вертыкальныя',
+    set_badge_name: 'Бэйдж «Фільм/Серыял»',
+    set_badge_desc: 'Бэйдж у левым верхнім куце карткі',
+    set_rating_desc: 'Паказваць ацэнку ў правым верхнім куце карткі',
+    set_rating_style_name: 'Стыль рэйтынгу TMDB',
+    set_rating_style_desc: 'Каляровы ці манахромны выгляд стылю рэйтынгу tmdb',
+    set_reset_name: 'Скінуць налады',
+    set_reset_desc: 'Вярнуць усе параметры плагіна да значэнняў па змаўчанні',
+    set_reset_done: 'Налады AppleTV AgNative скінуты',
+    set_category_size_name: 'Памер назваў катэгорый',
+    set_category_size_desc: 'Загалоўкі паліц (Папулярнае, Навінкі і г.д.)',
+    set_card_size_name: 'Памер карткі',
+    set_card_size_desc: 'Шырыня карткі ў стужках',
+    set_logo_size_name: 'Памер лагатыпа фільма',
+    set_logo_size_desc: 'Максімальная шырыня лагатыпа на картцы адносна карткі медыякантэнту',
+    set_clock_seconds_name: 'Секунды ў гадзінніку',
+    set_clock_seconds_desc: 'Паказваць секунды побач з гадзіннікам у шапцы',
+    set_control_panel_name: 'Панэль па кліку на гадзіннік',
+    set_control_panel_desc: 'Налады, Сінхранізацыя, Плэер, Кэш і Даныя',
+    set_perf_mode_name: 'Рэжым прадукцыйнасці',
+    set_perf_mode_desc: 'Зніжае нагрузку на слабых прыладах: адключае блюр, блікі і цяжкую анімацыю',
+    val_unlimited: 'Без абмежаванняў',
+    set_cache_size_name: 'Памер кэша выяў',
+    set_cache_size_desc: 'Максімальны аб\'ём выяў у лакальным кэшы. Пры перавышэнні выдаляюцца самыя старыя запісы',
+    val_perf_auto: 'Аўтаматычна',
+    val_perf_high: 'Максімум (усе эфекты)',
+    val_perf_low: 'Слабая прылада',
+    val_perf_ultra: 'Вельмі слабая прылада',
+    set_poster_quality_name: 'Якасць постэраў',
+    set_poster_quality_desc: 'Разрозненне выяў постэраў з TMDB',
+    set_overlay_align_name: 'Выраўноўванне подпісу карткі',
+    set_overlay_align_desc: 'Гарызантальнае выраўноўванне назвы і метададзеных на картцы',
+    val_overlay_align_start: 'Па левым краі',
+    val_overlay_align_center: 'Па цэнтры',
+    val_overlay_align_end: 'Па правым краі',
+    set_section_cards: 'Карткі',
+    set_section_text: 'Тэкст і шрыфты',
+    set_section_clock: 'Гадзіннік',
+    set_section_data: 'Даныя',
+    set_card_image_mode_name: 'Тып выявы карткі',
+    set_card_image_mode_desc: 'Бэкдроп + лагатып ці постэр без лагатыпа',
+    val_card_image_backdrop: 'Бэкдроп + Лагатып',
+    val_card_image_poster: 'Постэр',
+    set_logo_title_name: 'Назва на мясцовай мове',
+    set_logo_title_desc: 'Паказваць назву на мясцовай мове, калі лагатып загружаны толькі на англійскай',
+    val_logo_title_off: 'Не',
+    val_logo_title_below: 'Так, пад лагатыкам',
+    val_logo_title_above: 'Так, над лагатыкам'
+  };
+
   const GENRE_MAP_LOCALIZED = {
     ru: {
       28: 'Боевик', 12: 'Приключения', 16: 'Мультфильм', 35: 'Комедия', 80: 'Криминал',
@@ -293,10 +366,17 @@
       27: 'Жахи', 10402: 'Музика', 9648: 'Детектив', 10749: 'Мелодрама', 878: 'Фантастика',
       10770: 'Телефільм', 53: 'Трилер', 10752: 'Воєнний', 37: 'Вестерн', 10759: 'Бойовик',
       10762: 'Дитячий', 10765: 'Фантастика', 10767: 'Ток-шоу'
+    },
+    be: {
+      28: 'Баявік', 12: 'Прыгоды', 16: 'Мультфільм', 35: 'Камедыя', 80: 'Крымінал',
+      99: 'Дакументальны', 18: 'Драма', 10751: 'Сямейны', 14: 'Фэнтэзі', 36: 'Гісторыя',
+      27: 'Жахі', 10402: 'Музыка', 9648: 'Дэтэктыў', 10749: 'Меладрама', 878: 'Фантастыка',
+      10770: 'Тэлефільм', 53: 'Трылер', 10752: 'Вайсковы', 37: 'Вэстэрн', 10759: 'Баявік',
+      10762: 'Дзіцячы', 10765: 'Фантастыка', 10767: 'Ток-шоу'
     }
   };
 
-  const I18N = { ru, en, uk };
+  const I18N = { ru, en, uk, be };
   const I18N_CODES = Object.keys(I18N);
 
   function hasI18nCode(code) {
@@ -627,7 +707,8 @@
         l = (l || '').toLowerCase();
         if (l.indexOf('uk') === 0 || l === 'ua') return 'uk';
         if (l.indexOf('en') === 0) return 'en';
-        if (l.indexOf('ru') === 0 || l === 'be') return 'ru';
+        if (l.indexOf('ru') === 0) return 'ru';
+        if (l.indexOf('be') === 0) return 'be';
         return 'ru';
       } catch (e) { return 'ru'; }
     }
@@ -1163,7 +1244,7 @@
           param: {
             name: ENABLE_KEY,
             type: 'select',
-            values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
+            values: { on: t('val_on'), off: t('val_off') },
             default: 'off'
           },
           field: {
@@ -1244,7 +1325,7 @@
           param: {
             name: GLARE_KEY,
             type: 'select',
-            values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
+            values: { on: t('val_on'), off: t('val_off') },
             default: 'on'
           },
           field: {
@@ -1265,7 +1346,8 @@
               auto: t('val_auto'),
               ru: langText('filter_lang_ru', t('val_ru')),
               en: langText('filter_lang_en', t('val_en')),
-              uk: langText('filter_lang_uk', t('val_uk'))
+              uk: langText('filter_lang_uk', t('val_uk')),
+              be: langText('filter_lang_be', t('val_be'))
             },
             default: 'auto'
           },
@@ -1301,7 +1383,7 @@
           param: {
             name: BACKDROP_KEY,
             type: 'select',
-            values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
+            values: { on: t('val_on'), off: t('val_off') },
             default: 'on'
           },
           field: {
@@ -1399,7 +1481,8 @@
               auto: t('val_auto'),
               ru: langText('filter_lang_ru', t('val_ru')),
               en: langText('filter_lang_en', t('val_en')),
-              uk: langText('filter_lang_uk', t('val_uk'))
+              uk: langText('filter_lang_uk', t('val_uk')),
+              be: langText('filter_lang_be', t('val_be'))
             },
             default: 'auto'
           },
@@ -1488,7 +1571,7 @@
           param: {
             name: BADGE_KEY,
             type: 'select',
-            values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
+            values: { on: t('val_on'), off: t('val_off') },
             default: 'on'
           },
           field: {
@@ -1509,7 +1592,7 @@
           param: {
             name: RATING_KEY,
             type: 'select',
-            values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
+            values: { on: t('val_on'), off: t('val_off') },
             default: 'off'
           },
           field: {
@@ -1605,7 +1688,7 @@
           param: {
             name: CLOCK_SECONDS_KEY,
             type: 'select',
-            values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
+            values: { on: t('val_on'), off: t('val_off') },
             default: 'off'
           },
           field: {
@@ -1622,7 +1705,7 @@
           param: {
             name: CONTROL_PANEL_KEY,
             type: 'select',
-            values: { on: langText('extensions_enable', t('val_on')), off: langText('extensions_disable', t('val_off')) },
+            values: { on: t('val_on'), off: t('val_off') },
             default: 'off'
           },
           field: {
