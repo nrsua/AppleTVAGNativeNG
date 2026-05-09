@@ -1,7 +1,7 @@
 export const be = {
   nav_feed: 'Стужка',
   badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРЫЯЛ',
-  set_about_desc: 'Версія 0.3.14 Аўтары: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+  set_about_desc: 'Версія 0.3.17 Аўтары: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
   set_main_title: 'Асноўныя налады',
   set_enable_name: 'AppleTV AgNative',
   set_enable_desc: 'Уключае і выключае плагін',

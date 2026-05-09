@@ -56,7 +56,7 @@
   const ru = {
     nav_feed: 'Лента',
     badge_movie: 'ФИЛЬМ', badge_tv: 'СЕРИАЛ',
-    set_about_desc: 'Версия 0.3.15  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_desc: 'Версия 0.3.17  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
     set_main_title: 'Основные настройки',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Включает и выключает плагин',
@@ -81,7 +81,7 @@
     set_badge_desc: 'Бейдж в левом верхнем углу карточки',
     set_rating_desc: 'Показывать оценку в правом верхнем углу карточки',
     set_rating_style_name: 'Стиль рейтинга TMDB',
-    set_rating_style_desc: 'Цветной или монохромный вид стиль рейтинга tmdb',
+    set_rating_style_desc: 'Цветной или монохромный стиль рейтинга tmdb',
     set_reset_name: 'Сбросить настройки',
     set_reset_desc: 'Вернуть все параметры плагина к значениям по умолчанию',
     set_reset_done: 'Настройки AppleTV AgNative сброшены',
@@ -129,7 +129,7 @@
   const en = {
     nav_feed: 'Feed',
     badge_movie: 'MOVIE', badge_tv: 'TV SHOW',
-    set_about_desc: 'Version 0.3.15  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_desc: 'Version 0.3.17  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
     set_main_title: 'Main settings',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Enables and disables the plugin',
@@ -202,7 +202,7 @@
   const uk = {
     nav_feed: 'Стрічка',
     badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРІАЛ',
-    set_about_desc: 'Версія 0.3.15  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_desc: 'Версія 0.3.17  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
     set_main_title: 'Основні налаштування',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Вмикає та вимикає плагін',
@@ -275,7 +275,7 @@
   const be = {
     nav_feed: 'Стужка',
     badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРЫЯЛ',
-    set_about_desc: 'Версія 0.3.14 Аўтары: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_desc: 'Версія 0.3.17 Аўтары: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
     set_main_title: 'Асноўныя налады',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Уключае і выключае плагін',
