@@ -1,7 +1,7 @@
 export const ru = {
   nav_feed: 'Лента',
   badge_movie: 'ФИЛЬМ', badge_tv: 'СЕРИАЛ',
-  set_about_desc: 'Версия 0.3.15  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+  set_about_desc: 'Версия 0.3.17  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
   set_main_title: 'Основные настройки',
   set_enable_name: 'AppleTV AgNative',
   set_enable_desc: 'Включает и выключает плагин',
@@ -26,7 +26,7 @@ export const ru = {
   set_badge_desc: 'Бейдж в левом верхнем углу карточки',
   set_rating_desc: 'Показывать оценку в правом верхнем углу карточки',
   set_rating_style_name: 'Стиль рейтинга TMDB',
-  set_rating_style_desc: 'Цветной или монохромный вид стиль рейтинга tmdb',
+  set_rating_style_desc: 'Цветной или монохромный стиль рейтинга tmdb',
   set_reset_name: 'Сбросить настройки',
   set_reset_desc: 'Вернуть все параметры плагина к значениям по умолчанию',
   set_reset_done: 'Настройки AppleTV AgNative сброшены',
