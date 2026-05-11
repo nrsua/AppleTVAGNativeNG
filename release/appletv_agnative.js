@@ -5231,13 +5231,33 @@
 
     function bindCardScrollCenter() {
       if (window.__AGNATIVE_CARD_SCROLL_BOUND__) return;
-      if (!window.$) return;
+      if (!window.MutationObserver) return;
       window.__AGNATIVE_CARD_SCROLL_BOUND__ = true;
       try {
-        $(document).on('hover:focus', '.card, .card-episode', function () {
-          // Run after Lampa's own scroll-update on the next frame
-          requestAnimationFrame(function () { requestAnimationFrame(centerFocusedCard); });
-        });
+        var scheduleTimer = null;
+        function scheduleCenter() {
+          if (scheduleTimer) return;
+          scheduleTimer = setTimeout(function () {
+            scheduleTimer = null;
+            centerFocusedCard();
+          }, 40);
+        }
+        new MutationObserver(function (muts) {
+          for (var i = 0; i < muts.length; i++) {
+            var m = muts[i];
+            if (m.type !== 'attributes' || m.attributeName !== 'class') continue;
+            var t = m.target;
+            if (!t || !t.classList) continue;
+            if ((t.classList.contains('card') || t.classList.contains('card-episode')) && t.classList.contains('focus')) {
+              scheduleCenter();
+              return;
+            }
+          }
+        }).observe(document.body, { attributes: true, attributeFilter: ['class'], subtree: true });
+        // Also bind jQuery hover:focus delegated as a backup
+        if (window.$) {
+          try { $(document).on('hover:focus', '.card, .card-episode', scheduleCenter); } catch (e) { }
+        }
       } catch (e) { }
     }
 
