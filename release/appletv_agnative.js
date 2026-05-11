@@ -2396,7 +2396,7 @@
         '  padding-top: .3em !important;',
         '}',
         'body.' + BODY_CLASS + ' .wrap__content.layer--height.layer--width {',
-        '  padding-top: 2.2em !important;',
+        '  padding-top: 0 !important;',
         '}',
         'body.' + BODY_CLASS + ' .wrap__content.layer--height.layer--width > *,',
         'body.' + BODY_CLASS + ' .wrap__content > *,',
