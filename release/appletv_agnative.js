@@ -1497,6 +1497,20 @@
         // Bind action ONCE on the play button — handler reads heroCurrentItem at click time
         bindAction(playBtn, openHeroCurrentItem);
 
+        // Track hero focus state — when play button loses focus, mark hero as unfocused
+        // so subsequent items-lines visually shift down with extra gap
+        try {
+          var $$ = window.$ || window.jQuery;
+          if ($$) {
+            $$(playBtn).on('hover:focus.agnativeHeroState hover:hover.agnativeHeroState', function () {
+              hero.classList.remove('agnative-hero--unfocused');
+            });
+            $$(playBtn).on('hover:blur.agnativeHeroState hover:out.agnativeHeroState', function () {
+              hero.classList.add('agnative-hero--unfocused');
+            });
+          }
+        } catch (e) { }
+
         if (document.body) document.body.classList.add('agnative-has-hero');
 
         // Stretch the bg image upward so its top edge reaches viewport top regardless of remaining offset
@@ -3574,7 +3588,8 @@
         '  body.' + BODY_CLASS + ' .settings__body { font-size: 1.1em !important; }',
         '}',
         'body.' + BODY_CLASS + ' .settings-param[data-name="' + HERO_KEY + '"] .settings-param__name::after { content:"BETA"; display:inline-block; margin-left:.6em; padding:.12em .5em; font-size:.55em; font-weight:800; letter-spacing:.06em; color:#fff; background:linear-gradient(135deg, #ff6b35, #c1272d); border-radius:.4em; vertical-align:middle; line-height:1.2; box-shadow:0 1px 4px rgba(193,39,45,.4); }',
-        'body.' + BODY_CLASS + ' .agnative-hero { position:relative; width:auto; margin:-4em -2em 4em; height:80vh; min-height:480px; overflow:hidden; border-radius:0; opacity:1; transition:opacity .6s ease; flex-shrink:0; display:block; z-index:8; }',
+        'body.' + BODY_CLASS + ' .agnative-hero { position:relative; width:auto; margin:-4em -2em 2em; height:80vh; min-height:480px; overflow:hidden; border-radius:0; opacity:1; transition:opacity .6s ease, margin-bottom .4s cubic-bezier(.22,.61,.36,1); flex-shrink:0; display:block; z-index:8; }',
+        'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--unfocused { margin-bottom:5em; }',
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--visible { opacity:1; }',
         'body.' + BODY_CLASS + ' .agnative-hero__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center center; border-radius:0; }',
         'body.' + BODY_CLASS + ' .agnative-hero__content { position:absolute; left:5em; right:auto; bottom:3.2em; max-width:42%; display:flex; flex-direction:column; align-items:flex-start; z-index:2; }',
