@@ -4600,6 +4600,39 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     }).observe(document.body, { childList: true, subtree: true });
   }
 
+  function centerFocusedCard() {
+    try {
+      var focused = document.querySelector('.activity--active .card.focus, .activity--active .card-episode.focus');
+      if (!focused) return;
+      var scrollBody = focused.closest('.scroll__body');
+      if (!scrollBody) return;
+      var cardRect = focused.getBoundingClientRect();
+      var viewportH = window.innerHeight;
+      // Target: card top at ~38% of viewport (closer to center than Lampa default ~5%)
+      var targetTop = viewportH * 0.38;
+      var diff = cardRect.top - targetTop;
+      if (Math.abs(diff) < 8) return;
+      var transform = scrollBody.style.transform || '';
+      var m = transform.match(/translate3d\(\s*([^,]+),\s*(-?[\d.]+)px/);
+      if (!m) return;
+      var currentY = parseFloat(m[2]);
+      var newY = currentY - diff;
+      scrollBody.style.transform = 'translate3d(0px, ' + newY + 'px, 0px)';
+    } catch (e) { }
+  }
+
+  function bindCardScrollCenter() {
+    if (window.__AGNATIVE_CARD_SCROLL_BOUND__) return;
+    if (!window.$) return;
+    window.__AGNATIVE_CARD_SCROLL_BOUND__ = true;
+    try {
+      $(document).on('hover:focus', '.card, .card-episode', function () {
+        // Run after Lampa's own scroll-update on the next frame
+        requestAnimationFrame(function () { requestAnimationFrame(centerFocusedCard); });
+      });
+    } catch (e) { }
+  }
+
   function initGlareRuntime() {
     if (window.__AGNATIVE_TOPNAV_GLARE_RUNTIME__) return;
     if (resolvePerfLevel() === 'ultra') return;
@@ -4730,6 +4763,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     syncFlexGapFlag();
     syncOverlayAlign();
     observeCards();
+    bindCardScrollCenter();
     initGlareRuntime();
     neutralizeMenuController();
     patchActivityPushForMenu();
