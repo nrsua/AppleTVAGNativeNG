@@ -670,6 +670,7 @@
     var titledBackdropCache = {};
     var titledBackdropPending = {};
     var heroRotationTimer = null;
+    var heroExitDirection = null;
     var heroCurrentIndex = 0;
     var heroItems = [];
     var heroCurrentItem = null;
@@ -1368,18 +1369,23 @@
             try { Lampa.Controller.toggle('content'); } catch (e) { }
             return;
           }
+          heroExitDirection = null;
+          hero.classList.remove('agnative-hero--hidden');
           try {
             Lampa.Controller.collectionSet($(hero));
             Lampa.Controller.collectionFocus(btn, $(hero));
           } catch (e) { }
         },
         up: function () {
+          heroExitDirection = 'up';
           try { Lampa.Controller.toggle('head'); } catch (e) { }
         },
         down: function () {
+          heroExitDirection = 'down';
           try { Lampa.Controller.toggle('content'); } catch (e) { }
         },
         left: function () {
+          heroExitDirection = 'left';
           try { Lampa.Controller.toggle('menu'); } catch (e) { }
         },
         right: function () { },
@@ -1497,16 +1503,21 @@
         // Bind action ONCE on the play button — handler reads heroCurrentItem at click time
         bindAction(playBtn, openHeroCurrentItem);
 
-        // Track hero focus state — when play button loses focus, mark hero as unfocused
-        // so subsequent items-lines visually shift down with extra gap
+        // Track hero focus state:
+        // - hero gets --unfocused class when focus leaves (used for margin animation)
+        // - hero gets --hidden class only when focus moves DOWN to cards
+        //   (when moving UP to topnav, hero stays visible)
         try {
           var $$ = window.$ || window.jQuery;
           if ($$) {
             $$(playBtn).on('hover:focus.agnativeHeroState hover:hover.agnativeHeroState', function () {
               hero.classList.remove('agnative-hero--unfocused');
+              hero.classList.remove('agnative-hero--hidden');
+              heroExitDirection = null;
             });
             $$(playBtn).on('hover:blur.agnativeHeroState hover:out.agnativeHeroState', function () {
               hero.classList.add('agnative-hero--unfocused');
+              if (heroExitDirection === 'down') hero.classList.add('agnative-hero--hidden');
             });
           }
         } catch (e) { }
@@ -3588,8 +3599,10 @@
         '  body.' + BODY_CLASS + ' .settings__body { font-size: 1.1em !important; }',
         '}',
         'body.' + BODY_CLASS + ' .settings-param[data-name="' + HERO_KEY + '"] .settings-param__name::after { content:"BETA"; display:inline-block; margin-left:.6em; padding:.12em .5em; font-size:.55em; font-weight:800; letter-spacing:.06em; color:#fff; background:linear-gradient(135deg, #ff6b35, #c1272d); border-radius:.4em; vertical-align:middle; line-height:1.2; box-shadow:0 1px 4px rgba(193,39,45,.4); }',
-        'body.' + BODY_CLASS + ' .agnative-hero { position:relative; width:auto; margin:-4em -2em 2em; height:80vh; min-height:480px; overflow:hidden; border-radius:0; opacity:1; transition:opacity .6s ease, margin-bottom .4s cubic-bezier(.22,.61,.36,1); flex-shrink:0; display:block; z-index:8; }',
-        'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--unfocused { margin-bottom:10em; }',
+        'body.' + BODY_CLASS + ' .agnative-hero { position:fixed; top:0; left:0; right:0; bottom:0; width:100vw; height:100vh; margin:0; overflow:hidden; border-radius:0; opacity:1; visibility:visible; transition:opacity .4s ease, visibility .4s ease; flex-shrink:0; display:block; z-index:1; pointer-events:none; }',
+        'body.' + BODY_CLASS + ' .agnative-hero .agnative-hero__play { pointer-events:auto; }',
+        'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden { opacity:0; visibility:hidden; }',
+        'body.' + BODY_CLASS + ' .activity--active .items-line, body.' + BODY_CLASS + ' .activity--active .scroll__content { position:relative; z-index:10; }',
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--visible { opacity:1; }',
         'body.' + BODY_CLASS + ' .agnative-hero__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center center; border-radius:0; }',
         'body.' + BODY_CLASS + ' .agnative-hero__content { position:absolute; left:5em; right:auto; bottom:3.2em; max-width:42%; display:flex; flex-direction:column; align-items:flex-start; z-index:2; }',
