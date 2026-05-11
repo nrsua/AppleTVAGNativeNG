@@ -1788,7 +1788,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       '  padding-top: .3em !important;',
       '}',
       'body.' + BODY_CLASS + ' .wrap__content.layer--height.layer--width {',
-      '  padding-top: .68em !important;',
+      '  padding-top: 2.2em !important;',
       '}',
       'body.' + BODY_CLASS + ' .wrap__content.layer--height.layer--width > *,',
       'body.' + BODY_CLASS + ' .wrap__content > *,',
