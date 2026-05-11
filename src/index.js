@@ -2163,7 +2163,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       'body.' + BODY_CLASS + ' .agnative-control-panel__tile.selector.hover, body.' + BODY_CLASS + ' .agnative-control-panel__tile.selector.focus { background:rgba(255,255,255,.18); box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 0 0 1px rgba(255,255,255,.12); transform:translateY(-.02em); }',
       'body.' + BODY_CLASS + ' .items-line--type-default { min-height:auto !important; padding-top:0 !important; padding-bottom:.12em !important; margin-bottom:.32em !important; transition:transform .35s cubic-bezier(.22,.61,.36,1) !important; }',
       'body.' + BODY_CLASS + ' .items-line.layer--visible.layer--render.items-line--type-default { transform:translateY(1.2em) !important; padding-top:0 !important; }',
-      'body.' + BODY_CLASS + ':not(.agnative-mouse-mode) .items-line.layer--visible.layer--render.items-line--type-default:has(.card.focus), body.' + BODY_CLASS + ':not(.agnative-mouse-mode) .items-line.layer--visible.layer--render.items-line--type-default:has(.card-episode.focus) { padding-top:5.5em !important; }',
+      'body.' + BODY_CLASS + ':not(.agnative-mouse-mode) .items-line.layer--visible.layer--render.items-line--type-default:has(.card.focus), body.' + BODY_CLASS + ':not(.agnative-mouse-mode) .items-line.layer--visible.layer--render.items-line--type-default:has(.card-episode.focus), body.' + BODY_CLASS + ':not(.agnative-mouse-mode) .items-line.layer--visible.layer--render.items-line--type-default.agnative-line-frozen { padding-top:5.5em !important; }',
       'body.' + BODY_CLASS + '.agnative-mouse-mode .items-line.layer--visible.layer--render.items-line--type-default { padding-top:5.5em !important; }',
       'body.' + BODY_CLASS + '.agnative-mouse-mode .items-line.layer--visible.layer--render.items-line--type-default ~ .items-line.layer--visible.layer--render.items-line--type-default { padding-top:0 !important; }',
       'body.' + BODY_CLASS + ' .items-line--type-default .items-line__head { margin-bottom:1.1em !important; min-height:auto !important; padding-top:0 !important; padding-bottom:.45em !important; padding-left:1.05em !important; padding-right:1.05em !important; font-size:1em !important; }',
@@ -4621,6 +4621,54 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     } catch (e) { }
   }
 
+  function bindTopnavFreezePadding() {
+    if (window.__AGNATIVE_TOPNAV_FREEZE_BOUND__) return;
+    if (!window.MutationObserver) return;
+    window.__AGNATIVE_TOPNAV_FREEZE_BOUND__ = true;
+
+    function clearFrozen() {
+      var prev = document.querySelectorAll('.agnative-line-frozen');
+      for (var i = 0; i < prev.length; i++) prev[i].classList.remove('agnative-line-frozen');
+    }
+
+    function isTopnavEl(el) {
+      if (!el || !el.closest) return false;
+      return !!el.closest('.agnative-topnav-shell, .agnative-topnav-rightdock, .head__menu-icon');
+    }
+
+    function isCardEl(el) {
+      return el && el.classList && (el.classList.contains('card') || el.classList.contains('card-episode'));
+    }
+
+    new MutationObserver(function (muts) {
+      var saw = false;
+      for (var i = 0; i < muts.length; i++) {
+        var m = muts[i];
+        if (m.type !== 'attributes' || m.attributeName !== 'class') continue;
+        var t = m.target;
+        if (!t || !t.classList) continue;
+        // A topnav element gained focus → freeze last focused items-line
+        if (t.classList.contains('focus') && isTopnavEl(t)) {
+          var lastCard = document.querySelector('.activity--active .card.focus, .activity--active .card-episode.focus, .card.focus, .card-episode.focus');
+          var lastLine = null;
+          if (lastCard && lastCard.closest) lastLine = lastCard.closest('.items-line');
+          if (!lastLine) {
+            // fallback: use existing frozen
+            return;
+          }
+          clearFrozen();
+          lastLine.classList.add('agnative-line-frozen');
+          saw = true;
+        }
+        // A card gained focus → clear frozen state
+        if (t.classList.contains('focus') && isCardEl(t)) {
+          clearFrozen();
+          saw = true;
+        }
+      }
+    }).observe(document.body, { attributes: true, attributeFilter: ['class'], subtree: true });
+  }
+
   function initGlareRuntime() {
     if (window.__AGNATIVE_TOPNAV_GLARE_RUNTIME__) return;
     if (resolvePerfLevel() === 'ultra') return;
@@ -4752,6 +4800,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     syncOverlayAlign();
     observeCards();
     bindInputModeDetector();
+    bindTopnavFreezePadding();
     initGlareRuntime();
     neutralizeMenuController();
     patchActivityPushForMenu();
