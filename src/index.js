@@ -2170,6 +2170,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       'body.' + BODY_CLASS + ' .items-cards { padding-left:1.05em !important; padding-right:1.05em !important; gap:.62em !important; }',
       'body.' + BODY_CLASS + ' .items-line__body { padding-left:0 !important; }',
       'body.' + BODY_CLASS + ' .items-line__title { font-size:1em !important; line-height:1.2 !important; font-weight:700 !important; }',
+      'body.' + BODY_CLASS + ' .activity--active .scroll__body:not(.mapping--line) { transform:translate3d(0px, -2102px, 0px) !important; }',
       'body.' + BODY_CLASS + ' .scroll__body.mapping--line { display:flex !important; gap:1.5em !important; padding-left:1.15em !important; padding-right:1.15em !important; }',
       'body.' + BODY_CLASS + ' .scroll__body.mapping--line .full-person { padding: 1em !important; }',
       'body.' + BODY_CLASS + ' .mapping--grid { display:grid !important; grid-template-columns:repeat(auto-fit, minmax(17.6em, 1fr)) !important; gap: 1em .52em !important; align-items:start !important; }',
