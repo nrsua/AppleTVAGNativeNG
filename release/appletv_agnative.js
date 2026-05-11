@@ -5208,59 +5208,6 @@
       }).observe(document.body, { childList: true, subtree: true });
     }
 
-    function centerFocusedCard() {
-      try {
-        var focused = document.querySelector('.activity--active .card.focus, .activity--active .card-episode.focus');
-        if (!focused) return;
-        var scrollBody = focused.closest('.scroll__body');
-        if (!scrollBody) return;
-        var cardRect = focused.getBoundingClientRect();
-        var viewportH = window.innerHeight;
-        // Target: card top at ~38% of viewport (closer to center than Lampa default ~5%)
-        var targetTop = viewportH * 0.38;
-        var diff = cardRect.top - targetTop;
-        if (Math.abs(diff) < 8) return;
-        var transform = scrollBody.style.transform || '';
-        var m = transform.match(/translate3d\(\s*([^,]+),\s*(-?[\d.]+)px/);
-        if (!m) return;
-        var currentY = parseFloat(m[2]);
-        var newY = currentY - diff;
-        scrollBody.style.transform = 'translate3d(0px, ' + newY + 'px, 0px)';
-      } catch (e) { }
-    }
-
-    function bindCardScrollCenter() {
-      if (window.__AGNATIVE_CARD_SCROLL_BOUND__) return;
-      if (!window.MutationObserver) return;
-      window.__AGNATIVE_CARD_SCROLL_BOUND__ = true;
-      try {
-        var scheduleTimer = null;
-        function scheduleCenter() {
-          if (scheduleTimer) return;
-          scheduleTimer = setTimeout(function () {
-            scheduleTimer = null;
-            centerFocusedCard();
-          }, 40);
-        }
-        new MutationObserver(function (muts) {
-          for (var i = 0; i < muts.length; i++) {
-            var m = muts[i];
-            if (m.type !== 'attributes' || m.attributeName !== 'class') continue;
-            var t = m.target;
-            if (!t || !t.classList) continue;
-            if ((t.classList.contains('card') || t.classList.contains('card-episode')) && t.classList.contains('focus')) {
-              scheduleCenter();
-              return;
-            }
-          }
-        }).observe(document.body, { attributes: true, attributeFilter: ['class'], subtree: true });
-        // Also bind jQuery hover:focus delegated as a backup
-        if (window.$) {
-          try { $(document).on('hover:focus', '.card, .card-episode', scheduleCenter); } catch (e) { }
-        }
-      } catch (e) { }
-    }
-
     function initGlareRuntime() {
       if (window.__AGNATIVE_TOPNAV_GLARE_RUNTIME__) return;
       if (resolvePerfLevel() === 'ultra') return;
@@ -5391,7 +5338,6 @@
       syncFlexGapFlag();
       syncOverlayAlign();
       observeCards();
-      bindCardScrollCenter();
       initGlareRuntime();
       neutralizeMenuController();
       patchActivityPushForMenu();
