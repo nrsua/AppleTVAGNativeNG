@@ -2163,9 +2163,9 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       'body.' + BODY_CLASS + ' .agnative-control-panel__tile.selector.hover, body.' + BODY_CLASS + ' .agnative-control-panel__tile.selector.focus { background:rgba(255,255,255,.18); box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 0 0 1px rgba(255,255,255,.12); transform:translateY(-.02em); }',
       'body.' + BODY_CLASS + ' .items-line--type-default { min-height:auto !important; padding-top:0 !important; padding-bottom:.12em !important; margin-bottom:.32em !important; transition:transform .35s cubic-bezier(.22,.61,.36,1) !important; }',
       'body.' + BODY_CLASS + ' .items-line.layer--visible.layer--render.items-line--type-default { transform:translateY(1.2em) !important; padding-top:0 !important; }',
-      'body.' + BODY_CLASS + ' .items-line.layer--visible.layer--render.items-line--type-default:has(.card.focus), body.' + BODY_CLASS + ' .items-line.layer--visible.layer--render.items-line--type-default:has(.card-episode.focus) { padding-top:5.5em !important; }',
-      'body.' + BODY_CLASS + ':has(.card.hover) .items-line.layer--visible.layer--render.items-line--type-default, body.' + BODY_CLASS + ':has(.card-episode.hover) .items-line.layer--visible.layer--render.items-line--type-default { padding-top:5.5em !important; }',
-      'body.' + BODY_CLASS + ':has(.card.hover) .items-line.layer--visible.layer--render.items-line--type-default ~ .items-line.layer--visible.layer--render.items-line--type-default, body.' + BODY_CLASS + ':has(.card-episode.hover) .items-line.layer--visible.layer--render.items-line--type-default ~ .items-line.layer--visible.layer--render.items-line--type-default { padding-top:0 !important; }',
+      'body.' + BODY_CLASS + ':not(.agnative-mouse-mode) .items-line.layer--visible.layer--render.items-line--type-default:has(.card.focus), body.' + BODY_CLASS + ':not(.agnative-mouse-mode) .items-line.layer--visible.layer--render.items-line--type-default:has(.card-episode.focus) { padding-top:5.5em !important; }',
+      'body.' + BODY_CLASS + '.agnative-mouse-mode .items-line.layer--visible.layer--render.items-line--type-default { padding-top:5.5em !important; }',
+      'body.' + BODY_CLASS + '.agnative-mouse-mode .items-line.layer--visible.layer--render.items-line--type-default ~ .items-line.layer--visible.layer--render.items-line--type-default { padding-top:0 !important; }',
       'body.' + BODY_CLASS + ' .items-line--type-default .items-line__head { margin-bottom:1.1em !important; min-height:auto !important; padding-top:0 !important; padding-bottom:.45em !important; padding-left:1.05em !important; padding-right:1.05em !important; font-size:1em !important; }',
       'body.' + BODY_CLASS + ' .items-line__more.selector { font-size:.7em !important; padding:.3em .6em !important; opacity:.85 !important; }',
       'body.' + BODY_CLASS + ' .items-line--type-default .items-cards { padding-top:0 !important; font-size:.86em !important; }',
@@ -4602,6 +4602,25 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     }).observe(document.body, { childList: true, subtree: true });
   }
 
+  function bindInputModeDetector() {
+    if (window.__AGNATIVE_INPUT_MODE_BOUND__) return;
+    window.__AGNATIVE_INPUT_MODE_BOUND__ = true;
+    try {
+      var setMouse = function () {
+        if (document.body) document.body.classList.add('agnative-mouse-mode');
+      };
+      var setRemote = function () {
+        if (document.body) document.body.classList.remove('agnative-mouse-mode');
+      };
+      window.addEventListener('mousemove', setMouse, { capture: true, passive: true });
+      window.addEventListener('mousedown', setMouse, { capture: true, passive: true });
+      window.addEventListener('keydown', function (e) {
+        var k = e.keyCode;
+        if (k === 13 || k === 32 || (k >= 37 && k <= 40)) setRemote();
+      }, { capture: true });
+    } catch (e) { }
+  }
+
   function initGlareRuntime() {
     if (window.__AGNATIVE_TOPNAV_GLARE_RUNTIME__) return;
     if (resolvePerfLevel() === 'ultra') return;
@@ -4732,6 +4751,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     syncFlexGapFlag();
     syncOverlayAlign();
     observeCards();
+    bindInputModeDetector();
     initGlareRuntime();
     neutralizeMenuController();
     patchActivityPushForMenu();
