@@ -2169,11 +2169,16 @@
             }, 500);
             schedulePatch();
             try {
-              if (e.object && e.object.component === 'main') {
+              var comp = e.object && e.object.component;
+              if (comp === 'main') {
+                if (document.body) document.body.classList.add('agnative-has-hero');
                 if (!document.querySelector('.agnative-hero')) {
                   setTimeout(buildHeroBanner, 900);
-                  // focus handled internally by buildHeroBanner once it builds
                 }
+              } else {
+                // On non-main screens: drop the body class so padding-top reset
+                // and other hero-related rules don't affect detail/settings pages
+                if (document.body) document.body.classList.remove('agnative-has-hero');
               }
             } catch (err) { }
           }
