@@ -72,5 +72,7 @@ export const en = {
   set_hero_name: 'Hero banner',
   set_hero_desc: 'Large banner at the top of the main screen',
   hero_btn_watch: 'Watch',
+  set_hero_v2_name: 'Hero V2 (card)',
+  set_hero_v2_desc: 'Apple TV style hero — rounded card below topnav',
   set_section_beta: 'Beta features'
 };

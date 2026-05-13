@@ -72,5 +72,7 @@ export const be = {
   set_hero_name: 'Hero банер',
   set_hero_desc: 'Вялікі банер угары галоўнага экрана',
   hero_btn_watch: 'Глядзець',
+  set_hero_v2_name: 'Hero V2 (card)',
+  set_hero_v2_desc: 'Apple TV style hero — rounded card below topnav',
   set_section_beta: 'Beta - функцыі'
 };

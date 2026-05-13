@@ -72,5 +72,7 @@ export const ru = {
   set_hero_name: 'Hero баннер',
   set_hero_desc: 'Большой баннер вверху главного экрана',
   hero_btn_watch: 'Смотреть',
+  set_hero_v2_name: 'Hero V2 (карточка)',
+  set_hero_v2_desc: 'Баннер в стиле Apple TV — карточка со скруглёнными углами под топнавом',
   set_section_beta: 'Beta - функции'
 };
