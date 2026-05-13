@@ -2338,7 +2338,7 @@
         '  position: relative !important;',
         '  z-index: 12 !important;',
         '  min-height: 0 !important;',
-        '  height: 3.5em !important;', /* spacer = topnav height; keeps content below topnav on all screens */
+        '  height: 0 !important;',
         '  padding-top: 0 !important;',
         '  padding-bottom: 0 !important;',
         '  overflow: visible !important;',
@@ -2755,8 +2755,8 @@
         'body.' + BODY_CLASS + ' .head__logo-icon {',
         '  display: none !important;',
         '}',
-        /* Main screen with hero: zero scroll padding so hero fills naturally; head__body(3.5em) is above scroll anyway */
-        'body.' + BODY_CLASS + '.agnative-has-hero .activity--active .activity__body, body.' + BODY_CLASS + '.agnative-has-hero .activity--active .scroll, body.' + BODY_CLASS + '.agnative-has-hero .activity--active .scroll__content { padding-top:0 !important; }',
+        'body.' + BODY_CLASS + '.agnative-has-hero .activity--active .activity__body, body.' + BODY_CLASS + '.agnative-has-hero .activity--active .scroll, body.' + BODY_CLASS + '.agnative-has-hero .activity--active .scroll__content { padding-top:0 !important; transition:padding-top .4s cubic-bezier(.22,.61,.36,1) !important; }',
+        'body.' + BODY_CLASS + '.agnative-hero-collapsed .activity--active .scroll__content { padding-top:5em !important; }',
         'body.' + BODY_CLASS + ' .agnative-topnav-shell { position:absolute; left:50%; top:.46em; transform:translateX(-50%); z-index:20; width:max-content; max-width:calc(100vw - 24em); height:2.6em; display:inline-flex; align-items:center; box-sizing:border-box; }',
         'body.' + BODY_CLASS + ' .agnative-topnav-shell__inner { height:2.6em; box-sizing:border-box; display:inline-flex; align-items:center; gap:.18em; padding:.21em .32em; border-radius:999px; background:rgba(22,24,30,.28); border:1px solid rgba(255,255,255,.10); box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 8px 18px rgba(0,0,0,.12); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%); }',
         'body.' + BODY_CLASS + ' .agnative-topnav-shell__items { display:flex; align-items:center; justify-content:center; gap:.08em; }',
