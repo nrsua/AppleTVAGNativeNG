@@ -72,7 +72,5 @@ export const uk = {
   set_hero_name: 'Hero банер',
   set_hero_desc: 'Великий банер вгорі головного екрану',
   hero_btn_watch: 'Дивитися',
-  set_hero_v2_name: 'Hero V2 (card)',
-  set_hero_v2_desc: 'Apple TV style hero — rounded card below topnav',
   set_section_beta: 'Beta - функції'
 };

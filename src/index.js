@@ -50,8 +50,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     CARD_IMAGE_MODE_KEY,
     CARD_IMAGE_MODE_ATTR,
     LOGO_TITLE_KEY,
-    HERO_KEY,
-    HERO_V2_KEY
+    HERO_KEY
   } = AGNATIVE_KEYS;
 
   var scheduled = false;
@@ -64,7 +63,6 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
   var titledBackdropPending = {};
   var heroRotationTimer = null;
   var heroExitDirection = null;
-  var heroV2RotationTimer = null;
   var heroCurrentIndex = 0;
   var heroItems = [];
   var heroCurrentItem = null;
@@ -630,10 +628,6 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     try { return window.Lampa && Lampa.Storage.get(HERO_KEY, 'off') === 'on'; } catch (e) { return false; }
   }
 
-  function heroBannerV2Enabled() {
-    try { return window.Lampa && Lampa.Storage.get(HERO_V2_KEY, 'off') === 'on'; } catch (e) { return false; }
-  }
-
   function stopHeroRotation() {
     if (heroRotationTimer) { clearInterval(heroRotationTimer); heroRotationTimer = null; }
   }
@@ -650,100 +644,6 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       document.body.classList.remove('agnative-has-hero');
       document.body.classList.remove('agnative-hero-collapsed');
     }
-  }
-
-  function removeHeroBannerV2() {
-    if (heroV2RotationTimer) { clearInterval(heroV2RotationTimer); heroV2RotationTimer = null; }
-    var hero = document.querySelector('.agnative-hero-v2');
-    if (hero) hero.remove();
-  }
-
-  function buildHeroBannerV2() {
-    try {
-      if (!heroBannerV2Enabled()) return;
-      if (document.querySelector('.agnative-hero-v2')) return;
-      var scrollContent = document.querySelector('.activity--active .scroll__content') || document.querySelector('.scroll__content');
-      if (!scrollContent) return;
-      var firstLine = scrollContent.querySelector('.items-line');
-      if (!firstLine) return;
-      // collect items from first row cards
-      var cards = firstLine.querySelectorAll('[data-module]');
-      if (!cards.length) cards = firstLine.querySelectorAll('.card');
-      var items = [];
-      cards.forEach(function(card) {
-        try {
-          var obj = card._call_data || (card.__vue__ && card.__vue__.card) || null;
-          if (!obj && window.Lampa && Lampa.Scroll) {
-            // try lampa card data from element
-            var evt = new Event('get_data');
-            card.dispatchEvent(evt);
-          }
-          // fall back: read from Lampa cache via card id
-          if (!obj) {
-            var id = card.getAttribute('data-id') || card.getAttribute('id');
-            if (id && window.Lampa && Lampa.Cache) obj = Lampa.Cache.get('card_' + id);
-          }
-          if (obj && (obj.backdrop_path || obj.poster_path)) items.push(obj);
-        } catch(e) {}
-      });
-      // fallback: use heroItems if v1 has already fetched them
-      if (!items.length && window.heroItemsCache) items = window.heroItemsCache;
-      if (!items.length) {
-        // try from first items-line lampa data
-        try {
-          var lineComp = firstLine._component || (firstLine.__vue__ && firstLine.__vue__);
-          if (lineComp && lineComp.items) items = lineComp.items.slice(0, 10);
-        } catch(e) {}
-      }
-      if (!items.length) return;
-
-      var item = items[0];
-      var backdropUrl = '';
-      if (item.backdrop_path) {
-        backdropUrl = (window.Lampa && Lampa.TMDB) ? Lampa.TMDB.image('t/p/w1280' + item.backdrop_path) : ('https://image.tmdb.org/t/p/w1280' + item.backdrop_path);
-      } else if (item.poster_path) {
-        backdropUrl = (window.Lampa && Lampa.TMDB) ? Lampa.TMDB.image('t/p/w780' + item.poster_path) : ('https://image.tmdb.org/t/p/w780' + item.poster_path);
-      }
-
-      var hero = document.createElement('div');
-      hero.className = 'agnative-hero-v2';
-
-      var bg = document.createElement('img');
-      bg.className = 'agnative-hero-v2__bg';
-      if (backdropUrl) bg.src = backdropUrl;
-
-      var overlay = document.createElement('div');
-      overlay.className = 'agnative-hero-v2__overlay';
-
-      var content = document.createElement('div');
-      content.className = 'agnative-hero-v2__content';
-
-      var badge = document.createElement('div');
-      badge.className = 'agnative-hero-v2__badge';
-      var genres = item.genres || item.genre_ids || [];
-      var genreName = '';
-      if (item.genres && item.genres.length) genreName = item.genres[0].name || '';
-      badge.textContent = (item.number_of_seasons ? 'СЕРИАЛ' : genreName.toUpperCase() || 'ФИЛЬМ');
-
-      var titleEl = document.createElement('div');
-      titleEl.className = 'agnative-hero-v2__title';
-      titleEl.textContent = item.name || item.title || '';
-
-      var overviewEl = document.createElement('div');
-      overviewEl.className = 'agnative-hero-v2__overview';
-      overviewEl.textContent = (item.overview || '').slice(0, 120);
-
-      content.appendChild(badge);
-      content.appendChild(titleEl);
-      content.appendChild(overviewEl);
-      hero.appendChild(bg);
-      hero.appendChild(overlay);
-      hero.appendChild(content);
-
-      var insertParent = firstLine.parentNode;
-      try { insertParent.insertBefore(hero, firstLine); }
-      catch(e) { scrollContent.insertBefore(hero, scrollContent.firstChild); }
-    } catch(e) {}
   }
 
   function extractDominantColor(url, callback) {
@@ -1600,24 +1500,6 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
 
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
-        param: {
-          name: HERO_V2_KEY,
-          type: 'select',
-          values: { on: t('val_on'), off: t('val_off') },
-          default: 'off'
-        },
-        field: {
-          name: t('set_hero_v2_name'),
-          description: t('set_hero_v2_desc')
-        },
-        onChange: function (value) {
-          if (value === 'off') removeHeroBannerV2();
-          else buildHeroBannerV2();
-        }
-      });
-
-      Lampa.SettingsApi.addParam({
-        component: SETTINGS_COMPONENT,
         param: { name: 'agnative_reset_button', type: 'button' },
         field: {
           name: t('set_reset_name'),
@@ -1685,14 +1567,10 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
               if (!document.querySelector('.agnative-hero')) {
                 setTimeout(buildHeroBanner, 900);
               }
-              if (!document.querySelector('.agnative-hero-v2')) {
-                setTimeout(buildHeroBannerV2, 950);
-              }
             } else {
               // On non-main screens: drop the body class so padding-top reset
               // and other hero-related rules don't affect detail/settings pages
               if (document.body) document.body.classList.remove('agnative-has-hero');
-              removeHeroBannerV2();
             }
           } catch (err) { }
         }
@@ -3120,16 +2998,6 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       '  body.' + BODY_CLASS + ' .settings__body { font-size: 1.1em !important; }',
       '}',
       'body.' + BODY_CLASS + ' .settings-param[data-name="' + HERO_KEY + '"] .settings-param__name::after { content:"BETA"; display:inline-block; margin-left:.6em; padding:.12em .5em; font-size:.55em; font-weight:800; letter-spacing:.06em; color:#fff; background:linear-gradient(135deg, #ff6b35, #c1272d); border-radius:.4em; vertical-align:middle; line-height:1.2; box-shadow:0 1px 4px rgba(193,39,45,.4); }',
-      'body.' + BODY_CLASS + ' .settings-param[data-name="' + HERO_V2_KEY + '"] .settings-param__name::after { content:"BETA"; display:inline-block; margin-left:.6em; padding:.12em .5em; font-size:.55em; font-weight:800; letter-spacing:.06em; color:#fff; background:linear-gradient(135deg, #ff6b35, #c1272d); border-radius:.4em; vertical-align:middle; line-height:1.2; box-shadow:0 1px 4px rgba(193,39,45,.4); }',
-
-      /* ── Hero V2: Apple TV-style contained card ── */
-      'body.' + BODY_CLASS + ' .agnative-hero-v2 { position:relative; width:auto; margin:.55em 1.8em 1.4em; height:42vh; min-height:260px; border-radius:1.5em; overflow:hidden; flex-shrink:0; z-index:8; box-shadow:0 14px 44px rgba(0,0,0,.38), 0 4px 12px rgba(0,0,0,.22); }',
-      'body.' + BODY_CLASS + ' .agnative-hero-v2__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 25%; border-radius:0; display:block; }',
-      'body.' + BODY_CLASS + ' .agnative-hero-v2__overlay { position:absolute; inset:0; background:linear-gradient(90deg, rgba(0,0,0,.82) 0%, rgba(0,0,0,.45) 45%, rgba(0,0,0,.08) 75%, transparent 100%); z-index:1; }',
-      'body.' + BODY_CLASS + ' .agnative-hero-v2__content { position:absolute; left:2.4em; bottom:2em; max-width:44%; z-index:2; display:flex; flex-direction:column; align-items:flex-start; gap:.3em; }',
-      'body.' + BODY_CLASS + ' .agnative-hero-v2__badge { font-size:.65em; font-weight:800; letter-spacing:.16em; color:rgba(255,255,255,.78); text-transform:uppercase; }',
-      'body.' + BODY_CLASS + ' .agnative-hero-v2__title { font-size:2em; font-weight:900; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.8); line-height:1.08; margin:0; letter-spacing:.01em; }',
-      'body.' + BODY_CLASS + ' .agnative-hero-v2__overview { font-size:.8em; font-weight:400; color:rgba(255,255,255,.75); line-height:1.4; margin-top:.1em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }',
       'body.' + BODY_CLASS + ' .agnative-hero { position:relative; width:auto; margin:-4em -2em 2em; height:80vh; min-height:480px; padding-bottom:5em; overflow:visible; box-sizing:content-box; border-radius:0; opacity:1; transition:opacity .6s ease, padding-bottom .4s cubic-bezier(.22,.61,.36,1); flex-shrink:0; display:block; z-index:8; }',
       'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--unfocused { padding-bottom:12em; }',
       'body.' + BODY_CLASS + ' .agnative-hero__bg { position:fixed; top:0; left:0; width:100vw; height:100vh; object-fit:cover; object-position:center center; border-radius:0; z-index:1; opacity:1; transition:opacity .4s ease; pointer-events:none; -webkit-mask-image:linear-gradient(180deg, #000 0%, #000 55%, rgba(0,0,0,.4) 80%, transparent 100%); mask-image:linear-gradient(180deg, #000 0%, #000 55%, rgba(0,0,0,.4) 80%, transparent 100%); }',
