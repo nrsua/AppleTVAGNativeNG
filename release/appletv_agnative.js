@@ -2338,18 +2338,11 @@
         '  position: relative !important;',
         '  z-index: 12 !important;',
         '  min-height: 0 !important;',
-        '  height: 0 !important;',
+        '  height: 3.5em !important;', /* spacer = topnav height; keeps content below topnav on all screens */
         '  padding-top: 0 !important;',
         '  padding-bottom: 0 !important;',
         '  overflow: visible !important;',
         '}',
-        /* Global top spacing: scroll content starts below topnav on ALL screens */
-        'body.' + BODY_CLASS + ' .activity--active .scroll__content { padding-top:3.5em !important; }',
-        'body.' + BODY_CLASS + ' .activity--active .scroll { overflow:visible !important; }',
-        /* Main screen with hero: zero it — hero element itself provides visual spacing */
-        'body.' + BODY_CLASS + '.agnative-has-hero .activity--active .scroll__content { padding-top:0 !important; }',
-        /* Hero collapsed: restore safe top gap */
-        'body.' + BODY_CLASS + '.agnative-hero-collapsed.agnative-has-hero .activity--active .scroll__content { padding-top:3.5em !important; }',
         'body.' + BODY_CLASS + ' .activity.activity--active,',
         'body.' + BODY_CLASS + ' .activity__body,',
         'body.' + BODY_CLASS + ' .full-start,',
@@ -2762,7 +2755,8 @@
         'body.' + BODY_CLASS + ' .head__logo-icon {',
         '  display: none !important;',
         '}',
-        /* activity__body / scroll padding overrides handled above near head__body */
+        /* Main screen with hero: zero scroll padding so hero fills naturally; head__body(3.5em) is above scroll anyway */
+        'body.' + BODY_CLASS + '.agnative-has-hero .activity--active .activity__body, body.' + BODY_CLASS + '.agnative-has-hero .activity--active .scroll, body.' + BODY_CLASS + '.agnative-has-hero .activity--active .scroll__content { padding-top:0 !important; }',
         'body.' + BODY_CLASS + ' .agnative-topnav-shell { position:absolute; left:50%; top:.46em; transform:translateX(-50%); z-index:20; width:max-content; max-width:calc(100vw - 24em); height:2.6em; display:inline-flex; align-items:center; box-sizing:border-box; }',
         'body.' + BODY_CLASS + ' .agnative-topnav-shell__inner { height:2.6em; box-sizing:border-box; display:inline-flex; align-items:center; gap:.18em; padding:.21em .32em; border-radius:999px; background:rgba(22,24,30,.28); border:1px solid rgba(255,255,255,.10); box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 8px 18px rgba(0,0,0,.12); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%); }',
         'body.' + BODY_CLASS + ' .agnative-topnav-shell__items { display:flex; align-items:center; justify-content:center; gap:.08em; }',
