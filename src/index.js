@@ -1750,13 +1750,6 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       '  box-shadow: none !important;',
       '  filter: none !important;',
       '}',
-      /* Zero out activity padding only on main screen where hero needs full bleed */
-      'body.' + BODY_CLASS + '.agnative-has-hero .activity.layer--width.activity--active,',
-      'body.' + BODY_CLASS + '.agnative-has-hero .activity.layer--width.activity--active.application,',
-      'body.' + BODY_CLASS + '.agnative-has-hero .activity.layer--width.activity--active.applecation {',
-      '  padding: 0 !important;',
-      '}',
-      /* All screens: only strip background/shadow */
       'body.' + BODY_CLASS + ' .activity.layer--width.activity--active,',
       'body.' + BODY_CLASS + ' .activity.layer--width.activity--active.application,',
       'body.' + BODY_CLASS + ' .activity.layer--width.activity--active.applecation {',
@@ -1764,6 +1757,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       '  background-color: transparent !important;',
       '  background-image: none !important;',
       '  box-shadow: none !important;',
+      '  padding: 0 !important;',
       '}',
       'body.' + BODY_CLASS + ' .activity.layer--width.activity--active::before,',
       'body.' + BODY_CLASS + ' .activity.layer--width.activity--active::after,',
@@ -1798,8 +1792,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       'body.' + BODY_CLASS + ' .wrap__content .layer--width {',
       '  padding-top: .3em !important;',
       '}',
-      /* Only zero out the top-level wrap padding on the main screen where hero covers the top */
-      'body.' + BODY_CLASS + '.agnative-has-hero .wrap__content.layer--height.layer--width {',
+      'body.' + BODY_CLASS + ' .wrap__content.layer--height.layer--width {',
       '  padding-top: 0 !important;',
       '}',
       'body.' + BODY_CLASS + ' .wrap__content.layer--height.layer--width > *,',
