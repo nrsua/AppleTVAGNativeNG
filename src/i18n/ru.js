@@ -76,5 +76,8 @@ export const ru = {
   set_topnav_enable_name: 'Верхняя панель навигации',
   set_topnav_enable_desc: 'Показывать или скрыть верхнюю панель (меню / часы)',
   set_topnav_size_name: 'Размер верхней панели',
-  set_topnav_size_desc: 'Масштаб панели сверху (пункты меню, часы, профиль)'
+  set_topnav_size_desc: 'Масштаб панели сверху (пункты меню, часы, профиль)',
+  set_topnav_move_up: 'Переместить вверх',
+  set_topnav_move_down: 'Переместить вниз',
+  set_topnav_move_desc: 'Изменить порядок этого пункта в верхней панели'
 };

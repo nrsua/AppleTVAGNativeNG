@@ -76,5 +76,8 @@ export const uk = {
   set_topnav_enable_name: 'Верхня панель навігації',
   set_topnav_enable_desc: 'Показувати або приховати верхню панель (меню / годинник)',
   set_topnav_size_name: 'Розмір верхньої панелі',
-  set_topnav_size_desc: 'Масштаб панелі вгорі (пункти меню, годинник, профіль)'
+  set_topnav_size_desc: 'Масштаб панелі вгорі (пункти меню, годинник, профіль)',
+  set_topnav_move_up: 'Перемістити вгору',
+  set_topnav_move_down: 'Перемістити вниз',
+  set_topnav_move_desc: 'Змінити порядок цього пункту у верхній панелі'
 };

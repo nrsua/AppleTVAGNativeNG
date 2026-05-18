@@ -76,5 +76,8 @@ export const be = {
   set_topnav_enable_name: 'Верхняя панэль навігацыі',
   set_topnav_enable_desc: 'Паказаць або схаваць верхнюю панэль (меню / гадзіннік)',
   set_topnav_size_name: 'Памер верхняй панэлі',
-  set_topnav_size_desc: 'Маштаб верхняй панэлі (пункты меню, гадзіннік, профіль)'
+  set_topnav_size_desc: 'Маштаб верхняй панэлі (пункты меню, гадзіннік, профіль)',
+  set_topnav_move_up: 'Перамясціць угору',
+  set_topnav_move_down: 'Перамясціць уніз',
+  set_topnav_move_desc: 'Змяніць парадак гэтага пункта ў верхняй панэлі'
 };

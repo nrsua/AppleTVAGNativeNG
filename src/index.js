@@ -600,7 +600,6 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
   }
 
   function setTopnavActionState(action, enabled) {
-    var order = getAvailableTopnavItems().map(function (item) { return item.action; });
     var current = getStoredTopnavActions().filter(function (item, index, arr) {
       return item && arr.indexOf(item) === index;
     });
@@ -611,10 +610,21 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       current = current.filter(function (item) { return item !== action; });
     }
 
-    current.sort(function (a, b) {
-      return order.indexOf(a) - order.indexOf(b);
-    });
+    // Preserve user-defined order, no auto-sorting
+    setStoredTopnavActions(current);
+  }
 
+  function moveTopnavAction(action, direction) {
+    var current = getStoredTopnavActions().filter(function (item, index, arr) {
+      return item && arr.indexOf(item) === index;
+    });
+    var idx = current.indexOf(action);
+    if (idx === -1) return;
+    var newIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= current.length) return;
+    var tmp = current[idx];
+    current[idx] = current[newIdx];
+    current[newIdx] = tmp;
     setStoredTopnavActions(current);
   }
 
@@ -1575,6 +1585,30 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
           },
           onChange: function (value) {
             setTopnavActionState(item.action, value !== 'off');
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: TOPNAV_SETTINGS_COMPONENT,
+          param: { name: 'agnative_topnav_move_up_' + item.action, type: 'button' },
+          field: {
+            name: '↑  ' + t('set_topnav_move_up') + ' — ' + item.label,
+            description: t('set_topnav_move_desc')
+          },
+          onChange: function () {
+            moveTopnavAction(item.action, 'up');
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: TOPNAV_SETTINGS_COMPONENT,
+          param: { name: 'agnative_topnav_move_down_' + item.action, type: 'button' },
+          field: {
+            name: '↓  ' + t('set_topnav_move_down') + ' — ' + item.label,
+            description: t('set_topnav_move_desc')
+          },
+          onChange: function () {
+            moveTopnavAction(item.action, 'down');
           }
         });
       });
