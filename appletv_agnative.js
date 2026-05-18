@@ -2936,6 +2936,15 @@
         'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"][' + BACKDROP_ATTR + '="off"] .items-line .card { width:14.3em !important; }',
         'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .items-line .card { width:21.2em !important; }',
         'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"][' + BACKDROP_ATTR + '="off"] .items-line .card { width:15.6em !important; }',
+        // Streaming/button-compact service cards (e.g. from SURS plugin) — half size of regular cards
+        'body.' + BODY_CLASS + ' .items-line .card.card--button-compact, body.' + BODY_CLASS + ' .items-line .card.streaming-card--button-compact { width:8.8em !important; flex:0 0 auto !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"] .items-line .card.card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"] .items-line .card.streaming-card--button-compact { width:7em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"] .items-line .card.card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"] .items-line .card.streaming-card--button-compact { width:7.9em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="md"] .items-line .card.card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="md"] .items-line .card.streaming-card--button-compact { width:8.8em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"] .items-line .card.card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"] .items-line .card.streaming-card--button-compact { width:9.7em !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .items-line .card.card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .items-line .card.streaming-card--button-compact { width:10.6em !important; }',
+        // Scale text inside (logo labels, etc) accordingly
+        'body.' + BODY_CLASS + ' .card.card--button-compact .card__view, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .card__view { font-size:.85em !important; }',
         'body.' + BODY_CLASS + ' .card .card-watched { transform: scale(.8) !important; bottom: 0 !important; max-height: 100% !important; overflow: hidden !important; }',
         'body.' + BODY_CLASS + ' .card .card__view { padding-bottom:56.25% !important; margin-bottom:0 !important; border-radius:1.55em !important; overflow:hidden !important; clip-path: inset(0 round 1.55em); -webkit-clip-path: inset(0 round 1.55em); box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1.5px 1px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.06), 0 6px 14px rgba(0,0,0,.14), 0 12px 28px rgba(0,0,0,.16) !important; transition: transform .28s cubic-bezier(.22,.61,.36,1), box-shadow .28s ease, filter .28s ease, opacity .18s ease !important; border: 0.1em solid transparent !important; box-sizing: border-box !important; }',
         'body.' + BODY_CLASS + ' .card[data-nfx-switched="1"] .card__view { opacity:1 !important; }',
