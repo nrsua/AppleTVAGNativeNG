@@ -72,5 +72,10 @@ export const en = {
   set_hero_name: 'Hero banner',
   set_hero_desc: 'Large banner at the top of the main screen',
   hero_btn_watch: 'Watch',
-  set_section_beta: 'Beta features'
+  set_section_beta: 'Beta features',
+  set_topnav_enable_name: 'Top navigation bar',
+  set_topnav_enable_desc: 'Show or hide the top navigation (logo / menu items / time)',
+  set_topnav_size_name: 'Top navigation size',
+  set_topnav_size_desc: 'Scale of the topnav bar (menu items, clock, profile)',
+  set_topnav_position: 'Position'
 };
