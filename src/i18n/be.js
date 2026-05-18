@@ -72,5 +72,7 @@ export const be = {
   set_hero_name: 'Hero банер',
   set_hero_desc: 'Вялікі банер угары галоўнага экрана',
   hero_btn_watch: 'Глядзець',
-  set_section_beta: 'Beta - функцыі'
+  set_section_beta: 'Beta - функцыі',
+  set_topnav_enable_name: 'Верхняя панэль навігацыі',
+  set_topnav_enable_desc: 'Паказаць або схаваць верхнюю панэль (меню / гадзіннік)'
 };

@@ -51,7 +51,8 @@
     CARD_IMAGE_MODE_KEY: 'appletv_agnative_card_image_mode',
     CARD_IMAGE_MODE_ATTR: 'data-agnative-card-image-mode',
     LOGO_TITLE_KEY: 'appletv_agnative_logo_title_fallback',
-    HERO_KEY: 'appletv_agnative_hero_enabled'
+    HERO_KEY: 'appletv_agnative_hero_enabled',
+    TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible'
   };
 
   const ru = {
@@ -128,7 +129,9 @@
     set_hero_name: 'Hero баннер',
     set_hero_desc: 'Большой баннер вверху главного экрана',
     hero_btn_watch: 'Смотреть',
-    set_section_beta: 'Beta - функции'
+    set_section_beta: 'Beta - функции',
+    set_topnav_enable_name: 'Верхняя панель навигации',
+    set_topnav_enable_desc: 'Показывать или скрыть верхнюю панель (меню / часы)'
   };
 
   const en = {
@@ -205,7 +208,9 @@
     set_hero_name: 'Hero banner',
     set_hero_desc: 'Large banner at the top of the main screen',
     hero_btn_watch: 'Watch',
-    set_section_beta: 'Beta features'
+    set_section_beta: 'Beta features',
+    set_topnav_enable_name: 'Top navigation bar',
+    set_topnav_enable_desc: 'Show or hide the top navigation (logo / menu items / time)'
   };
 
   const uk = {
@@ -282,7 +287,9 @@
     set_hero_name: 'Hero банер',
     set_hero_desc: 'Великий банер вгорі головного екрану',
     hero_btn_watch: 'Дивитися',
-    set_section_beta: 'Beta - функції'
+    set_section_beta: 'Beta - функції',
+    set_topnav_enable_name: 'Верхня панель навігації',
+    set_topnav_enable_desc: 'Показувати або приховати верхню панель (меню / годинник)'
   };
 
   const be = {
@@ -359,7 +366,9 @@
     set_hero_name: 'Hero банер',
     set_hero_desc: 'Вялікі банер угары галоўнага экрана',
     hero_btn_watch: 'Глядзець',
-    set_section_beta: 'Beta - функцыі'
+    set_section_beta: 'Beta - функцыі',
+    set_topnav_enable_name: 'Верхняя панэль навігацыі',
+    set_topnav_enable_desc: 'Паказаць або схаваць верхнюю панэль (меню / гадзіннік)'
   };
 
   const GENRE_MAP_LOCALIZED = {
@@ -658,7 +667,8 @@
       CARD_IMAGE_MODE_KEY,
       CARD_IMAGE_MODE_ATTR,
       LOGO_TITLE_KEY,
-      HERO_KEY
+      HERO_KEY,
+      TOPNAV_ENABLE_KEY
     } = AGNATIVE_KEYS;
 
     var scheduled = false;
@@ -1690,6 +1700,24 @@
           },
           onChange: function () {
             setTimeout(function () { schedulePatch(); }, 80);
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_COMPONENT,
+          param: {
+            name: TOPNAV_ENABLE_KEY,
+            type: 'select',
+            values: { on: t('val_on'), off: t('val_off') },
+            default: 'on'
+          },
+          field: {
+            name: t('set_topnav_enable_name'),
+            description: t('set_topnav_enable_desc')
+          },
+          onChange: function (value) {
+            if (value === 'off') removeTopnavUi();
+            else setTimeout(function () { schedulePatch(); }, 50);
           }
         });
 
@@ -4672,7 +4700,25 @@
       startClock();
     }
 
+    function topnavEnabled() {
+      try { return window.Lampa && Lampa.Storage.get(TOPNAV_ENABLE_KEY, 'on') !== 'off'; } catch (e) { return true; }
+    }
+
+    function removeTopnavUi() {
+      try {
+        var shell = document.querySelector('.agnative-topnav-shell');
+        if (shell) shell.remove();
+        var dock = document.querySelector('.agnative-topnav-rightdock');
+        if (dock) dock.remove();
+        var clock = document.getElementById(CLOCK_ID);
+        if (clock) clock.remove();
+        var panel = document.querySelector('.agnative-control-panel');
+        if (panel) panel.remove();
+      } catch (e) { }
+    }
+
     function patchTopnav() {
+      if (!topnavEnabled()) { removeTopnavUi(); return false; }
       var head = qs('.head__body') || qs('.head');
       if (!head) return false;
 
