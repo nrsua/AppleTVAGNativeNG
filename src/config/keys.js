@@ -40,5 +40,7 @@ export const AGNATIVE_KEYS = {
   CARD_IMAGE_MODE_ATTR: 'data-agnative-card-image-mode',
   LOGO_TITLE_KEY: 'appletv_agnative_logo_title_fallback',
   HERO_KEY: 'appletv_agnative_hero_enabled',
-  TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible'
+  TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible',
+  TOPNAV_SIZE_KEY: 'appletv_agnative_topnav_size',
+  TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size'
 };

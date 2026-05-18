@@ -74,5 +74,7 @@ export const be = {
   hero_btn_watch: 'Глядзець',
   set_section_beta: 'Beta - функцыі',
   set_topnav_enable_name: 'Верхняя панэль навігацыі',
-  set_topnav_enable_desc: 'Паказаць або схаваць верхнюю панэль (меню / гадзіннік)'
+  set_topnav_enable_desc: 'Паказаць або схаваць верхнюю панэль (меню / гадзіннік)',
+  set_topnav_size_name: 'Памер верхняй панэлі',
+  set_topnav_size_desc: 'Маштаб верхняй панэлі (пункты меню, гадзіннік, профіль)'
 };

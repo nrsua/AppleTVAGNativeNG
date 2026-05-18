@@ -74,5 +74,7 @@ export const ru = {
   hero_btn_watch: 'Смотреть',
   set_section_beta: 'Beta - функции',
   set_topnav_enable_name: 'Верхняя панель навигации',
-  set_topnav_enable_desc: 'Показывать или скрыть верхнюю панель (меню / часы)'
+  set_topnav_enable_desc: 'Показывать или скрыть верхнюю панель (меню / часы)',
+  set_topnav_size_name: 'Размер верхней панели',
+  set_topnav_size_desc: 'Масштаб панели сверху (пункты меню, часы, профиль)'
 };

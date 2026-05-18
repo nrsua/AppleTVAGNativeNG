@@ -74,5 +74,7 @@ export const uk = {
   hero_btn_watch: 'Дивитися',
   set_section_beta: 'Beta - функції',
   set_topnav_enable_name: 'Верхня панель навігації',
-  set_topnav_enable_desc: 'Показувати або приховати верхню панель (меню / годинник)'
+  set_topnav_enable_desc: 'Показувати або приховати верхню панель (меню / годинник)',
+  set_topnav_size_name: 'Розмір верхньої панелі',
+  set_topnav_size_desc: 'Масштаб панелі вгорі (пункти меню, годинник, профіль)'
 };

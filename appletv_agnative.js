@@ -52,7 +52,9 @@
     CARD_IMAGE_MODE_ATTR: 'data-agnative-card-image-mode',
     LOGO_TITLE_KEY: 'appletv_agnative_logo_title_fallback',
     HERO_KEY: 'appletv_agnative_hero_enabled',
-    TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible'
+    TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible',
+    TOPNAV_SIZE_KEY: 'appletv_agnative_topnav_size',
+    TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size'
   };
 
   const ru = {
@@ -131,7 +133,9 @@
     hero_btn_watch: 'Смотреть',
     set_section_beta: 'Beta - функции',
     set_topnav_enable_name: 'Верхняя панель навигации',
-    set_topnav_enable_desc: 'Показывать или скрыть верхнюю панель (меню / часы)'
+    set_topnav_enable_desc: 'Показывать или скрыть верхнюю панель (меню / часы)',
+    set_topnav_size_name: 'Размер верхней панели',
+    set_topnav_size_desc: 'Масштаб панели сверху (пункты меню, часы, профиль)'
   };
 
   const en = {
@@ -210,7 +214,9 @@
     hero_btn_watch: 'Watch',
     set_section_beta: 'Beta features',
     set_topnav_enable_name: 'Top navigation bar',
-    set_topnav_enable_desc: 'Show or hide the top navigation (logo / menu items / time)'
+    set_topnav_enable_desc: 'Show or hide the top navigation (logo / menu items / time)',
+    set_topnav_size_name: 'Top navigation size',
+    set_topnav_size_desc: 'Scale of the topnav bar (menu items, clock, profile)'
   };
 
   const uk = {
@@ -289,7 +295,9 @@
     hero_btn_watch: 'Дивитися',
     set_section_beta: 'Beta - функції',
     set_topnav_enable_name: 'Верхня панель навігації',
-    set_topnav_enable_desc: 'Показувати або приховати верхню панель (меню / годинник)'
+    set_topnav_enable_desc: 'Показувати або приховати верхню панель (меню / годинник)',
+    set_topnav_size_name: 'Розмір верхньої панелі',
+    set_topnav_size_desc: 'Масштаб панелі вгорі (пункти меню, годинник, профіль)'
   };
 
   const be = {
@@ -368,7 +376,9 @@
     hero_btn_watch: 'Глядзець',
     set_section_beta: 'Beta - функцыі',
     set_topnav_enable_name: 'Верхняя панэль навігацыі',
-    set_topnav_enable_desc: 'Паказаць або схаваць верхнюю панэль (меню / гадзіннік)'
+    set_topnav_enable_desc: 'Паказаць або схаваць верхнюю панэль (меню / гадзіннік)',
+    set_topnav_size_name: 'Памер верхняй панэлі',
+    set_topnav_size_desc: 'Маштаб верхняй панэлі (пункты меню, гадзіннік, профіль)'
   };
 
   const GENRE_MAP_LOCALIZED = {
@@ -668,7 +678,9 @@
       CARD_IMAGE_MODE_ATTR,
       LOGO_TITLE_KEY,
       HERO_KEY,
-      TOPNAV_ENABLE_KEY
+      TOPNAV_ENABLE_KEY,
+      TOPNAV_SIZE_KEY,
+      TOPNAV_SIZE_ATTR
     } = AGNATIVE_KEYS;
 
     var scheduled = false;
@@ -947,6 +959,7 @@
           document.body.removeAttribute(PERF_ATTR);
           document.body.removeAttribute(FLEX_GAP_ATTR);
           document.body.removeAttribute(CARD_IMAGE_MODE_ATTR);
+          document.body.removeAttribute(TOPNAV_SIZE_ATTR);
         }
         var style = document.getElementById(STYLE_ID);
         if (style) style.remove();
@@ -1199,6 +1212,7 @@
         syncCardFlags();
         syncPerfMode();
         syncOverlayAlign();
+        syncTopnavSize();
         resetCardSwitches();
         setTimeout(function () { schedulePatch(); }, 80);
         try {
@@ -1718,6 +1732,29 @@
           onChange: function (value) {
             if (value === 'off') removeTopnavUi();
             else setTimeout(function () { schedulePatch(); }, 50);
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_COMPONENT,
+          param: {
+            name: TOPNAV_SIZE_KEY,
+            type: 'select',
+            values: {
+              xs: t('val_size_xs'),
+              sm: t('val_size_sm'),
+              md: t('val_size_md'),
+              lg: t('val_size_lg'),
+              xl: t('val_size_xl')
+            },
+            default: 'md'
+          },
+          field: {
+            name: t('set_topnav_size_name'),
+            description: t('set_topnav_size_desc')
+          },
+          onChange: function () {
+            syncTopnavSize();
           }
         });
 
@@ -2778,7 +2815,12 @@
         '  display: none !important;',
         '}',
         'body.' + BODY_CLASS + '.agnative-hero-collapsed .activity--active .scroll__content { padding-top:5em !important; }',
-        'body.' + BODY_CLASS + ' .agnative-topnav-shell { position:absolute; left:50%; top:.46em; transform:translateX(-50%); z-index:20; width:max-content; max-width:calc(100vw - 24em); height:2.6em; display:inline-flex; align-items:center; box-sizing:border-box; }',
+        'body.' + BODY_CLASS + ' .agnative-topnav-shell { position:absolute; left:50%; top:.46em; transform:translateX(-50%); z-index:20; width:max-content; max-width:calc(100vw - 24em); height:2.6em; display:inline-flex; align-items:center; box-sizing:border-box; font-size:1em; }',
+        'body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="xs"] .agnative-topnav-shell, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="xs"] .agnative-topnav-rightdock, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="xs"] .agnative-topnav-clock, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="xs"] .head__menu-icon { font-size:.78em !important; }',
+        'body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="sm"] .agnative-topnav-shell, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="sm"] .agnative-topnav-rightdock, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="sm"] .agnative-topnav-clock, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="sm"] .head__menu-icon { font-size:.9em !important; }',
+        'body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="md"] .agnative-topnav-shell, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="md"] .agnative-topnav-rightdock, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="md"] .agnative-topnav-clock, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="md"] .head__menu-icon { font-size:1em !important; }',
+        'body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="lg"] .agnative-topnav-shell, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="lg"] .agnative-topnav-rightdock, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="lg"] .agnative-topnav-clock, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="lg"] .head__menu-icon { font-size:1.15em !important; }',
+        'body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="xl"] .agnative-topnav-shell, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="xl"] .agnative-topnav-rightdock, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="xl"] .agnative-topnav-clock, body.' + BODY_CLASS + '[' + TOPNAV_SIZE_ATTR + '="xl"] .head__menu-icon { font-size:1.3em !important; }',
         'body.' + BODY_CLASS + ' .agnative-topnav-shell__inner { height:2.6em; box-sizing:border-box; display:inline-flex; align-items:center; gap:.18em; padding:.21em .32em; border-radius:999px; background:rgba(22,24,30,.28); border:1px solid rgba(255,255,255,.10); box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 8px 18px rgba(0,0,0,.12); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%); }',
         'body.' + BODY_CLASS + ' .agnative-topnav-shell__items { display:flex; align-items:center; justify-content:center; gap:.08em; }',
         'body.' + BODY_CLASS + ' .agnative-topnav-shell__right { display:flex; align-items:center; gap:.08em; margin-left:.12em; padding-left:.18em; }',
@@ -4704,6 +4746,14 @@
       try { return window.Lampa && Lampa.Storage.get(TOPNAV_ENABLE_KEY, 'on') !== 'off'; } catch (e) { return true; }
     }
 
+    function syncTopnavSize() {
+      if (!document.body) return;
+      var size = 'md';
+      try { size = Lampa.Storage.get(TOPNAV_SIZE_KEY, 'md'); } catch (e) { }
+      if (!/^(xs|sm|md|lg|xl)$/.test(size)) size = 'md';
+      document.body.setAttribute(TOPNAV_SIZE_ATTR, size);
+    }
+
     function removeTopnavUi() {
       try {
         var shell = document.querySelector('.agnative-topnav-shell');
@@ -5406,6 +5456,7 @@
       syncPerfMode();
       syncFlexGapFlag();
       syncOverlayAlign();
+      syncTopnavSize();
       observeCards();
       bindInputModeDetector();
       initGlareRuntime();
