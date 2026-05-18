@@ -1570,45 +1570,40 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         field: { name: t('set_topnav_title') }
       });
 
+      var posMax = 15;
+      var posValues = { off: t('val_hide') };
+      for (var pi = 1; pi <= posMax; pi++) posValues['p' + pi] = t('set_topnav_position') + ' ' + pi;
+
       getAvailableTopnavItems().forEach(function (item) {
+        var stored = getStoredTopnavActions();
+        var currentIdx = stored.indexOf(item.action);
+        var currentDefault = currentIdx === -1 ? 'off' : ('p' + (currentIdx + 1));
+
         Lampa.SettingsApi.addParam({
           component: TOPNAV_SETTINGS_COMPONENT,
           param: {
             name: 'agnative_topnav_item_' + item.action,
             type: 'select',
-            values: { on: langText('settings_add', t('val_add')), off: t('val_hide') },
-            default: getStoredTopnavActions().indexOf(item.action) > -1 ? 'on' : 'off'
+            values: posValues,
+            default: currentDefault
           },
           field: {
             name: item.label,
             description: t('set_topnav_item_desc') + item.action
           },
           onChange: function (value) {
-            setTopnavActionState(item.action, value !== 'off');
-          }
-        });
-
-        Lampa.SettingsApi.addParam({
-          component: TOPNAV_SETTINGS_COMPONENT,
-          param: { name: 'agnative_topnav_move_up_' + item.action, type: 'button' },
-          field: {
-            name: '↑  ' + t('set_topnav_move_up') + ' — ' + item.label,
-            description: t('set_topnav_move_desc')
-          },
-          onChange: function () {
-            moveTopnavAction(item.action, 'up');
-          }
-        });
-
-        Lampa.SettingsApi.addParam({
-          component: TOPNAV_SETTINGS_COMPONENT,
-          param: { name: 'agnative_topnav_move_down_' + item.action, type: 'button' },
-          field: {
-            name: '↓  ' + t('set_topnav_move_down') + ' — ' + item.label,
-            description: t('set_topnav_move_desc')
-          },
-          onChange: function () {
-            moveTopnavAction(item.action, 'down');
+            if (value === 'off') {
+              setTopnavActionState(item.action, false);
+              return;
+            }
+            var targetPos = parseInt(value.replace('p', ''), 10) - 1;
+            if (isNaN(targetPos) || targetPos < 0) return;
+            var current = getStoredTopnavActions().filter(function (a, i, arr) { return a && arr.indexOf(a) === i; });
+            var oldIdx = current.indexOf(item.action);
+            if (oldIdx !== -1) current.splice(oldIdx, 1);
+            if (targetPos > current.length) targetPos = current.length;
+            current.splice(targetPos, 0, item.action);
+            setStoredTopnavActions(current);
           }
         });
       });

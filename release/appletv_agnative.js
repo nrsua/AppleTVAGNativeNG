@@ -136,9 +136,7 @@
     set_topnav_enable_desc: 'Показывать или скрыть верхнюю панель (меню / часы)',
     set_topnav_size_name: 'Размер верхней панели',
     set_topnav_size_desc: 'Масштаб панели сверху (пункты меню, часы, профиль)',
-    set_topnav_move_up: 'Переместить вверх',
-    set_topnav_move_down: 'Переместить вниз',
-    set_topnav_move_desc: 'Изменить порядок этого пункта в верхней панели'
+    set_topnav_position: 'Позиция'
   };
 
   const en = {
@@ -220,9 +218,7 @@
     set_topnav_enable_desc: 'Show or hide the top navigation (logo / menu items / time)',
     set_topnav_size_name: 'Top navigation size',
     set_topnav_size_desc: 'Scale of the topnav bar (menu items, clock, profile)',
-    set_topnav_move_up: 'Move up',
-    set_topnav_move_down: 'Move down',
-    set_topnav_move_desc: 'Change the order of this item in the top navigation'
+    set_topnav_position: 'Position'
   };
 
   const uk = {
@@ -304,9 +300,7 @@
     set_topnav_enable_desc: 'Показувати або приховати верхню панель (меню / годинник)',
     set_topnav_size_name: 'Розмір верхньої панелі',
     set_topnav_size_desc: 'Масштаб панелі вгорі (пункти меню, годинник, профіль)',
-    set_topnav_move_up: 'Перемістити вгору',
-    set_topnav_move_down: 'Перемістити вниз',
-    set_topnav_move_desc: 'Змінити порядок цього пункту у верхній панелі'
+    set_topnav_position: 'Позиція'
   };
 
   const be = {
@@ -388,9 +382,7 @@
     set_topnav_enable_desc: 'Паказаць або схаваць верхнюю панэль (меню / гадзіннік)',
     set_topnav_size_name: 'Памер верхняй панэлі',
     set_topnav_size_desc: 'Маштаб верхняй панэлі (пункты меню, гадзіннік, профіль)',
-    set_topnav_move_up: 'Перамясціць угору',
-    set_topnav_move_down: 'Перамясціць уніз',
-    set_topnav_move_desc: 'Змяніць парадак гэтага пункта ў верхняй панэлі'
+    set_topnav_position: 'Пазіцыя'
   };
 
   const GENRE_MAP_LOCALIZED = {
@@ -2209,45 +2201,40 @@
           field: { name: t('set_topnav_title') }
         });
 
+        var posMax = 15;
+        var posValues = { off: t('val_hide') };
+        for (var pi = 1; pi <= posMax; pi++) posValues['p' + pi] = t('set_topnav_position') + ' ' + pi;
+
         getAvailableTopnavItems().forEach(function (item) {
+          var stored = getStoredTopnavActions();
+          var currentIdx = stored.indexOf(item.action);
+          var currentDefault = currentIdx === -1 ? 'off' : ('p' + (currentIdx + 1));
+
           Lampa.SettingsApi.addParam({
             component: TOPNAV_SETTINGS_COMPONENT,
             param: {
               name: 'agnative_topnav_item_' + item.action,
               type: 'select',
-              values: { on: langText('settings_add', t('val_add')), off: t('val_hide') },
-              default: getStoredTopnavActions().indexOf(item.action) > -1 ? 'on' : 'off'
+              values: posValues,
+              default: currentDefault
             },
             field: {
               name: item.label,
               description: t('set_topnav_item_desc') + item.action
             },
             onChange: function (value) {
-              setTopnavActionState(item.action, value !== 'off');
-            }
-          });
-
-          Lampa.SettingsApi.addParam({
-            component: TOPNAV_SETTINGS_COMPONENT,
-            param: { name: 'agnative_topnav_move_up_' + item.action, type: 'button' },
-            field: {
-              name: '↑  ' + t('set_topnav_move_up') + ' — ' + item.label,
-              description: t('set_topnav_move_desc')
-            },
-            onChange: function () {
-              moveTopnavAction(item.action, 'up');
-            }
-          });
-
-          Lampa.SettingsApi.addParam({
-            component: TOPNAV_SETTINGS_COMPONENT,
-            param: { name: 'agnative_topnav_move_down_' + item.action, type: 'button' },
-            field: {
-              name: '↓  ' + t('set_topnav_move_down') + ' — ' + item.label,
-              description: t('set_topnav_move_desc')
-            },
-            onChange: function () {
-              moveTopnavAction(item.action, 'down');
+              if (value === 'off') {
+                setTopnavActionState(item.action, false);
+                return;
+              }
+              var targetPos = parseInt(value.replace('p', ''), 10) - 1;
+              if (isNaN(targetPos) || targetPos < 0) return;
+              var current = getStoredTopnavActions().filter(function (a, i, arr) { return a && arr.indexOf(a) === i; });
+              var oldIdx = current.indexOf(item.action);
+              if (oldIdx !== -1) current.splice(oldIdx, 1);
+              if (targetPos > current.length) targetPos = current.length;
+              current.splice(targetPos, 0, item.action);
+              setStoredTopnavActions(current);
             }
           });
         });

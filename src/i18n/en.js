@@ -77,7 +77,5 @@ export const en = {
   set_topnav_enable_desc: 'Show or hide the top navigation (logo / menu items / time)',
   set_topnav_size_name: 'Top navigation size',
   set_topnav_size_desc: 'Scale of the topnav bar (menu items, clock, profile)',
-  set_topnav_move_up: 'Move up',
-  set_topnav_move_down: 'Move down',
-  set_topnav_move_desc: 'Change the order of this item in the top navigation'
+  set_topnav_position: 'Position'
 };
