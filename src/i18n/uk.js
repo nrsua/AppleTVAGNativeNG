@@ -1,7 +1,7 @@
 export const uk = {
   nav_feed: 'Стрічка',
   badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРІАЛ',
-  set_about_desc: 'Версія 0.3.17  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+  set_about_desc: 'Версія 0.3.18  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
   set_main_title: 'Основні налаштування',
   set_enable_name: 'AppleTV AgNative',
   set_enable_desc: 'Вмикає та вимикає плагін',
@@ -68,5 +68,14 @@ export const uk = {
   set_logo_title_desc: 'Показувати назву локальною мовою, якщо логотип завантажено лише англійською',
   val_logo_title_off: 'Ні',
   val_logo_title_below: 'Так, знизу логотипу',
-  val_logo_title_above: 'Так, зверху логотипу'
+  val_logo_title_above: 'Так, зверху логотипу',
+  set_hero_name: 'Hero банер',
+  set_hero_desc: 'Великий банер вгорі головного екрану',
+  hero_btn_watch: 'Дивитися',
+  set_section_beta: 'Beta - функції',
+  set_topnav_enable_name: 'Верхня панель навігації',
+  set_topnav_enable_desc: 'Показувати або приховати верхню панель (меню / годинник)',
+  set_topnav_size_name: 'Розмір верхньої панелі',
+  set_topnav_size_desc: 'Масштаб панелі вгорі (пункти меню, годинник, профіль)',
+  set_topnav_position: 'Позиція'
 };

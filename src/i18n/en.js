@@ -1,7 +1,7 @@
 export const en = {
   nav_feed: 'Feed',
   badge_movie: 'MOVIE', badge_tv: 'TV SHOW',
-  set_about_desc: 'Version 0.3.17  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+  set_about_desc: 'Version 0.3.18  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
   set_main_title: 'Main settings',
   set_enable_name: 'AppleTV AgNative',
   set_enable_desc: 'Enables and disables the plugin',
@@ -68,5 +68,14 @@ export const en = {
   set_logo_title_desc: 'Show title in local language when only an English logo is available',
   val_logo_title_off: 'No',
   val_logo_title_below: 'Yes, below logo',
-  val_logo_title_above: 'Yes, above logo'
+  val_logo_title_above: 'Yes, above logo',
+  set_hero_name: 'Hero banner',
+  set_hero_desc: 'Large banner at the top of the main screen',
+  hero_btn_watch: 'Watch',
+  set_section_beta: 'Beta features',
+  set_topnav_enable_name: 'Top navigation bar',
+  set_topnav_enable_desc: 'Show or hide the top navigation (logo / menu items / time)',
+  set_topnav_size_name: 'Top navigation size',
+  set_topnav_size_desc: 'Scale of the topnav bar (menu items, clock, profile)',
+  set_topnav_position: 'Position'
 };

@@ -1,7 +1,7 @@
 export const ru = {
   nav_feed: 'Лента',
   badge_movie: 'ФИЛЬМ', badge_tv: 'СЕРИАЛ',
-  set_about_desc: 'Версия 0.3.17  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+  set_about_desc: 'Версия 0.3.18  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
   set_main_title: 'Основные настройки',
   set_enable_name: 'AppleTV AgNative',
   set_enable_desc: 'Включает и выключает плагин',
@@ -68,5 +68,14 @@ export const ru = {
   set_logo_title_desc: 'Показывать название на локальном языке, если логотип загружен только на английском',
   val_logo_title_off: 'Нет',
   val_logo_title_below: 'Да, снизу логотипа',
-  val_logo_title_above: 'Да, сверху логотипа'
+  val_logo_title_above: 'Да, сверху логотипа',
+  set_hero_name: 'Hero баннер',
+  set_hero_desc: 'Большой баннер вверху главного экрана',
+  hero_btn_watch: 'Смотреть',
+  set_section_beta: 'Beta - функции',
+  set_topnav_enable_name: 'Верхняя панель навигации',
+  set_topnav_enable_desc: 'Показывать или скрыть верхнюю панель (меню / часы)',
+  set_topnav_size_name: 'Размер верхней панели',
+  set_topnav_size_desc: 'Масштаб панели сверху (пункты меню, часы, профиль)',
+  set_topnav_position: 'Позиция'
 };
