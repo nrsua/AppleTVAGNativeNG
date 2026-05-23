@@ -767,6 +767,24 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     } catch (e) { }
   }
 
+  function scrollActivityToHero(hero) {
+    try {
+      if (!hero) hero = document.querySelector('.agnative-hero');
+      if (!hero) return;
+      var scrollBody = hero.closest ? hero.closest('.scroll__body') : null;
+      if (!scrollBody) {
+        scrollBody = document.querySelector('.activity--active .scroll__body') ||
+                     document.querySelector('.scroll__body');
+      }
+      if (scrollBody) {
+        scrollBody.style.transform = 'translate3d(0px, 0px, 0px)';
+        scrollBody.style.webkitTransform = 'translate3d(0px, 0px, 0px)';
+      }
+      var scrollHost = hero.closest ? hero.closest('.scroll') : null;
+      if (scrollHost) scrollHost.scrollTop = 0;
+    } catch (e) { }
+  }
+
   function ensureHeroController() {
     if (window.__AGNATIVE_HERO_CONTROLLER__) return;
     if (!window.Lampa || !Lampa.Controller || !Lampa.Controller.add || !window.$) return;
@@ -782,6 +800,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         heroExitDirection = null;
         hero.classList.remove('agnative-hero--hidden');
         if (document.body) document.body.classList.remove('agnative-hero-collapsed');
+        scrollActivityToHero(hero);
         try {
           Lampa.Controller.collectionSet($(hero));
           Lampa.Controller.collectionFocus(btn, $(hero));
@@ -3888,6 +3907,12 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     }
   }
 
+  function heroReadyForRouting() {
+    if (!window.__AGNATIVE_HERO_CONTROLLER__) return false;
+    if (!document.body || !document.body.classList.contains('agnative-has-hero')) return false;
+    return !!document.querySelector('.agnative-hero');
+  }
+
   function patchControllerToggleForLeftdock() {
     if (controllerTogglePatched) return;
     if (!window.Lampa || !Lampa.Controller || typeof Lampa.Controller.toggle !== 'function') return;
@@ -3896,6 +3921,17 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       controllerToggleOriginal = Lampa.Controller.toggle.bind(Lampa.Controller);
       Lampa.Controller.toggle = function (name) {
         if (name && name !== 'agnative_leftdock') hideLeftdock(true, true);
+        try {
+          if (name && heroReadyForRouting()) {
+            var enabled = Lampa.Controller.enabled && Lampa.Controller.enabled();
+            var current = enabled && enabled.name;
+            if (name === 'head' && (current === 'items_line' || current === 'content')) {
+              name = 'agnative_hero';
+            } else if (name === 'content' && current === 'head') {
+              name = 'agnative_hero';
+            }
+          }
+        } catch (err) { }
         return controllerToggleOriginal(name);
       };
     } catch (e) {
