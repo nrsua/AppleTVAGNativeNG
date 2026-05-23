@@ -40,6 +40,13 @@ export const AGNATIVE_KEYS = {
   CARD_IMAGE_MODE_ATTR: 'data-agnative-card-image-mode',
   LOGO_TITLE_KEY: 'appletv_agnative_logo_title_fallback',
   HERO_KEY: 'appletv_agnative_hero_enabled',
+  HERO_SETTINGS_COMPONENT: 'agnative_hero',
+  HERO_ALIGN_KEY: 'appletv_agnative_hero_align',
+  HERO_ALIGN_ATTR: 'data-agnative-hero-align',
+  HERO_INDICATORS_KEY: 'appletv_agnative_hero_indicators',
+  HERO_ANIMATION_KEY: 'appletv_agnative_hero_animation',
+  HERO_ANIMATION_ATTR: 'data-agnative-hero-anim',
+  HERO_INTERVAL_KEY: 'appletv_agnative_hero_interval',
   TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible',
   TOPNAV_SIZE_KEY: 'appletv_agnative_topnav_size',
   TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size'
