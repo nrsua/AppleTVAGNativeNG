@@ -1109,6 +1109,33 @@
       } catch (e) { }
     }
 
+    function showReloadConfirm(cancel) {
+      try {
+        if (!window.Lampa || !Lampa.Modal || !Lampa.Lang || !window.$) return;
+        Lampa.Modal.open({
+          title: '',
+          align: 'center',
+          zIndex: 300,
+          html: $('<div class="about">' + Lampa.Lang.translate('plugins_need_reload') + '</div>'),
+          buttons: [
+            {
+              name: Lampa.Lang.translate('settings_param_no'),
+              onSelect: function () {
+                Lampa.Modal.close();
+                if (typeof cancel === 'function') cancel();
+              }
+            },
+            {
+              name: Lampa.Lang.translate('settings_param_yes'),
+              onSelect: function () {
+                window.location.reload();
+              }
+            }
+          ]
+        });
+      } catch (e) { }
+    }
+
     function openSettingsSection(name, back) {
       if (!name || !window.Lampa || !Lampa.Settings || !Lampa.Settings.create) return;
       setTimeout(function () {
@@ -1963,37 +1990,9 @@
             syncPerfMode();
             initGlareRuntime();
             perfModeDirty = true;
-            try {
-              if (window.Lampa && Lampa.Modal && Lampa.Lang) {
-                Lampa.Modal.open({
-
-                  html: $('<div style="padding: 20px; text-align: center;">' +
-                    '<div style="margin-bottom: 15px;">' + Lampa.Lang.translate('plugins_need_reload') + '</div>' +
-                  '</div>'),
-                  buttons: [
-                    {
-                      name: Lampa.Lang.translate('settings_param_yes'),
-                      onSelect: function () {
-                        Lampa.Modal.close();
-                        window.location.reload();
-                      }
-                    },
-                    {
-                      name: Lampa.Lang.translate('settings_param_no'),
-                      onSelect: function () {
-                        Lampa.Modal.close();
-                        Lampa.Controller.toggle('settings_component');
-                      }
-                    }
-                  ],
-                  onBack: function () {
-                    Lampa.Controller.toggle('settings_component');
-                  }
-                });
-              }
-            } catch (e) {
-              console.error('Error showing reload dialog:', e);
-            }
+            showReloadConfirm(function () {
+              try { Lampa.Controller.toggle('settings_component'); } catch (e) { }
+            });
           }
         });
 
