@@ -1831,9 +1831,19 @@
         renderHeroSlide(heroItems[0]);
         startHeroRotation();
         ensureHeroController();
-        // Auto-focus on play button when hero is built (initial load on main)
-        setTimeout(focusHeroPlayButton, 100);
+        if (!isUiLayerOpen()) setTimeout(focusHeroPlayButton, 100);
       } catch (e) { }
+    }
+
+    function isUiLayerOpen() {
+      try {
+        if (!document.body) return false;
+        if (document.body.classList.contains('settings--open')) return true;
+        if (document.body.classList.contains('selectbox--open')) return true;
+        if (document.body.classList.contains('search--open')) return true;
+        if (document.querySelector('.modal, .player, .youtube-player, .search-box')) return true;
+        return false;
+      } catch (e) { return false; }
     }
 
     function registerSettings() {
