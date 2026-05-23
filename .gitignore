@@ -2,5 +2,6 @@ AGENTS.md
 .codex
 node_modules/
 release/*.map
+/lampa-source-main
 .DS_Store
 AppleTVAGNativeNG.code-workspace
