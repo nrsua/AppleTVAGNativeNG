@@ -5,6 +5,8 @@ export const AGNATIVE_KEYS = {
   TMDB_KEY: '4ef0d7355d9ffb5151e987764708ce96',
   ENABLE_KEY: 'appletv_agnative_topnav_enabled',
   GLARE_KEY: 'appletv_agnative_topnav_glare_enabled',
+  CARD_ANIM_KEY: 'appletv_agnative_card_anim',
+  CARD_ANIM_ATTR: 'data-agnative-card-anim',
   TOPNAV_ITEMS_KEY: 'appletv_agnative_topnav_items',
   LOGO_LANG_KEY: 'appletv_agnative_logo_lang',
   FONT_SIZE_KEY: 'appletv_agnative_font_size',

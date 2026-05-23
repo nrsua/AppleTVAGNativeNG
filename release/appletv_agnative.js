@@ -17,6 +17,8 @@
     TMDB_KEY: '4ef0d7355d9ffb5151e987764708ce96',
     ENABLE_KEY: 'appletv_agnative_topnav_enabled',
     GLARE_KEY: 'appletv_agnative_topnav_glare_enabled',
+    CARD_ANIM_KEY: 'appletv_agnative_card_anim',
+    CARD_ANIM_ATTR: 'data-agnative-card-anim',
     TOPNAV_ITEMS_KEY: 'appletv_agnative_topnav_items',
     LOGO_LANG_KEY: 'appletv_agnative_logo_lang',
     FONT_SIZE_KEY: 'appletv_agnative_font_size',
@@ -75,7 +77,11 @@
     set_main_title: 'Основные настройки',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Включает и выключает плагин',
-    set_glare_name: 'Наклон veoveo.ru', set_glare_desc: 'от arabian_q',
+    set_card_anim_name: 'Анимация карточек',
+    set_card_anim_desc: 'Эффект при наведении/фокусе на карточку',
+    val_card_anim_off: 'Выключено',
+    val_card_anim_veoveo: 'Наклон veoveo.ru (arabian_q)',
+    val_card_anim_appletv: 'DepthTV (based on marcreichel)',
     set_topnav_name: 'Пункты Topnav', set_topnav_desc: 'Меню вверху страницы',
     set_topnav_title: 'Пункты верхнего меню',
     set_topnav_item_desc: 'Пункт menu_list: ',
@@ -173,7 +179,11 @@
     set_main_title: 'Main settings',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Enables and disables the plugin',
-    set_glare_name: 'Tilt veoveo.ru', set_glare_desc: 'by arabian_q',
+    set_card_anim_name: 'Card animation',
+    set_card_anim_desc: 'Effect on card hover / focus',
+    val_card_anim_off: 'Off',
+    val_card_anim_veoveo: 'veoveo.ru tilt (arabian_q)',
+    val_card_anim_appletv: 'DepthTV (based on marcreichel)',
     set_topnav_name: 'Topnav items', set_topnav_desc: 'Top page menu',
     set_topnav_title: 'Top navigation items',
     set_topnav_item_desc: 'menu_list item: ',
@@ -271,7 +281,11 @@
     set_main_title: 'Основні налаштування',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Вмикає та вимикає плагін',
-    set_glare_name: 'Нахил veoveo.ru', set_glare_desc: 'від arabian_q',
+    set_card_anim_name: 'Анімація карток',
+    set_card_anim_desc: 'Ефект при наведенні/фокусі на картку',
+    val_card_anim_off: 'Вимкнено',
+    val_card_anim_veoveo: 'Нахил veoveo.ru (arabian_q)',
+    val_card_anim_appletv: 'DepthTV (based on marcreichel)',
     set_topnav_name: 'Пункти Topnav', set_topnav_desc: 'Меню вгорі сторінки',
     set_topnav_title: 'Пункти верхнього меню',
     set_topnav_item_desc: 'Пункт menu_list: ',
@@ -369,7 +383,11 @@
     set_main_title: 'Асноўныя налады',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Уключае і выключае плагін',
-    set_glare_name: 'Нахіл veoveo.ru', set_glare_desc: 'ад arabian_q',
+    set_card_anim_name: 'Анімацыя картак',
+    set_card_anim_desc: 'Эфект пры навядзенні/фокусе на картку',
+    val_card_anim_off: 'Выключана',
+    val_card_anim_veoveo: 'Нахіл veoveo.ru (arabian_q)',
+    val_card_anim_appletv: 'DepthTV (based on marcreichel)',
     set_topnav_name: 'Пункты Topnav', set_topnav_desc: 'Меню ўверсе старонкі',
     set_topnav_title: 'Пункты верхняга меню',
     set_topnav_item_desc: 'Пункт menu_list: ',
@@ -721,6 +739,8 @@
       TMDB_KEY,
       ENABLE_KEY,
       GLARE_KEY,
+      CARD_ANIM_KEY,
+      CARD_ANIM_ATTR,
       TOPNAV_ITEMS_KEY,
       LOGO_LANG_KEY,
       FONT_SIZE_KEY,
@@ -1016,13 +1036,19 @@
       return key;
     }
 
-    function glareEnabled() {
+    function getCardAnim() {
       try {
-        if (!window.Lampa || !Lampa.Storage) return true;
-        return Lampa.Storage.get(GLARE_KEY, 'on') !== 'off';
-      } catch (e) {
-        return true;
-      }
+        if (!window.Lampa || !Lampa.Storage) return 'veoveo';
+        var raw = Lampa.Storage.get(CARD_ANIM_KEY, null);
+        if (raw === 'off' || raw === 'veoveo' || raw === 'appletv') return raw;
+        var legacy = Lampa.Storage.get(GLARE_KEY, 'on');
+        if (legacy === 'off') return 'off';
+        return 'veoveo';
+      } catch (e) { return 'veoveo'; }
+    }
+
+    function glareEnabled() {
+      return getCardAnim() === 'veoveo';
     }
 
     function sceneActive() {
@@ -1034,6 +1060,7 @@
         if (document.body) {
           document.body.classList.remove(BODY_CLASS);
           document.body.classList.remove(GLARE_CLASS);
+          document.body.removeAttribute(CARD_ANIM_ATTR);
           document.body.removeAttribute(FONT_SIZE_ATTR);
           document.body.removeAttribute(CATEGORY_SIZE_ATTR);
           document.body.removeAttribute(CARD_SIZE_ATTR);
@@ -1194,6 +1221,9 @@
       if (!document.body) return;
       if (glareEnabled() && pluginEnabled()) document.body.classList.add(GLARE_CLASS);
       else document.body.classList.remove(GLARE_CLASS);
+      var mode = pluginEnabled() ? getCardAnim() : 'off';
+      if (resolvePerfLevel() === 'ultra') mode = 'off';
+      document.body.setAttribute(CARD_ANIM_ATTR, mode);
     }
 
     function syncFontSize() {
@@ -1281,6 +1311,7 @@
         if (!window.Lampa || !Lampa.Storage) return;
         Lampa.Storage.set(ENABLE_KEY, 'on');
         Lampa.Storage.set(GLARE_KEY, 'on');
+        Lampa.Storage.set(CARD_ANIM_KEY, 'veoveo');
         Lampa.Storage.set(UI_LANG_KEY, 'auto');
         Lampa.Storage.set(LOGO_LANG_KEY, 'auto');
         Lampa.Storage.set(FONT_SIZE_KEY, 'md');
@@ -1969,14 +2000,18 @@
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
           param: {
-            name: GLARE_KEY,
+            name: CARD_ANIM_KEY,
             type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
-            default: 'on'
+            values: {
+              off: t('val_card_anim_off'),
+              veoveo: t('val_card_anim_veoveo'),
+              appletv: t('val_card_anim_appletv')
+            },
+            default: 'veoveo'
           },
           field: {
-            name: t('set_glare_name'),
-            description: t('set_glare_desc')
+            name: t('set_card_anim_name'),
+            description: t('set_card_anim_desc')
           },
           onChange: function () {
             syncGlareClass();
@@ -2679,7 +2714,7 @@
             return;
           }
 
-          if (e.name === GLARE_KEY) {
+          if (e.name === GLARE_KEY || e.name === CARD_ANIM_KEY) {
             syncGlareClass();
             return;
           }
@@ -3092,8 +3127,7 @@
         '  content: none !important;',
         '}',
 
-        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .settings-param[data-name="' + GLARE_KEY + '"],',
-        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .settings-param[data-name="' + GLARE_KEY + '"] { display: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .settings-param[data-name="' + CARD_ANIM_KEY + '"] { display: none !important; }',
         'body.' + BODY_CLASS + '[' + RATING_ATTR + '="off"] .settings-param[data-name="' + RATING_STYLE_KEY + '"] { display: none !important; }',
         'body.' + BODY_CLASS + '[' + CARD_IMAGE_MODE_ATTR + '="poster"] .settings-param[data-name="' + LOGO_SIZE_KEY + '"] { display: none !important; }',
         'body.' + BODY_CLASS + ' .wrap__content.layer--height.layer--width::after,',
@@ -3364,6 +3398,9 @@
         'body.' + GLARE_CLASS + ' .card .card__view::after, body.' + GLARE_CLASS + ' .card-episode .full-episode__img::after, body.' + GLARE_CLASS + ' .full-start-new__poster::after { content:"" !important; display:block !important; position:absolute; inset:-10%; border-radius:inherit; background: radial-gradient(ellipse at var(--gx, 50%) var(--gy, 50%), rgba(255,255,255,.20) 0%, rgba(255,255,255,.16) 12%, rgba(255,255,255,.10) 26%, rgba(255,255,255,.05) 42%, rgba(255,255,255,.02) 58%, rgba(255,255,255,0) 78%) !important; opacity:0; filter: blur(18px); transition: opacity .22s ease, transform .22s ease; pointer-events:none; z-index:8; mix-blend-mode: screen; }',
         'body.' + GLARE_CLASS + ' .card.focus .card__view::after, body.' + GLARE_CLASS + ' .card.hover .card__view::after, body.' + GLARE_CLASS + ' .card-episode.focus .full-episode__img::after, body.' + GLARE_CLASS + ' .card-episode.hover .full-episode__img::after, body.' + GLARE_CLASS + ' .full-start-new__poster.focus::after, body.' + GLARE_CLASS + ' .full-start-new__poster.hover::after { opacity: 1 !important; }',
         'body.' + GLARE_CLASS + ' .card.focus .card__view, body.' + GLARE_CLASS + ' .card.hover .card__view, body.' + GLARE_CLASS + ' .card-episode.focus .full-episode, body.' + GLARE_CLASS + ' .card-episode.hover .full-episode, body.' + GLARE_CLASS + ' .full-start-new__poster.focus, body.' + GLARE_CLASS + ' .full-start-new__poster.hover { transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(1.055) translateY(-.06em) !important; transition: transform .08s linear, box-shadow .24s ease, filter .24s ease !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card .card__view > *, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode .full-episode > *:not(.full-episode__img) { transition: transform .14s ease-out; }',
+        'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.focus .card__view, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.hover .card__view, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.focus .full-episode, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.hover .full-episode, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .full-start-new__poster.focus, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .full-start-new__poster.hover { transform: perspective(1200px) rotateX(var(--atv-rx, 0deg)) rotateY(var(--atv-ry, 0deg)) scale(1.05) translateY(-.06em) !important; transition: transform .12s ease-out, box-shadow .24s ease, filter .24s ease !important; will-change: transform; }',
+        'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.focus .card__view > *:not(.card__img):not(.card__image), body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.hover .card__view > *:not(.card__img):not(.card__image), body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.focus .full-episode__body, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.hover .full-episode__body, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.focus .full-episode__num, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.hover .full-episode__num { transform: translate(var(--atv-lx, 0em), var(--atv-ly, 0em)) !important; will-change: transform; }',
         'body.' + BODY_CLASS + ' .card__vote, body.' + BODY_CLASS + ' .card__quality, body.' + BODY_CLASS + ' .card__type, body.' + BODY_CLASS + ' .card__promo-text, body.' + BODY_CLASS + ' .card__promo-title, body.' + BODY_CLASS + ' .full-person__photo, body.' + BODY_CLASS + ' .nfx-card-overlay__match { display:none !important; }',
         'body.' + BODY_CLASS + ' .card__title, body.' + BODY_CLASS + ' .card__age { display:none !important; }',
         'body.' + BODY_CLASS + ' .nfx-card-overlay { position:absolute; left:0; right:0; bottom:0; z-index:0; display:flex !important; flex-direction:column; justify-content:center; align-items:flex-start; opacity:1 !important; visibility:visible !important; border-radius:0 0 1.55em 1.55em !important; background:transparent !important; padding:2.15em 1.02em .92em !important; transform: translateZ(14px); transition: transform .28s cubic-bezier(.22,.61,.36,1), opacity .24s ease; pointer-events:none; }',
@@ -5790,14 +5827,18 @@
       var lastClientX = 0;
       var lastClientY = 0;
       var rafScheduled = false;
-      var glareOn = glareEnabled();
+      var cardAnimMode = getCardAnim();
 
-      if (window.Lampa && Lampa.Storage && typeof Lampa.Storage.listener === 'function' && Lampa.Storage.listener.follow) {
+      if (window.Lampa && Lampa.Storage && Lampa.Storage.listener && Lampa.Storage.listener.follow) {
         try {
           Lampa.Storage.listener.follow('change', function (e) {
-            if (e && e.name === GLARE_KEY) glareOn = glareEnabled();
+            if (e && (e.name === CARD_ANIM_KEY || e.name === GLARE_KEY)) cardAnimMode = getCardAnim();
           });
         } catch (err) { }
+      }
+
+      function animActive() {
+        return cardAnimMode !== 'off' && resolvePerfLevel() !== 'ultra';
       }
 
       function flushGlare() {
@@ -5810,10 +5851,17 @@
         var xPct = (x / w) * 2 - 1;
         var yPct = (y / h) * 2 - 1;
         var s = activeCard.style;
-        s.setProperty('--gx', x + 'px');
-        s.setProperty('--gy', y + 'px');
-        s.setProperty('--rx', (yPct * -7) + 'deg');
-        s.setProperty('--ry', (xPct * 7) + 'deg');
+        if (cardAnimMode === 'appletv') {
+          s.setProperty('--atv-rx', (yPct * -4) + 'deg');
+          s.setProperty('--atv-ry', (xPct * 4) + 'deg');
+          s.setProperty('--atv-lx', (xPct * 0.3) + 'em');
+          s.setProperty('--atv-ly', (yPct * 0.3) + 'em');
+        } else {
+          s.setProperty('--gx', x + 'px');
+          s.setProperty('--gy', y + 'px');
+          s.setProperty('--rx', (yPct * -7) + 'deg');
+          s.setProperty('--ry', (xPct * 7) + 'deg');
+        }
       }
 
       function setActiveCard(card) {
@@ -5823,7 +5871,7 @@
       }
 
       document.body.addEventListener('mouseover', function (e) {
-        if (!glareOn || resolvePerfLevel() === 'ultra') { activeCard = null; activeRect = null; return; }
+        if (!animActive()) { activeCard = null; activeRect = null; return; }
         var card = e.target.closest ? e.target.closest(GLARE_SEL) : null;
         setActiveCard(card);
       });
@@ -5856,6 +5904,10 @@
         s.setProperty('--ry', '0deg');
         s.setProperty('--gx', '50%');
         s.setProperty('--gy', '50%');
+        s.removeProperty('--atv-rx');
+        s.removeProperty('--atv-ry');
+        s.removeProperty('--atv-lx');
+        s.removeProperty('--atv-ly');
         if (activeCard === card) { activeCard = null; activeRect = null; }
       });
     }
