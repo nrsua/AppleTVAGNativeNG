@@ -61,6 +61,8 @@
     HERO_ANIMATION_KEY: 'appletv_agnative_hero_animation',
     HERO_ANIMATION_ATTR: 'data-agnative-hero-anim',
     HERO_INTERVAL_KEY: 'appletv_agnative_hero_interval',
+    HERO_PAN_KEY: 'appletv_agnative_hero_pan',
+    HERO_QUALITY_KEY: 'appletv_agnative_hero_quality',
     TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible',
     TOPNAV_SIZE_KEY: 'appletv_agnative_topnav_size',
     TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size'
@@ -161,6 +163,10 @@
     set_hero_animation_desc: 'Плавная смена контента баннера при ротации',
     set_hero_interval_name: 'Интервал смены',
     set_hero_interval_desc: 'Как часто баннер переключается на следующую карточку',
+    set_hero_pan_name: 'Прокрутка фона',
+    set_hero_pan_desc: 'Плавное движение картинки сверху вниз за время одной карточки',
+    set_hero_quality_name: 'Качество фона',
+    set_hero_quality_desc: 'Разрешение фоновой картинки баннера',
     val_sec_short: 'сек',
     hero_btn_watch: 'Смотреть',
     set_section_beta: 'Beta - функции',
@@ -263,6 +269,10 @@
     set_hero_animation_desc: 'Smooth content transition when the banner rotates',
     set_hero_interval_name: 'Slide interval',
     set_hero_interval_desc: 'How often the banner rotates to the next card',
+    set_hero_pan_name: 'Background pan',
+    set_hero_pan_desc: 'Smoothly pans the image top to bottom over each slide',
+    set_hero_quality_name: 'Background quality',
+    set_hero_quality_desc: 'Banner backdrop image resolution',
     val_sec_short: 'sec',
     hero_btn_watch: 'Watch',
     set_section_beta: 'Beta features',
@@ -365,6 +375,10 @@
     set_hero_animation_desc: 'Плавна зміна контенту банера при ротації',
     set_hero_interval_name: 'Інтервал зміни',
     set_hero_interval_desc: 'Як часто банер перемикається на наступну картку',
+    set_hero_pan_name: 'Прокручування фону',
+    set_hero_pan_desc: 'Плавне переміщення картинки зверху вниз за час однієї картки',
+    set_hero_quality_name: 'Якість фону',
+    set_hero_quality_desc: 'Роздільна здатність фонової картинки банера',
     val_sec_short: 'сек',
     hero_btn_watch: 'Дивитися',
     set_section_beta: 'Beta - функції',
@@ -467,6 +481,10 @@
     set_hero_animation_desc: 'Плыўная змена кантэнту банера пры ратацыі',
     set_hero_interval_name: 'Інтэрвал змены',
     set_hero_interval_desc: 'Як часта банер пераключаецца на наступную картку',
+    set_hero_pan_name: 'Пракрутка фону',
+    set_hero_pan_desc: 'Плыўны рух карцінкі зверху ўніз за час адной карткі',
+    set_hero_quality_name: 'Якасць фону',
+    set_hero_quality_desc: 'Раздзяляльная здольнасць фонавай карцінкі банера',
     val_sec_short: 'сек',
     hero_btn_watch: 'Глядзець',
     set_section_beta: 'Beta - функцыі',
@@ -783,6 +801,8 @@
       HERO_ANIMATION_KEY,
       HERO_ANIMATION_ATTR,
       HERO_INTERVAL_KEY,
+      HERO_PAN_KEY,
+      HERO_QUALITY_KEY,
       TOPNAV_ENABLE_KEY,
       TOPNAV_SIZE_KEY,
       TOPNAV_SIZE_ATTR
@@ -1359,6 +1379,8 @@
         Lampa.Storage.set(HERO_INDICATORS_KEY, 'false');
         Lampa.Storage.set(HERO_ANIMATION_KEY, 'true');
         Lampa.Storage.set(HERO_INTERVAL_KEY, '8');
+        Lampa.Storage.set(HERO_PAN_KEY, 'false');
+        Lampa.Storage.set(HERO_QUALITY_KEY, 'w1280');
         Lampa.Storage.set(TOPNAV_ITEMS_KEY, ['main', 'movie', 'tv', 'cartoon']);
         logoCache = {};
         titledBackdropCache = {};
@@ -1466,6 +1488,33 @@
       } catch (e) { return 8000; }
     }
 
+    function heroPanEnabled() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return false;
+        var v = Lampa.Storage.get(HERO_PAN_KEY, 'false');
+        return v === true || v === 'true' || v === 'on';
+      } catch (e) { return false; }
+    }
+
+    function getHeroQuality() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return 'w1280';
+        var v = Lampa.Storage.get(HERO_QUALITY_KEY, 'w1280') || 'w1280';
+        if (v === 'w780' || v === 'w1280' || v === 'original') return v;
+        return 'w1280';
+      } catch (e) { return 'w1280'; }
+    }
+
+    function startHeroPan() {
+      var bg = document.querySelector('.agnative-hero__bg');
+      if (!bg) return;
+      bg.style.animation = 'none';
+      if (!heroPanEnabled()) return;
+      var dur = (getHeroIntervalMs() / 1000) + 's';
+      void bg.offsetWidth;
+      bg.style.animation = 'agnative-hero-pan ' + dur + ' linear forwards';
+    }
+
     function syncHeroAttrs(hero) {
       if (!hero) hero = document.querySelector('.agnative-hero');
       if (!hero) return;
@@ -1544,11 +1593,12 @@
 
         var bg = hero.querySelector('.agnative-hero__bg');
         if (bg) {
-          var newSrc = item.backdrop_path ? Lampa.TMDB.image('t/p/w1280' + item.backdrop_path) : (item._heroFallbackImg || '');
+          var newSrc = item.backdrop_path ? Lampa.TMDB.image('t/p/' + getHeroQuality() + item.backdrop_path) : (item._heroFallbackImg || '');
           if (bg.src !== newSrc) {
             bg.src = newSrc;
             extractDominantColor(newSrc, applyHeroAccent);
           }
+          startHeroPan();
         }
 
         var badgeEl = hero.querySelector('.agnative-hero__badge');
@@ -2597,7 +2647,51 @@
             description: t('set_hero_interval_desc')
           },
           onChange: function () {
-            if (document.querySelector('.agnative-hero')) startHeroRotation();
+            if (document.querySelector('.agnative-hero')) {
+              startHeroRotation();
+              startHeroPan();
+            }
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_PAN_KEY,
+            type: 'trigger',
+            default: 'false'
+          },
+          field: {
+            name: t('set_hero_pan_name'),
+            description: t('set_hero_pan_desc')
+          },
+          onChange: function () {
+            startHeroPan();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_QUALITY_KEY,
+            type: 'select',
+            values: {
+              w780: t('val_size_md'),
+              w1280: t('val_size_lg'),
+              original: t('val_size_xl')
+            },
+            default: 'w1280'
+          },
+          field: {
+            name: t('set_hero_quality_name'),
+            description: t('set_hero_quality_desc')
+          },
+          onChange: function () {
+            if (heroCurrentItem) {
+              var bg = document.querySelector('.agnative-hero__bg');
+              if (bg) bg.src = '';
+              renderHeroSlide(heroCurrentItem);
+            }
           }
         });
 
@@ -4126,6 +4220,7 @@
         'body.' + BODY_CLASS + ' .agnative-beta-badge { display:inline-block; margin-left:.6em; padding:.12em .5em; font-size:.55em; font-weight:800; letter-spacing:.06em; color:#fff; background:linear-gradient(135deg, #ff6b35, #c1272d); border-radius:.4em; vertical-align:middle; line-height:1.2; box-shadow:0 1px 4px rgba(193,39,45,.4); }',
         'body.' + BODY_CLASS + ' .agnative-hero { position:relative; width:auto; margin:1em 2.5em 1.5em; height:52vh; min-height:380px; overflow:hidden; border-radius:1.5em; opacity:1; transition:opacity .6s ease; flex-shrink:0; display:block; z-index:8; box-shadow:0 16px 40px rgba(0,0,0,.32), 0 6px 14px rgba(0,0,0,.18); }',
         'body.' + BODY_CLASS + ' .agnative-hero__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center top; border-radius:1.5em; opacity:1; transition:opacity .4s ease; pointer-events:none; }',
+        '@keyframes agnative-hero-pan { from { object-position: center 0%; } to { object-position: center 100%; } }',
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__bg { opacity:0; }',
         'body.' + BODY_CLASS + ' .activity--active .items-line, body.' + BODY_CLASS + ' .activity--active .scroll__content { position:relative; z-index:10; }',
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--visible { opacity:1; }',

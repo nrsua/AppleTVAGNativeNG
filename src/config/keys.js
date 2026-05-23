@@ -49,6 +49,8 @@ export const AGNATIVE_KEYS = {
   HERO_ANIMATION_KEY: 'appletv_agnative_hero_animation',
   HERO_ANIMATION_ATTR: 'data-agnative-hero-anim',
   HERO_INTERVAL_KEY: 'appletv_agnative_hero_interval',
+  HERO_PAN_KEY: 'appletv_agnative_hero_pan',
+  HERO_QUALITY_KEY: 'appletv_agnative_hero_quality',
   TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible',
   TOPNAV_SIZE_KEY: 'appletv_agnative_topnav_size',
   TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size'
