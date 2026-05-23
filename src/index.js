@@ -1894,13 +1894,15 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
           name: HERO_INTERVAL_KEY,
           type: 'select',
           values: {
-            '3': '3 ' + heroIntervalSec,
             '5': '5 ' + heroIntervalSec,
-            '8': '8 ' + heroIntervalSec,
-            '12': '12 ' + heroIntervalSec,
-            '20': '20 ' + heroIntervalSec
+            '10': '10 ' + heroIntervalSec,
+            '15': '15 ' + heroIntervalSec,
+            '20': '20 ' + heroIntervalSec,
+            '25': '25 ' + heroIntervalSec,
+            '30': '30 ' + heroIntervalSec,
+            '35': '35 ' + heroIntervalSec
           },
-          default: '8'
+          default: '25'
         },
         field: {
           name: t('set_hero_interval_name'),
