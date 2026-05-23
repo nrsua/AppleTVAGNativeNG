@@ -52,15 +52,26 @@
     CARD_IMAGE_MODE_ATTR: 'data-agnative-card-image-mode',
     LOGO_TITLE_KEY: 'appletv_agnative_logo_title_fallback',
     HERO_KEY: 'appletv_agnative_hero_enabled',
+    HERO_SETTINGS_COMPONENT: 'agnative_hero',
+    HERO_ALIGN_KEY: 'appletv_agnative_hero_align',
+    HERO_ALIGN_ATTR: 'data-agnative-hero-align',
+    HERO_INDICATORS_KEY: 'appletv_agnative_hero_indicators',
+    HERO_ANIMATION_KEY: 'appletv_agnative_hero_animation',
+    HERO_ANIMATION_ATTR: 'data-agnative-hero-anim',
+    HERO_INTERVAL_KEY: 'appletv_agnative_hero_interval',
     TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible',
     TOPNAV_SIZE_KEY: 'appletv_agnative_topnav_size',
     TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size'
   };
 
+  const PLUGIN_VERSION = '0.3.19';
+  const PLUGIN_AUTHORS = 'llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96';
+
   const ru = {
     nav_feed: 'Лента',
     badge_movie: 'ФИЛЬМ', badge_tv: 'СЕРИАЛ',
-    set_about_desc: 'Версия 0.3.18  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_version: 'Версия',
+    set_about_authors: 'Авторы',
     set_main_title: 'Основные настройки',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Включает и выключает плагин',
@@ -130,6 +141,21 @@
     val_logo_title_above: 'Да, сверху логотипа',
     set_hero_name: 'Hero баннер',
     set_hero_desc: 'Большой баннер вверху главного экрана',
+    set_hero_title: 'Настройки Hero баннера',
+    set_hero_enable_name: 'Hero баннер',
+    set_hero_enable_desc: 'Большой баннер вверху главного экрана',
+    set_hero_align_name: 'Положение текста',
+    set_hero_align_desc: 'Где расположен блок с названием и описанием',
+    val_hero_align_top: 'Сверху',
+    val_hero_align_center: 'По центру',
+    val_hero_align_bottom: 'Снизу',
+    set_hero_indicators_name: 'Полоски карточек',
+    set_hero_indicators_desc: 'Показывать индикаторы, по нажатию открывают соответствующую карточку',
+    set_hero_animation_name: 'Плавная анимация',
+    set_hero_animation_desc: 'Плавная смена контента баннера при ротации',
+    set_hero_interval_name: 'Интервал смены',
+    set_hero_interval_desc: 'Как часто баннер переключается на следующую карточку',
+    val_sec_short: 'сек',
     hero_btn_watch: 'Смотреть',
     set_section_beta: 'Beta - функции',
     set_topnav_enable_name: 'Верхняя панель навигации',
@@ -142,7 +168,8 @@
   const en = {
     nav_feed: 'Feed',
     badge_movie: 'MOVIE', badge_tv: 'TV SHOW',
-    set_about_desc: 'Version 0.3.18  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_version: 'Version',
+    set_about_authors: 'Authors',
     set_main_title: 'Main settings',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Enables and disables the plugin',
@@ -212,6 +239,21 @@
     val_logo_title_above: 'Yes, above logo',
     set_hero_name: 'Hero banner',
     set_hero_desc: 'Large banner at the top of the main screen',
+    set_hero_title: 'Hero banner settings',
+    set_hero_enable_name: 'Hero banner',
+    set_hero_enable_desc: 'Large banner at the top of the main screen',
+    set_hero_align_name: 'Text position',
+    set_hero_align_desc: 'Where the title and description block sits',
+    val_hero_align_top: 'Top',
+    val_hero_align_center: 'Center',
+    val_hero_align_bottom: 'Bottom',
+    set_hero_indicators_name: 'Card strips',
+    set_hero_indicators_desc: 'Show indicator strips, pressing opens the matching card',
+    set_hero_animation_name: 'Smooth animation',
+    set_hero_animation_desc: 'Smooth content transition when the banner rotates',
+    set_hero_interval_name: 'Slide interval',
+    set_hero_interval_desc: 'How often the banner rotates to the next card',
+    val_sec_short: 'sec',
     hero_btn_watch: 'Watch',
     set_section_beta: 'Beta features',
     set_topnav_enable_name: 'Top navigation bar',
@@ -224,7 +266,8 @@
   const uk = {
     nav_feed: 'Стрічка',
     badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРІАЛ',
-    set_about_desc: 'Версія 0.3.18  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_version: 'Версія',
+    set_about_authors: 'Автори',
     set_main_title: 'Основні налаштування',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Вмикає та вимикає плагін',
@@ -294,6 +337,21 @@
     val_logo_title_above: 'Так, зверху логотипу',
     set_hero_name: 'Hero банер',
     set_hero_desc: 'Великий банер вгорі головного екрану',
+    set_hero_title: 'Налаштування Hero банера',
+    set_hero_enable_name: 'Hero банер',
+    set_hero_enable_desc: 'Великий банер вгорі головного екрану',
+    set_hero_align_name: 'Положення тексту',
+    set_hero_align_desc: 'Де розташований блок з назвою та описом',
+    val_hero_align_top: 'Зверху',
+    val_hero_align_center: 'По центру',
+    val_hero_align_bottom: 'Знизу',
+    set_hero_indicators_name: 'Смужки карток',
+    set_hero_indicators_desc: 'Показувати індикатори, по натисканню відкривають відповідну картку',
+    set_hero_animation_name: 'Плавна анімація',
+    set_hero_animation_desc: 'Плавна зміна контенту банера при ротації',
+    set_hero_interval_name: 'Інтервал зміни',
+    set_hero_interval_desc: 'Як часто банер перемикається на наступну картку',
+    val_sec_short: 'сек',
     hero_btn_watch: 'Дивитися',
     set_section_beta: 'Beta - функції',
     set_topnav_enable_name: 'Верхня панель навігації',
@@ -306,7 +364,8 @@
   const be = {
     nav_feed: 'Стужка',
     badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРЫЯЛ',
-    set_about_desc: 'Версія 0.3.18 Аўтары: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_version: 'Версія',
+    set_about_authors: 'Аўтары',
     set_main_title: 'Асноўныя налады',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Уключае і выключае плагін',
@@ -376,6 +435,21 @@
     val_logo_title_above: 'Так, над лагатыкам',
     set_hero_name: 'Hero банер',
     set_hero_desc: 'Вялікі банер угары галоўнага экрана',
+    set_hero_title: 'Налады Hero банера',
+    set_hero_enable_name: 'Hero банер',
+    set_hero_enable_desc: 'Вялікі банер угары галоўнага экрана',
+    set_hero_align_name: 'Размяшчэнне тэксту',
+    set_hero_align_desc: 'Дзе размешчаны блок з назвай і апісаннем',
+    val_hero_align_top: 'Зверху',
+    val_hero_align_center: 'Па цэнтры',
+    val_hero_align_bottom: 'Знізу',
+    set_hero_indicators_name: 'Палоскі картак',
+    set_hero_indicators_desc: 'Паказваць індыкатары, націсканне адкрывае адпаведную картку',
+    set_hero_animation_name: 'Плыўная анімацыя',
+    set_hero_animation_desc: 'Плыўная змена кантэнту банера пры ратацыі',
+    set_hero_interval_name: 'Інтэрвал змены',
+    set_hero_interval_desc: 'Як часта банер пераключаецца на наступную картку',
+    val_sec_short: 'сек',
     hero_btn_watch: 'Глядзець',
     set_section_beta: 'Beta - функцыі',
     set_topnav_enable_name: 'Верхняя панэль навігацыі',
@@ -682,6 +756,13 @@
       CARD_IMAGE_MODE_ATTR,
       LOGO_TITLE_KEY,
       HERO_KEY,
+      HERO_SETTINGS_COMPONENT,
+      HERO_ALIGN_KEY,
+      HERO_ALIGN_ATTR,
+      HERO_INDICATORS_KEY,
+      HERO_ANIMATION_KEY,
+      HERO_ANIMATION_ATTR,
+      HERO_INTERVAL_KEY,
       TOPNAV_ENABLE_KEY,
       TOPNAV_SIZE_KEY,
       TOPNAV_SIZE_ATTR
@@ -1027,6 +1108,17 @@
       }, 0);
     }
 
+    function openHeroSettingsSection() {
+      if (!window.Lampa || !Lampa.Settings || !Lampa.Settings.create) return;
+      setTimeout(function () {
+        Lampa.Settings.create(HERO_SETTINGS_COMPONENT, {
+          onBack: function () {
+            Lampa.Settings.create(SETTINGS_COMPONENT);
+          }
+        });
+      }, 0);
+    }
+
     function getFallbackTopnavItems() {
       return [
         { action: 'main', label: langText('menu_main', t('nav_main')) },
@@ -1205,6 +1297,10 @@
         Lampa.Storage.set(OVERLAY_ALIGN_KEY, 'start');
         Lampa.Storage.set(CARD_IMAGE_MODE_KEY, 'backdrop');
         Lampa.Storage.set(LOGO_TITLE_KEY, 'off');
+        Lampa.Storage.set(HERO_ALIGN_KEY, 'top');
+        Lampa.Storage.set(HERO_INDICATORS_KEY, 'false');
+        Lampa.Storage.set(HERO_ANIMATION_KEY, 'true');
+        Lampa.Storage.set(HERO_INTERVAL_KEY, '8');
         Lampa.Storage.set(TOPNAV_ITEMS_KEY, ['main', 'movie', 'tv', 'cartoon']);
         logoCache = {};
         titledBackdropCache = {};
@@ -1271,7 +1367,52 @@
     }
 
     function heroBannerEnabled() {
-      try { return window.Lampa && Lampa.Storage.get(HERO_KEY, 'off') === 'on'; } catch (e) { return false; }
+      try {
+        if (!window.Lampa || !Lampa.Storage) return false;
+        var v = Lampa.Storage.get(HERO_KEY, 'false');
+        return v === true || v === 'true' || v === 'on';
+      } catch (e) { return false; }
+    }
+
+    function getHeroAlign() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return 'top';
+        var v = Lampa.Storage.get(HERO_ALIGN_KEY, 'top') || 'top';
+        return (v === 'center' || v === 'bottom') ? v : 'top';
+      } catch (e) { return 'top'; }
+    }
+
+    function heroIndicatorsEnabled() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return false;
+        var v = Lampa.Storage.get(HERO_INDICATORS_KEY, 'false');
+        return v === true || v === 'true' || v === 'on';
+      } catch (e) { return false; }
+    }
+
+    function heroAnimationEnabled() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return true;
+        var v = Lampa.Storage.get(HERO_ANIMATION_KEY, 'true');
+        return !(v === false || v === 'false' || v === 'off');
+      } catch (e) { return true; }
+    }
+
+    function getHeroIntervalMs() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return 8000;
+        var v = parseInt(Lampa.Storage.get(HERO_INTERVAL_KEY, '8'), 10);
+        if (!v || v < 2) v = 8;
+        if (v > 60) v = 60;
+        return v * 1000;
+      } catch (e) { return 8000; }
+    }
+
+    function syncHeroAttrs(hero) {
+      if (!hero) hero = document.querySelector('.agnative-hero');
+      if (!hero) return;
+      hero.setAttribute(HERO_ALIGN_ATTR, getHeroAlign());
+      hero.setAttribute(HERO_ANIMATION_ATTR, heroAnimationEnabled() ? 'on' : 'off');
     }
 
     function stopHeroRotation() {
@@ -1338,6 +1479,7 @@
       var hero = document.querySelector('.agnative-hero');
       if (!hero || !item) return;
       heroCurrentItem = item;
+      updateHeroIndicators();
       try {
         var id = item.id;
         var type = detectHeroItemType(item);
@@ -1398,6 +1540,24 @@
       } catch (e) { }
     }
 
+    function scrollActivityToHero(hero) {
+      try {
+        if (!hero) hero = document.querySelector('.agnative-hero');
+        if (!hero) return;
+        var scrollBody = hero.closest ? hero.closest('.scroll__body') : null;
+        if (!scrollBody) {
+          scrollBody = document.querySelector('.activity--active .scroll__body') ||
+                       document.querySelector('.scroll__body');
+        }
+        if (scrollBody) {
+          scrollBody.style.transform = 'translate3d(0px, 0px, 0px)';
+          scrollBody.style.webkitTransform = 'translate3d(0px, 0px, 0px)';
+        }
+        var scrollHost = hero.closest ? hero.closest('.scroll') : null;
+        if (scrollHost) scrollHost.scrollTop = 0;
+      } catch (e) { }
+    }
+
     function ensureHeroController() {
       if (window.__AGNATIVE_HERO_CONTROLLER__) return;
       if (!window.Lampa || !Lampa.Controller || !Lampa.Controller.add || !window.$) return;
@@ -1413,24 +1573,41 @@
           heroExitDirection = null;
           hero.classList.remove('agnative-hero--hidden');
           if (document.body) document.body.classList.remove('agnative-hero-collapsed');
+          scrollActivityToHero(hero);
           try {
             Lampa.Controller.collectionSet($(hero));
             Lampa.Controller.collectionFocus(btn, $(hero));
           } catch (e) { }
         },
         up: function () {
+          if (window.Navigator && Navigator.canmove && Navigator.canmove('up')) {
+            Navigator.move('up');
+            return;
+          }
           heroExitDirection = 'up';
           try { Lampa.Controller.toggle('head'); } catch (e) { }
         },
         down: function () {
+          if (window.Navigator && Navigator.canmove && Navigator.canmove('down')) {
+            Navigator.move('down');
+            return;
+          }
           heroExitDirection = 'down';
           try { Lampa.Controller.toggle('content'); } catch (e) { }
         },
         left: function () {
+          if (window.Navigator && Navigator.canmove && Navigator.canmove('left')) {
+            Navigator.move('left');
+            return;
+          }
           heroExitDirection = 'left';
           try { Lampa.Controller.toggle('menu'); } catch (e) { }
         },
-        right: function () { },
+        right: function () {
+          if (window.Navigator && Navigator.canmove && Navigator.canmove('right')) {
+            Navigator.move('right');
+          }
+        },
         back: function () {
           try { if (Lampa.Activity && Lampa.Activity.backward) Lampa.Activity.backward(); } catch (e) { }
         }
@@ -1452,14 +1629,96 @@
       heroRotationTimer = setInterval(function () {
         var hero = document.querySelector('.agnative-hero');
         if (!hero) { stopHeroRotation(); return; }
-        heroCurrentIndex = (heroCurrentIndex + 1) % heroItems.length;
-        hero.classList.remove('agnative-hero--visible');
-        setTimeout(function () {
-          renderHeroSlide(heroItems[heroCurrentIndex]);
-          var h = document.querySelector('.agnative-hero');
-          if (h) h.classList.add('agnative-hero--visible');
-        }, 350);
-      }, 8000);
+        var nextIdx = (heroCurrentIndex + 1) % heroItems.length;
+        heroCurrentIndex = nextIdx;
+        if (heroAnimationEnabled()) {
+          hero.classList.add('agnative-hero--switching');
+          setTimeout(function () {
+            renderHeroSlide(heroItems[nextIdx]);
+            var h = document.querySelector('.agnative-hero');
+            if (h) {
+              requestAnimationFrame(function () {
+                h.classList.remove('agnative-hero--switching');
+              });
+            }
+          }, 280);
+        } else {
+          renderHeroSlide(heroItems[nextIdx]);
+        }
+      }, getHeroIntervalMs());
+    }
+
+    function buildHeroIndicators(container) {
+      if (!container) return;
+      container.innerHTML = '';
+      if (!heroIndicatorsEnabled()) {
+        container.style.display = 'none';
+        return;
+      }
+      container.style.display = '';
+      for (var i = 0; i < heroItems.length; i++) {
+        (function (idx) {
+          var dot = document.createElement('div');
+          dot.className = 'agnative-hero__indicator selector';
+          dot.setAttribute('tabindex', '0');
+          dot.setAttribute('data-selector', 'true');
+          dot.setAttribute('data-hero-index', String(idx));
+          container.appendChild(dot);
+          bindAction(dot, function () {
+            stopHeroRotation();
+            if (heroCurrentIndex !== idx) {
+              heroCurrentIndex = idx;
+              renderHeroSlide(heroItems[idx]);
+            }
+          });
+          try {
+            var $$ = window.$ || window.jQuery;
+            if ($$) {
+              $$(dot).on('hover:focus.agnativeHeroState hover:hover.agnativeHeroState', function () {
+                var h = document.querySelector('.agnative-hero');
+                if (!h) return;
+                h.classList.remove('agnative-hero--unfocused');
+                h.classList.remove('agnative-hero--hidden');
+                if (document.body) document.body.classList.remove('agnative-hero-collapsed');
+                heroExitDirection = null;
+                stopHeroRotation();
+                if (heroCurrentIndex !== idx) {
+                  heroCurrentIndex = idx;
+                  renderHeroSlide(heroItems[idx]);
+                }
+              });
+              $$(dot).on('hover:blur.agnativeHeroState hover:out.agnativeHeroState', function () {
+                var h = document.querySelector('.agnative-hero');
+                if (!h) return;
+                h.classList.add('agnative-hero--unfocused');
+                if (heroExitDirection === 'down') {
+                  h.classList.add('agnative-hero--hidden');
+                  if (document.body) document.body.classList.add('agnative-hero-collapsed');
+                }
+              });
+            }
+          } catch (e) { }
+        })(i);
+      }
+      updateHeroIndicators();
+    }
+
+    function updateHeroIndicators() {
+      var dots = document.querySelectorAll('.agnative-hero__indicator');
+      for (var i = 0; i < dots.length; i++) {
+        if (i === heroCurrentIndex) dots[i].classList.add('agnative-hero__indicator--active');
+        else dots[i].classList.remove('agnative-hero__indicator--active');
+      }
+    }
+
+    function openHeroItemAt(idx) {
+      try {
+        var item = heroItems[idx];
+        if (!item || !window.Lampa || !Lampa.Activity) return;
+        var type = detectHeroItemType(item);
+        var src = (Lampa.Storage && Lampa.Storage.field) ? Lampa.Storage.field('source') : 'tmdb';
+        Lampa.Activity.push({ url: '', title: item.title || item.name || '', component: 'full', id: item.id, method: type, source: src, card: item });
+      } catch (e) { }
     }
 
     function buildHeroBanner() {
@@ -1534,16 +1793,21 @@
         content.appendChild(metaEl);
         content.appendChild(overviewEl);
         content.appendChild(playBtn);
+
+        var indicatorsEl = document.createElement('div');
+        indicatorsEl.className = 'agnative-hero__indicators';
+
         hero.appendChild(bg);
         hero.appendChild(content);
+        hero.appendChild(indicatorsEl);
+        syncHeroAttrs(hero);
 
-        // Insert before the first items-line in its actual parent (not scrollContent — items-line may be nested)
         var insertParent = firstLine.parentNode;
         try { insertParent.insertBefore(hero, firstLine); }
         catch (e) { scrollContent.insertBefore(hero, scrollContent.firstChild); }
 
-        // Bind action ONCE on the play button — handler reads heroCurrentItem at click time
         bindAction(playBtn, openHeroCurrentItem);
+        buildHeroIndicators(indicatorsEl);
 
         // Track hero focus state:
         // - hero gets --unfocused class when focus leaves (used for margin animation)
@@ -1574,9 +1838,19 @@
         renderHeroSlide(heroItems[0]);
         startHeroRotation();
         ensureHeroController();
-        // Auto-focus on play button when hero is built (initial load on main)
-        setTimeout(focusHeroPlayButton, 100);
+        if (!isUiLayerOpen()) setTimeout(focusHeroPlayButton, 100);
       } catch (e) { }
+    }
+
+    function isUiLayerOpen() {
+      try {
+        if (!document.body) return false;
+        if (document.body.classList.contains('settings--open')) return true;
+        if (document.body.classList.contains('selectbox--open')) return true;
+        if (document.body.classList.contains('search--open')) return true;
+        if (document.querySelector('.modal, .player, .youtube-player, .search-box')) return true;
+        return false;
+      } catch (e) { return false; }
     }
 
     function registerSettings() {
@@ -1587,6 +1861,7 @@
         if (Lampa.Template && Lampa.Template.add) {
           Lampa.Template.add('settings_' + SETTINGS_COMPONENT, '<div></div>');
           Lampa.Template.add('settings_' + TOPNAV_SETTINGS_COMPONENT, '<div></div>');
+          Lampa.Template.add('settings_' + HERO_SETTINGS_COMPONENT, '<div></div>');
         }
 
         Lampa.SettingsApi.addComponent({
@@ -1600,7 +1875,7 @@
           param: { name: 'agnative_about_info', type: 'static' },
           field: {
             name: 'AppleTV AgNative',
-            description: t('set_about_desc')
+            description: t('set_about_version') + ' ' + PLUGIN_VERSION + '  ' + t('set_about_authors') + ': ' + PLUGIN_AUTHORS
           }
         });
 
@@ -2133,6 +2408,24 @@
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
+          field: { name: t('set_section_beta') + ' <span class="agnative-beta-badge">BETA</span>' }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_COMPONENT,
+          param: { name: 'agnative_open_hero_settings', type: 'button' },
+          field: {
+            name: t('set_hero_name'),
+            description: t('set_hero_desc')
+          },
+          onChange: function () {
+            openHeroSettingsSection();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_COMPONENT,
+          param: { type: 'title' },
           field: { name: t('set_section_data') }
         });
 
@@ -2161,30 +2454,6 @@
 
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
-          param: { type: 'title' },
-          field: { name: t('set_section_beta') }
-        });
-
-        Lampa.SettingsApi.addParam({
-          component: SETTINGS_COMPONENT,
-          param: {
-            name: HERO_KEY,
-            type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
-            default: 'off'
-          },
-          field: {
-            name: t('set_hero_name'),
-            description: t('set_hero_desc')
-          },
-          onChange: function (value) {
-            if (value === 'off') removeHeroBanner();
-            else buildHeroBanner();
-          }
-        });
-
-        Lampa.SettingsApi.addParam({
-          component: SETTINGS_COMPONENT,
           param: { name: 'agnative_reset_button', type: 'button' },
           field: {
             name: t('set_reset_name'),
@@ -2192,6 +2461,109 @@
           },
           onChange: function () {
             resetSettings();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: { type: 'title' },
+          field: { name: t('set_hero_title') }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_KEY,
+            type: 'trigger',
+            default: 'false'
+          },
+          field: {
+            name: t('set_hero_enable_name'),
+            description: t('set_hero_enable_desc')
+          },
+          onChange: function () {
+            if (heroBannerEnabled()) buildHeroBanner();
+            else removeHeroBanner();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_ALIGN_KEY,
+            type: 'select',
+            values: {
+              top: t('val_hero_align_top'),
+              center: t('val_hero_align_center'),
+              bottom: t('val_hero_align_bottom')
+            },
+            default: 'top'
+          },
+          field: {
+            name: t('set_hero_align_name'),
+            description: t('set_hero_align_desc')
+          },
+          onChange: function () {
+            syncHeroAttrs();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_INDICATORS_KEY,
+            type: 'trigger',
+            default: 'false'
+          },
+          field: {
+            name: t('set_hero_indicators_name'),
+            description: t('set_hero_indicators_desc')
+          },
+          onChange: function () {
+            var hero = document.querySelector('.agnative-hero');
+            if (!hero) return;
+            var indicators = hero.querySelector('.agnative-hero__indicators');
+            if (indicators) buildHeroIndicators(indicators);
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_ANIMATION_KEY,
+            type: 'trigger',
+            default: 'true'
+          },
+          field: {
+            name: t('set_hero_animation_name'),
+            description: t('set_hero_animation_desc')
+          },
+          onChange: function () {
+            syncHeroAttrs();
+          }
+        });
+
+        var heroIntervalSec = t('val_sec_short');
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_INTERVAL_KEY,
+            type: 'select',
+            values: {
+              '3': '3 ' + heroIntervalSec,
+              '5': '5 ' + heroIntervalSec,
+              '8': '8 ' + heroIntervalSec,
+              '12': '12 ' + heroIntervalSec,
+              '20': '20 ' + heroIntervalSec
+            },
+            default: '8'
+          },
+          field: {
+            name: t('set_hero_interval_name'),
+            description: t('set_hero_interval_desc')
+          },
+          onChange: function () {
+            if (document.querySelector('.agnative-hero')) startHeroRotation();
           }
         });
 
@@ -3715,14 +4087,16 @@
         '  }',
         '  body.' + BODY_CLASS + ' .settings__body { font-size: 1.1em !important; }',
         '}',
-        'body.' + BODY_CLASS + ' .settings-param[data-name="' + HERO_KEY + '"] .settings-param__name::after { content:"BETA"; display:inline-block; margin-left:.6em; padding:.12em .5em; font-size:.55em; font-weight:800; letter-spacing:.06em; color:#fff; background:linear-gradient(135deg, #ff6b35, #c1272d); border-radius:.4em; vertical-align:middle; line-height:1.2; box-shadow:0 1px 4px rgba(193,39,45,.4); }',
+        'body.' + BODY_CLASS + ' .agnative-beta-badge { display:inline-block; margin-left:.6em; padding:.12em .5em; font-size:.55em; font-weight:800; letter-spacing:.06em; color:#fff; background:linear-gradient(135deg, #ff6b35, #c1272d); border-radius:.4em; vertical-align:middle; line-height:1.2; box-shadow:0 1px 4px rgba(193,39,45,.4); }',
         'body.' + BODY_CLASS + ' .agnative-hero { position:relative; width:auto; margin:1em 2.5em 1.5em; height:52vh; min-height:380px; overflow:hidden; border-radius:1.5em; opacity:1; transition:opacity .6s ease; flex-shrink:0; display:block; z-index:8; box-shadow:0 16px 40px rgba(0,0,0,.32), 0 6px 14px rgba(0,0,0,.18); }',
-        'body.' + BODY_CLASS + ' .agnative-hero__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center center; border-radius:1.5em; opacity:1; transition:opacity .4s ease; pointer-events:none; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center top; border-radius:1.5em; opacity:1; transition:opacity .4s ease; pointer-events:none; }',
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__bg { opacity:0; }',
         'body.' + BODY_CLASS + ' .activity--active .items-line, body.' + BODY_CLASS + ' .activity--active .scroll__content { position:relative; z-index:10; }',
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--visible { opacity:1; }',
         'body.' + BODY_CLASS + ' .agnative-hero::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.30) 28%, rgba(0,0,0,.05) 55%, transparent 78%); pointer-events:none; z-index:1; border-radius:1.5em; }',
         'body.' + BODY_CLASS + ' .agnative-hero__content { position:absolute; left:2.4em; right:auto; top:2em; bottom:auto; max-width:40%; display:flex; flex-direction:column; align-items:flex-start; z-index:2; }',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ALIGN_ATTR + '="center"] .agnative-hero__content { top:50%; bottom:auto; transform:translateY(-50%); }',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ALIGN_ATTR + '="bottom"] .agnative-hero__content { top:auto; bottom:2em; transform:none; }',
         'body.' + BODY_CLASS + ' .agnative-hero__badge { font-size:.68em; font-weight:800; letter-spacing:.22em; color:rgba(255,255,255,.78); margin-bottom:.7em; padding:0; background:transparent; border:0; text-transform:uppercase; text-shadow:0 1px 6px rgba(0,0,0,.6); }',
         'body.' + BODY_CLASS + ' .agnative-hero__logo { max-height:4.2em; max-width:70%; object-fit:contain; object-position:left center; filter:drop-shadow(0 4px 12px rgba(0,0,0,.7)); margin:.1em 0 .45em; }',
         'body.' + BODY_CLASS + ' .agnative-hero__title { font-size:2.3em; font-weight:900; color:#fff; text-shadow:0 2px 18px rgba(0,0,0,.85); line-height:1.05; margin:0 0 .25em; letter-spacing:.005em; }',
@@ -3731,6 +4105,24 @@
         'body.' + BODY_CLASS + ' .agnative-hero__overview { font-size:.95em; line-height:1.4; color:rgba(255,255,255,.94); margin:0 0 1.1em; text-shadow:0 1px 8px rgba(0,0,0,.6); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; max-width:100%; font-weight:500; }',
         'body.' + BODY_CLASS + ' .agnative-hero__play.selector { display:inline-flex; align-items:center; justify-content:center; padding:.7em 2em; border-radius:999px; background:rgba(255,255,255,.94); border:0; color:#0a0a0f; font-size:.92em; font-weight:700; cursor:pointer; outline:none; transition:background .2s ease, transform .2s ease, box-shadow .2s ease; }',
         'body.' + BODY_CLASS + ' .agnative-hero__play.focus, body.' + BODY_CLASS + ' .agnative-hero__play.hover { background:#fff !important; box-shadow:0 12px 32px rgba(0,0,0,.55) !important; transform:scale(1.06) !important; color:#0a0a0f !important; outline:none !important; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__indicators { position:absolute; right:2.4em; bottom:1.6em; display:flex; gap:.5em; align-items:center; z-index:3; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__indicator.selector { display:inline-block; width:1.8em; height:.28em; border-radius:999px; background:rgba(255,255,255,.35); border:0; padding:0; cursor:pointer; outline:none; transition:background .25s ease, transform .25s ease, width .25s ease, box-shadow .25s ease; box-shadow:0 1px 4px rgba(0,0,0,.5); }',
+        'body.' + BODY_CLASS + ' .agnative-hero__indicator.agnative-hero__indicator--active { background:rgba(255,255,255,.92); width:2.6em; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__indicator.focus, body.' + BODY_CLASS + ' .agnative-hero__indicator.hover { background:#fff !important; transform:scaleY(1.6) !important; box-shadow:0 4px 14px rgba(0,0,0,.6) !important; outline:none !important; }',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__title,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__logo,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__year,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__meta,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__overview,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__badge { transition: opacity .45s ease, transform .55s ease; }',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__bg { transition: opacity .6s ease, transform .8s ease; }',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__title,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__logo,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__year,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__meta,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__overview,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__badge { opacity:0; transform:translateY(.6em); }',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__bg { opacity:.35; transform:scale(1.04); }',
         'body.' + BODY_CLASS + ' .agnative-hero__overview:empty, body.' + BODY_CLASS + ' .agnative-hero__year:empty, body.' + BODY_CLASS + ' .agnative-hero__meta:empty, body.' + BODY_CLASS + ' .agnative-hero__badge:empty { display:none; }'
       ].join('\n');
       if (style.textContent !== text) style.textContent = text;
@@ -4519,6 +4911,12 @@
       }
     }
 
+    function heroReadyForRouting() {
+      if (!window.__AGNATIVE_HERO_CONTROLLER__) return false;
+      if (!document.body || !document.body.classList.contains('agnative-has-hero')) return false;
+      return !!document.querySelector('.agnative-hero');
+    }
+
     function patchControllerToggleForLeftdock() {
       if (controllerTogglePatched) return;
       if (!window.Lampa || !Lampa.Controller || typeof Lampa.Controller.toggle !== 'function') return;
@@ -4527,6 +4925,17 @@
         controllerToggleOriginal = Lampa.Controller.toggle.bind(Lampa.Controller);
         Lampa.Controller.toggle = function (name) {
           if (name && name !== 'agnative_leftdock') hideLeftdock(true, true);
+          try {
+            if (name && heroReadyForRouting()) {
+              var enabled = Lampa.Controller.enabled && Lampa.Controller.enabled();
+              var current = enabled && enabled.name;
+              if (name === 'head' && (current === 'items_line' || current === 'content')) {
+                name = 'agnative_hero';
+              } else if (name === 'content' && current === 'head') {
+                name = 'agnative_hero';
+              }
+            }
+          } catch (err) { }
           return controllerToggleOriginal(name);
         };
       } catch (e) {
