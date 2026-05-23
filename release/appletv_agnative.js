@@ -64,10 +64,14 @@
     TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size'
   };
 
+  const PLUGIN_VERSION = '0.3.19';
+  const PLUGIN_AUTHORS = 'llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96';
+
   const ru = {
     nav_feed: 'Лента',
     badge_movie: 'ФИЛЬМ', badge_tv: 'СЕРИАЛ',
-    set_about_desc: 'Версия 0.3.18  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_version: 'Версия',
+    set_about_authors: 'Авторы',
     set_main_title: 'Основные настройки',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Включает и выключает плагин',
@@ -164,7 +168,8 @@
   const en = {
     nav_feed: 'Feed',
     badge_movie: 'MOVIE', badge_tv: 'TV SHOW',
-    set_about_desc: 'Version 0.3.18  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_version: 'Version',
+    set_about_authors: 'Authors',
     set_main_title: 'Main settings',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Enables and disables the plugin',
@@ -261,7 +266,8 @@
   const uk = {
     nav_feed: 'Стрічка',
     badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРІАЛ',
-    set_about_desc: 'Версія 0.3.18  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_version: 'Версія',
+    set_about_authors: 'Автори',
     set_main_title: 'Основні налаштування',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Вмикає та вимикає плагін',
@@ -358,7 +364,8 @@
   const be = {
     nav_feed: 'Стужка',
     badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРЫЯЛ',
-    set_about_desc: 'Версія 0.3.18 Аўтары: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_version: 'Версія',
+    set_about_authors: 'Аўтары',
     set_main_title: 'Асноўныя налады',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Уключае і выключае плагін',
@@ -1868,7 +1875,7 @@
           param: { name: 'agnative_about_info', type: 'static' },
           field: {
             name: 'AppleTV AgNative',
-            description: t('set_about_desc')
+            description: t('set_about_version') + ' ' + PLUGIN_VERSION + '  ' + t('set_about_authors') + ': ' + PLUGIN_AUTHORS
           }
         });
 

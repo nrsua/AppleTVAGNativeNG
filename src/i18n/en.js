@@ -1,7 +1,8 @@
 export const en = {
   nav_feed: 'Feed',
   badge_movie: 'MOVIE', badge_tv: 'TV SHOW',
-  set_about_desc: 'Version 0.3.18  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+  set_about_version: 'Version',
+  set_about_authors: 'Authors',
   set_main_title: 'Main settings',
   set_enable_name: 'AppleTV AgNative',
   set_enable_desc: 'Enables and disables the plugin',

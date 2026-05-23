@@ -1,7 +1,8 @@
 export const uk = {
   nav_feed: 'Стрічка',
   badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРІАЛ',
-  set_about_desc: 'Версія 0.3.18  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+  set_about_version: 'Версія',
+  set_about_authors: 'Автори',
   set_main_title: 'Основні налаштування',
   set_enable_name: 'AppleTV AgNative',
   set_enable_desc: 'Вмикає та вимикає плагін',

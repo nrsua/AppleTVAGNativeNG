@@ -1,5 +1,6 @@
 import { canBootPlugin } from './bootstrap/guard.js';
 import { AGNATIVE_KEYS } from './config/keys.js';
+import { PLUGIN_VERSION, PLUGIN_AUTHORS } from './config/version.js';
 import { GENRE_MAP_LOCALIZED, hasI18nCode, registerI18nToLampa } from './i18n/index.js';
 import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/persist.js';
 
@@ -1170,7 +1171,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         param: { name: 'agnative_about_info', type: 'static' },
         field: {
           name: 'AppleTV AgNative',
-          description: t('set_about_desc')
+          description: t('set_about_version') + ' ' + PLUGIN_VERSION + '  ' + t('set_about_authors') + ': ' + PLUGIN_AUTHORS
         }
       });
 
