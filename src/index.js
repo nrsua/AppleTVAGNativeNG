@@ -62,6 +62,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     HERO_ANIMATION_ATTR,
     HERO_INTERVAL_KEY,
     HERO_PAN_KEY,
+    HERO_BG_ANIM_KEY,
     HERO_QUALITY_KEY,
     TOPNAV_ENABLE_KEY,
     TOPNAV_SIZE_KEY,
@@ -639,7 +640,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       Lampa.Storage.set(HERO_INDICATORS_KEY, 'false');
       Lampa.Storage.set(HERO_ANIMATION_KEY, 'true');
       Lampa.Storage.set(HERO_INTERVAL_KEY, '8');
-      Lampa.Storage.set(HERO_PAN_KEY, 'false');
+      Lampa.Storage.set(HERO_BG_ANIM_KEY, 'off');
       Lampa.Storage.set(HERO_QUALITY_KEY, 'w1280');
       Lampa.Storage.set(TOPNAV_ITEMS_KEY, ['main', 'movie', 'tv', 'cartoon']);
       logoCache = {};
@@ -748,12 +749,17 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     } catch (e) { return 8000; }
   }
 
-  function heroPanEnabled() {
+  var HERO_BG_ANIM_VALUES = ['off', 'pan-down', 'pan-up', 'zoom-in', 'zoom-out', 'drift', 'breathe'];
+
+  function getHeroBgAnim() {
     try {
-      if (!window.Lampa || !Lampa.Storage) return false;
-      var v = Lampa.Storage.get(HERO_PAN_KEY, 'false');
-      return v === true || v === 'true' || v === 'on';
-    } catch (e) { return false; }
+      if (!window.Lampa || !Lampa.Storage) return 'off';
+      // backward compat: old pan toggle on → treat as pan-down if new key not set
+      var legacy = Lampa.Storage.get(HERO_PAN_KEY, 'false');
+      var v = Lampa.Storage.get(HERO_BG_ANIM_KEY, '');
+      if (!v && (legacy === true || legacy === 'true' || legacy === 'on')) return 'pan-down';
+      return HERO_BG_ANIM_VALUES.indexOf(v) >= 0 ? v : 'off';
+    } catch (e) { return 'off'; }
   }
 
   function getHeroQuality() {
@@ -765,14 +771,20 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     } catch (e) { return 'w1280'; }
   }
 
-  function startHeroPan() {
+  function applyHeroBgAnim() {
     var bg = document.querySelector('.agnative-hero__bg');
     if (!bg) return;
     bg.style.animation = 'none';
-    if (!heroPanEnabled()) return;
-    var dur = (getHeroIntervalMs() / 1000) + 's';
+    var anim = getHeroBgAnim();
+    if (anim === 'off') return;
     void bg.offsetWidth;
-    bg.style.animation = 'agnative-hero-pan ' + dur + ' linear forwards';
+    var dur = (getHeroIntervalMs() / 1000) + 's';
+    if      (anim === 'pan-down') bg.style.animation = 'agnative-hero-pan-down '  + dur + ' linear forwards';
+    else if (anim === 'pan-up')   bg.style.animation = 'agnative-hero-pan-up '    + dur + ' linear forwards';
+    else if (anim === 'zoom-in')  bg.style.animation = 'agnative-hero-zoom-in '   + dur + ' ease-in-out forwards';
+    else if (anim === 'zoom-out') bg.style.animation = 'agnative-hero-zoom-out '  + dur + ' ease-in-out forwards';
+    else if (anim === 'drift')    bg.style.animation = 'agnative-hero-drift '     + dur + ' ease-in-out forwards';
+    else if (anim === 'breathe')  bg.style.animation = 'agnative-hero-breathe 8s ease-in-out infinite';
   }
 
   function syncHeroAttrs(hero) {
@@ -858,7 +870,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
           bg.src = newSrc;
           extractDominantColor(newSrc, applyHeroAccent);
         }
-        startHeroPan();
+        applyHeroBgAnim();
       }
 
       var badgeEl = hero.querySelector('.agnative-hero__badge');
@@ -1914,7 +1926,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         onChange: function () {
           if (document.querySelector('.agnative-hero')) {
             startHeroRotation();
-            startHeroPan();
+            applyHeroBgAnim();
           }
         }
       });
@@ -1922,16 +1934,25 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       Lampa.SettingsApi.addParam({
         component: HERO_SETTINGS_COMPONENT,
         param: {
-          name: HERO_PAN_KEY,
-          type: 'trigger',
-          default: 'false'
+          name: HERO_BG_ANIM_KEY,
+          type: 'select',
+          values: {
+            'off':      t('val_off'),
+            'pan-down': t('val_anim_pan_down'),
+            'pan-up':   t('val_anim_pan_up'),
+            'zoom-in':  t('val_anim_zoom_in'),
+            'zoom-out': t('val_anim_zoom_out'),
+            'drift':    t('val_anim_drift'),
+            'breathe':  t('val_anim_breathe')
+          },
+          default: 'off'
         },
         field: {
-          name: t('set_hero_pan_name'),
-          description: t('set_hero_pan_desc')
+          name: t('set_hero_bg_anim_name'),
+          description: t('set_hero_bg_anim_desc')
         },
         onChange: function () {
-          startHeroPan();
+          applyHeroBgAnim();
         }
       });
 
@@ -3503,8 +3524,13 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       '}',
       'body.' + BODY_CLASS + ' .agnative-beta-badge { display:inline-block; margin-left:.6em; padding:.12em .5em; font-size:.55em; font-weight:800; letter-spacing:.06em; color:#fff; background:linear-gradient(135deg, #ff6b35, #c1272d); border-radius:.4em; vertical-align:middle; line-height:1.2; box-shadow:0 1px 4px rgba(193,39,45,.4); }',
       'body.' + BODY_CLASS + ' .agnative-hero { position:relative; width:auto; margin:1em 2.5em 1.5em; height:52vh; min-height:380px; overflow:hidden; border-radius:1.5em; opacity:1; transition:opacity .6s ease, transform .3s cubic-bezier(.22,.61,.36,1), box-shadow .3s ease; flex-shrink:0; display:block; z-index:8; box-shadow:0 16px 40px rgba(0,0,0,.32), 0 6px 14px rgba(0,0,0,.18); }',
-      'body.' + BODY_CLASS + ' .agnative-hero__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center top; border-radius:1.5em; opacity:1; transition:opacity .4s ease; pointer-events:none; }',
-      '@keyframes agnative-hero-pan { from { object-position: center 0%; } to { object-position: center 100%; } }',
+      'body.' + BODY_CLASS + ' .agnative-hero__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center top; border-radius:1.5em; opacity:1; transition:opacity .4s ease; pointer-events:none; transform-origin:center center; }',
+      '@keyframes agnative-hero-pan-down { from { object-position: center 0%; } to { object-position: center 100%; } }',
+      '@keyframes agnative-hero-pan-up { from { object-position: center 100%; } to { object-position: center 0%; } }',
+      '@keyframes agnative-hero-zoom-in { from { transform: scale(1); } to { transform: scale(1.1); } }',
+      '@keyframes agnative-hero-zoom-out { from { transform: scale(1.1); } to { transform: scale(1); } }',
+      '@keyframes agnative-hero-drift { from { transform: scale(1) translate(-2%, -1.5%); } to { transform: scale(1.1) translate(2%, 1.5%); } }',
+      '@keyframes agnative-hero-breathe { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }',
       'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__bg { opacity:0; }',
       'body.' + BODY_CLASS + ' .activity--active .items-line, body.' + BODY_CLASS + ' .activity--active .scroll__content { position:relative; z-index:10; }',
       'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--visible { opacity:1; }',
@@ -3520,7 +3546,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       'body.' + BODY_CLASS + ' .agnative-hero__overview { font-size:.95em; line-height:1.4; color:rgba(255,255,255,.94); margin:0 0 1.1em; text-shadow:0 1px 8px rgba(0,0,0,.6); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; max-width:100%; font-weight:500; }',
       'body.' + BODY_CLASS + ' .agnative-hero__play.selector { position:absolute; inset:0; display:block; padding:0; background:transparent !important; border:0 !important; color:transparent !important; font-size:0 !important; cursor:pointer; outline:none; z-index:3; }',
       'body.' + BODY_CLASS + ' .agnative-hero__play.focus, body.' + BODY_CLASS + ' .agnative-hero__play.hover { background:transparent !important; box-shadow:none !important; transform:none !important; color:transparent !important; outline:none !important; }',
-      'body.' + BODY_CLASS + ' .agnative-hero:has(.agnative-hero__play.focus), body.' + BODY_CLASS + ' .agnative-hero:has(.agnative-hero__play.hover) { transform:scale(1.012); box-shadow:0 0 0 3px rgba(255,255,255,.9), 0 24px 60px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.3); }',
+      'body.' + BODY_CLASS + ' .agnative-hero:has(.agnative-hero__play.focus), body.' + BODY_CLASS + ' .agnative-hero:has(.agnative-hero__play.hover) { transform:scale(1.012); box-shadow:0 0 0 1.5px rgba(255,255,255,.9), 0 24px 60px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.3); }',
       'body.' + BODY_CLASS + ' .agnative-hero__indicators { position:absolute; right:2.4em; bottom:1.6em; display:flex; gap:.5em; align-items:center; z-index:3; }',
       'body.' + BODY_CLASS + ' .agnative-hero__indicator.selector { display:inline-block; width:1.8em; height:.28em; border-radius:999px; background:rgba(255,255,255,.35); border:0; padding:0; cursor:pointer; outline:none; transition:background .25s ease, transform .25s ease, width .25s ease, box-shadow .25s ease; box-shadow:0 1px 4px rgba(0,0,0,.5); }',
       'body.' + BODY_CLASS + ' .agnative-hero__indicator.agnative-hero__indicator--active { background:rgba(255,255,255,.92); width:2.6em; }',
