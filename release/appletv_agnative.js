@@ -2802,6 +2802,7 @@
                 processCards(body);
               } catch (err) { }
             }, 500);
+            setTimeout(triggerExtraRowRender, 900);
             schedulePatch();
             try {
               var comp = e.object && e.object.component;
@@ -2911,6 +2912,23 @@
 
     function isMobile() {
       return window.innerWidth < 768 || (window.innerWidth < 1024 && 'ontouchstart' in window);
+    }
+
+    // On mobile Lampa only renders rows visible in the initial viewport (~4).
+    // Simulate a scroll-down so the IntersectionObserver triggers 2 extra rows,
+    // then snap back to top — invisible to the user but forces 6 rows to render.
+    function triggerExtraRowRender() {
+      if (!isMobile()) return;
+      var scroll = document.querySelector('.activity--active .scroll.scroll--mask.scroll--over') ||
+                   document.querySelector('.activity--active .scroll');
+      if (!scroll || scroll.scrollTop !== 0) return;
+      var rowHeight = Math.round(window.innerHeight * 0.38); // ~height of 2 rows
+      scroll.scrollTop = rowHeight * 2;
+      setTimeout(function () {
+        var s = document.querySelector('.activity--active .scroll.scroll--mask.scroll--over') ||
+                document.querySelector('.activity--active .scroll');
+        if (s && s.scrollTop > 0) s.scrollTop = 0;
+      }, 120);
     }
 
     function escapeHtml(str) {
@@ -3600,6 +3618,7 @@
         'body.' + BODY_CLASS + '[' + BADGE_ATTR + '="off"] .nfx-card-logo { display:none !important; }',
         'body.' + BODY_CLASS + '[' + RATING_ATTR + '="off"] .nfx-card-rating { display:none !important; }',
         'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card .card__view { padding-bottom:140% !important; }',
+        'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card.card--button-compact .card__view, body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card.streaming-card--button-compact .card__view, body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card.card--genre-compact .card__view { padding-bottom:56% !important; }',
         'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card__img, body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card__image { object-position:center center !important; }',
         'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .nfx-card-overlay { display:flex !important; background:transparent !important; padding:5em 1em 1em !important; border-radius:0 0 1.55em 1.55em !important; }',
         'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .nfx-card-rating { display:inline-flex !important; }',
