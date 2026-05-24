@@ -1900,9 +1900,12 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
             '20': '20 ' + heroIntervalSec,
             '25': '25 ' + heroIntervalSec,
             '30': '30 ' + heroIntervalSec,
-            '35': '35 ' + heroIntervalSec
+            '35': '35 ' + heroIntervalSec,
+            '40': '40 ' + heroIntervalSec,
+            '50': '50 ' + heroIntervalSec,
+            '60': '60 ' + heroIntervalSec
           },
-          default: '25'
+          default: '40'
         },
         field: {
           name: t('set_hero_interval_name'),
