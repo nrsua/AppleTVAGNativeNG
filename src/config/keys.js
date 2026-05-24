@@ -5,6 +5,8 @@ export const AGNATIVE_KEYS = {
   TMDB_KEY: '4ef0d7355d9ffb5151e987764708ce96',
   ENABLE_KEY: 'appletv_agnative_topnav_enabled',
   GLARE_KEY: 'appletv_agnative_topnav_glare_enabled',
+  CARD_ANIM_KEY: 'appletv_agnative_card_anim',
+  CARD_ANIM_ATTR: 'data-agnative-card-anim',
   TOPNAV_ITEMS_KEY: 'appletv_agnative_topnav_items',
   LOGO_LANG_KEY: 'appletv_agnative_logo_lang',
   FONT_SIZE_KEY: 'appletv_agnative_font_size',
@@ -47,6 +49,8 @@ export const AGNATIVE_KEYS = {
   HERO_ANIMATION_KEY: 'appletv_agnative_hero_animation',
   HERO_ANIMATION_ATTR: 'data-agnative-hero-anim',
   HERO_INTERVAL_KEY: 'appletv_agnative_hero_interval',
+  HERO_PAN_KEY: 'appletv_agnative_hero_pan',
+  HERO_QUALITY_KEY: 'appletv_agnative_hero_quality',
   TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible',
   TOPNAV_SIZE_KEY: 'appletv_agnative_topnav_size',
   TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size'

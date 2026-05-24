@@ -17,6 +17,8 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     TMDB_KEY,
     ENABLE_KEY,
     GLARE_KEY,
+    CARD_ANIM_KEY,
+    CARD_ANIM_ATTR,
     TOPNAV_ITEMS_KEY,
     LOGO_LANG_KEY,
     FONT_SIZE_KEY,
@@ -59,6 +61,8 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     HERO_ANIMATION_KEY,
     HERO_ANIMATION_ATTR,
     HERO_INTERVAL_KEY,
+    HERO_PAN_KEY,
+    HERO_QUALITY_KEY,
     TOPNAV_ENABLE_KEY,
     TOPNAV_SIZE_KEY,
     TOPNAV_SIZE_ATTR
@@ -312,13 +316,19 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     return key;
   }
 
-  function glareEnabled() {
+  function getCardAnim() {
     try {
-      if (!window.Lampa || !Lampa.Storage) return true;
-      return Lampa.Storage.get(GLARE_KEY, 'on') !== 'off';
-    } catch (e) {
-      return true;
-    }
+      if (!window.Lampa || !Lampa.Storage) return 'veoveo';
+      var raw = Lampa.Storage.get(CARD_ANIM_KEY, null);
+      if (raw === 'off' || raw === 'veoveo' || raw === 'appletv') return raw;
+      var legacy = Lampa.Storage.get(GLARE_KEY, 'on');
+      if (legacy === 'off') return 'off';
+      return 'veoveo';
+    } catch (e) { return 'veoveo'; }
+  }
+
+  function glareEnabled() {
+    return getCardAnim() === 'veoveo';
   }
 
   function sceneActive() {
@@ -330,6 +340,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       if (document.body) {
         document.body.classList.remove(BODY_CLASS);
         document.body.classList.remove(GLARE_CLASS);
+        document.body.removeAttribute(CARD_ANIM_ATTR);
         document.body.removeAttribute(FONT_SIZE_ATTR);
         document.body.removeAttribute(CATEGORY_SIZE_ATTR);
         document.body.removeAttribute(CARD_SIZE_ATTR);
@@ -375,6 +386,33 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         controllerTogglePatched = false;
         controllerToggleOriginal = null;
       }
+    } catch (e) { }
+  }
+
+  function showReloadConfirm(cancel) {
+    try {
+      if (!window.Lampa || !Lampa.Modal || !Lampa.Lang || !window.$) return;
+      Lampa.Modal.open({
+        title: '',
+        align: 'center',
+        zIndex: 300,
+        html: $('<div class="about">' + Lampa.Lang.translate('plugins_need_reload') + '</div>'),
+        buttons: [
+          {
+            name: Lampa.Lang.translate('settings_param_no'),
+            onSelect: function () {
+              Lampa.Modal.close();
+              if (typeof cancel === 'function') cancel();
+            }
+          },
+          {
+            name: Lampa.Lang.translate('settings_param_yes'),
+            onSelect: function () {
+              window.location.reload();
+            }
+          }
+        ]
+      });
     } catch (e) { }
   }
 
@@ -490,6 +528,9 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     if (!document.body) return;
     if (glareEnabled() && pluginEnabled()) document.body.classList.add(GLARE_CLASS);
     else document.body.classList.remove(GLARE_CLASS);
+    var mode = pluginEnabled() ? getCardAnim() : 'off';
+    if (resolvePerfLevel() === 'ultra') mode = 'off';
+    document.body.setAttribute(CARD_ANIM_ATTR, mode);
   }
 
   function syncFontSize() {
@@ -577,6 +618,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       if (!window.Lampa || !Lampa.Storage) return;
       Lampa.Storage.set(ENABLE_KEY, 'on');
       Lampa.Storage.set(GLARE_KEY, 'on');
+      Lampa.Storage.set(CARD_ANIM_KEY, 'veoveo');
       Lampa.Storage.set(UI_LANG_KEY, 'auto');
       Lampa.Storage.set(LOGO_LANG_KEY, 'auto');
       Lampa.Storage.set(FONT_SIZE_KEY, 'md');
@@ -597,6 +639,8 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       Lampa.Storage.set(HERO_INDICATORS_KEY, 'false');
       Lampa.Storage.set(HERO_ANIMATION_KEY, 'true');
       Lampa.Storage.set(HERO_INTERVAL_KEY, '8');
+      Lampa.Storage.set(HERO_PAN_KEY, 'false');
+      Lampa.Storage.set(HERO_QUALITY_KEY, 'w1280');
       Lampa.Storage.set(TOPNAV_ITEMS_KEY, ['main', 'movie', 'tv', 'cartoon']);
       logoCache = {};
       titledBackdropCache = {};
@@ -704,6 +748,33 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     } catch (e) { return 8000; }
   }
 
+  function heroPanEnabled() {
+    try {
+      if (!window.Lampa || !Lampa.Storage) return false;
+      var v = Lampa.Storage.get(HERO_PAN_KEY, 'false');
+      return v === true || v === 'true' || v === 'on';
+    } catch (e) { return false; }
+  }
+
+  function getHeroQuality() {
+    try {
+      if (!window.Lampa || !Lampa.Storage) return 'w1280';
+      var v = Lampa.Storage.get(HERO_QUALITY_KEY, 'w1280') || 'w1280';
+      if (v === 'w780' || v === 'w1280' || v === 'original') return v;
+      return 'w1280';
+    } catch (e) { return 'w1280'; }
+  }
+
+  function startHeroPan() {
+    var bg = document.querySelector('.agnative-hero__bg');
+    if (!bg) return;
+    bg.style.animation = 'none';
+    if (!heroPanEnabled()) return;
+    var dur = (getHeroIntervalMs() / 1000) + 's';
+    void bg.offsetWidth;
+    bg.style.animation = 'agnative-hero-pan ' + dur + ' linear forwards';
+  }
+
   function syncHeroAttrs(hero) {
     if (!hero) hero = document.querySelector('.agnative-hero');
     if (!hero) return;
@@ -782,11 +853,12 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
 
       var bg = hero.querySelector('.agnative-hero__bg');
       if (bg) {
-        var newSrc = item.backdrop_path ? Lampa.TMDB.image('t/p/w1280' + item.backdrop_path) : (item._heroFallbackImg || '');
+        var newSrc = item.backdrop_path ? Lampa.TMDB.image('t/p/' + getHeroQuality() + item.backdrop_path) : (item._heroFallbackImg || '');
         if (bg.src !== newSrc) {
           bg.src = newSrc;
           extractDominantColor(newSrc, applyHeroAccent);
         }
+        startHeroPan();
       }
 
       var badgeEl = hero.querySelector('.agnative-hero__badge');
@@ -1228,51 +1300,27 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
           syncPerfMode();
           initGlareRuntime();
           perfModeDirty = true;
-          try {
-            if (window.Lampa && Lampa.Modal && Lampa.Lang) {
-              Lampa.Modal.open({
-
-                html: $('<div style="padding: 20px; text-align: center;">' +
-                  '<div style="margin-bottom: 15px;">' + Lampa.Lang.translate('plugins_need_reload') + '</div>' +
-                '</div>'),
-                buttons: [
-                  {
-                    name: Lampa.Lang.translate('settings_param_yes'),
-                    onSelect: function () {
-                      Lampa.Modal.close();
-                      window.location.reload();
-                    }
-                  },
-                  {
-                    name: Lampa.Lang.translate('settings_param_no'),
-                    onSelect: function () {
-                      Lampa.Modal.close();
-                      Lampa.Controller.toggle('settings_component');
-                    }
-                  }
-                ],
-                onBack: function () {
-                  Lampa.Controller.toggle('settings_component');
-                }
-              });
-            }
-          } catch (e) {
-            console.error('Error showing reload dialog:', e);
-          }
+          showReloadConfirm(function () {
+            try { Lampa.Controller.toggle('settings_component'); } catch (e) { }
+          });
         }
       });
 
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
         param: {
-          name: GLARE_KEY,
+          name: CARD_ANIM_KEY,
           type: 'select',
-          values: { on: t('val_on'), off: t('val_off') },
-          default: 'on'
+          values: {
+            off: t('val_card_anim_off'),
+            veoveo: t('val_card_anim_veoveo'),
+            appletv: t('val_card_anim_appletv')
+          },
+          default: 'veoveo'
         },
         field: {
-          name: t('set_glare_name'),
-          description: t('set_glare_desc')
+          name: t('set_card_anim_name'),
+          description: t('set_card_anim_desc')
         },
         onChange: function () {
           syncGlareClass();
@@ -1846,20 +1894,69 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
           name: HERO_INTERVAL_KEY,
           type: 'select',
           values: {
-            '3': '3 ' + heroIntervalSec,
             '5': '5 ' + heroIntervalSec,
-            '8': '8 ' + heroIntervalSec,
-            '12': '12 ' + heroIntervalSec,
-            '20': '20 ' + heroIntervalSec
+            '10': '10 ' + heroIntervalSec,
+            '15': '15 ' + heroIntervalSec,
+            '20': '20 ' + heroIntervalSec,
+            '25': '25 ' + heroIntervalSec,
+            '30': '30 ' + heroIntervalSec,
+            '35': '35 ' + heroIntervalSec,
+            '40': '40 ' + heroIntervalSec,
+            '50': '50 ' + heroIntervalSec,
+            '60': '60 ' + heroIntervalSec
           },
-          default: '8'
+          default: '40'
         },
         field: {
           name: t('set_hero_interval_name'),
           description: t('set_hero_interval_desc')
         },
         onChange: function () {
-          if (document.querySelector('.agnative-hero')) startHeroRotation();
+          if (document.querySelector('.agnative-hero')) {
+            startHeroRotation();
+            startHeroPan();
+          }
+        }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: HERO_SETTINGS_COMPONENT,
+        param: {
+          name: HERO_PAN_KEY,
+          type: 'trigger',
+          default: 'false'
+        },
+        field: {
+          name: t('set_hero_pan_name'),
+          description: t('set_hero_pan_desc')
+        },
+        onChange: function () {
+          startHeroPan();
+        }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: HERO_SETTINGS_COMPONENT,
+        param: {
+          name: HERO_QUALITY_KEY,
+          type: 'select',
+          values: {
+            w780: t('val_size_md'),
+            w1280: t('val_size_lg'),
+            original: t('val_size_xl')
+          },
+          default: 'w1280'
+        },
+        field: {
+          name: t('set_hero_quality_name'),
+          description: t('set_hero_quality_desc')
+        },
+        onChange: function () {
+          if (heroCurrentItem) {
+            var bg = document.querySelector('.agnative-hero__bg');
+            if (bg) bg.src = '';
+            renderHeroSlide(heroCurrentItem);
+          }
         }
       });
 
@@ -1975,7 +2072,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
           return;
         }
 
-        if (e.name === GLARE_KEY) {
+        if (e.name === GLARE_KEY || e.name === CARD_ANIM_KEY) {
           syncGlareClass();
           return;
         }
@@ -2388,8 +2485,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       '  content: none !important;',
       '}',
 
-      'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .settings-param[data-name="' + GLARE_KEY + '"],',
-      'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .settings-param[data-name="' + GLARE_KEY + '"] { display: none !important; }',
+      'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .settings-param[data-name="' + CARD_ANIM_KEY + '"] { display: none !important; }',
       'body.' + BODY_CLASS + '[' + RATING_ATTR + '="off"] .settings-param[data-name="' + RATING_STYLE_KEY + '"] { display: none !important; }',
       'body.' + BODY_CLASS + '[' + CARD_IMAGE_MODE_ATTR + '="poster"] .settings-param[data-name="' + LOGO_SIZE_KEY + '"] { display: none !important; }',
       'body.' + BODY_CLASS + ' .wrap__content.layer--height.layer--width::after,',
@@ -2605,6 +2701,16 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .items-line .card { width:21.2em !important; }',
       'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"][' + BACKDROP_ATTR + '="off"] .items-line .card { width:15.6em !important; }',
       // Compact service/genre cards (e.g. from SURS plugin) — half size of regular cards
+      'body.' + BODY_CLASS + ' .card.card--button-compact .nfx-card-overlay, body.' + BODY_CLASS + ' .card.card--button-compact .nfx-card-logo, body.' + BODY_CLASS + ' .card.card--button-compact .nfx-card-rating, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .nfx-card-overlay, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .nfx-card-logo, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .nfx-card-rating, body.' + BODY_CLASS + ' .card.card--genre-compact .nfx-card-overlay, body.' + BODY_CLASS + ' .card.card--genre-compact .nfx-card-logo, body.' + BODY_CLASS + ' .card.card--genre-compact .nfx-card-rating { display:none !important; }',
+      'body.' + BODY_CLASS + ' .card.card--button-compact .card__view, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .card__view, body.' + BODY_CLASS + ' .card.card--genre-compact .card__view { display:flex !important; align-items:center !important; justify-content:center !important; padding-bottom:56% !important; background-color:rgba(200,200,200,.16) !important; }',
+      'body.' + BODY_CLASS + ' .card.card--button-compact .card__button-label, body.' + BODY_CLASS + ' .card.card--genre-compact .card__genre-label { display:block !important; position:absolute !important; bottom:.42em !important; left:0 !important; right:0 !important; text-align:center !important; color:#fff !important; padding:.34em !important; font-size:calc(.78em * var(--agnative-scale, 1)) !important; font-weight:600 !important; line-height:1.1 !important; z-index:2 !important; text-shadow:0 1px 2px rgba(0,0,0,.7) !important; pointer-events:none !important; }',
+      'body.' + BODY_CLASS + ' .card.card--button-compact .card__svg-icon, body.' + BODY_CLASS + ' .card.card--genre-compact .card__svg-icon { position:absolute !important; top:42% !important; left:50% !important; transform:translate(-50%, -50%) !important; width:42% !important; height:42% !important; display:flex !important; align-items:center !important; justify-content:center !important; z-index:1 !important; }',
+      'body.' + BODY_CLASS + ' .card.streaming-card--button-compact .streaming-card__svg-icon { position:absolute !important; top:50% !important; left:50% !important; transform:translate(-50%, -50%) !important; width:60% !important; height:60% !important; display:flex !important; align-items:center !important; justify-content:center !important; z-index:1 !important; }',
+      'body.' + BODY_CLASS + ' .card.card--button-compact .card__svg-icon svg, body.' + BODY_CLASS + ' .card.card--genre-compact .card__svg-icon svg, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .streaming-card__svg-icon svg, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .streaming-card__svg-icon img { width:100% !important; height:100% !important; object-fit:contain !important; }',
+      'body.' + BODY_CLASS + ' .card.card--button-compact .card__svg-icon, body.' + BODY_CLASS + ' .card.card--genre-compact .card__svg-icon, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .streaming-card__svg-icon { transform: translate(-50%, -50%) !important; transition: transform .14s ease-out !important; }',
+      'body.' + BODY_CLASS + ' .card.card--button-compact .card__button-label, body.' + BODY_CLASS + ' .card.card--genre-compact .card__genre-label { transform: translate(0, 0) !important; transition: transform .14s ease-out !important; }',
+      'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--button-compact.focus .card__svg-icon, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--button-compact.hover .card__svg-icon, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--genre-compact.focus .card__svg-icon, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--genre-compact.hover .card__svg-icon, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.streaming-card--button-compact.focus .streaming-card__svg-icon, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.streaming-card--button-compact.hover .streaming-card__svg-icon { transform: translate(calc(-50% + var(--atv-lx, 0em)), calc(-50% + var(--atv-ly, 0em))) !important; }',
+      'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--button-compact.focus .card__button-label, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--button-compact.hover .card__button-label, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--genre-compact.focus .card__genre-label, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--genre-compact.hover .card__genre-label { transform: translate(var(--atv-lx, 0em), var(--atv-ly, 0em)) !important; }',
       'body.' + BODY_CLASS + ' .items-line .card.card--button-compact, body.' + BODY_CLASS + ' .items-line .card.streaming-card--button-compact, body.' + BODY_CLASS + ' .items-line .card.card--genre-compact { width:8.8em !important; flex:0 0 auto !important; }',
       'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"] .items-line .card.card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"] .items-line .card.streaming-card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"] .items-line .card.card--genre-compact { width:7em !important; }',
       'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"] .items-line .card.card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"] .items-line .card.streaming-card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"] .items-line .card.card--genre-compact { width:7.9em !important; }',
@@ -2660,6 +2766,12 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       'body.' + GLARE_CLASS + ' .card .card__view::after, body.' + GLARE_CLASS + ' .card-episode .full-episode__img::after, body.' + GLARE_CLASS + ' .full-start-new__poster::after { content:"" !important; display:block !important; position:absolute; inset:-10%; border-radius:inherit; background: radial-gradient(ellipse at var(--gx, 50%) var(--gy, 50%), rgba(255,255,255,.20) 0%, rgba(255,255,255,.16) 12%, rgba(255,255,255,.10) 26%, rgba(255,255,255,.05) 42%, rgba(255,255,255,.02) 58%, rgba(255,255,255,0) 78%) !important; opacity:0; filter: blur(18px); transition: opacity .22s ease, transform .22s ease; pointer-events:none; z-index:8; mix-blend-mode: screen; }',
       'body.' + GLARE_CLASS + ' .card.focus .card__view::after, body.' + GLARE_CLASS + ' .card.hover .card__view::after, body.' + GLARE_CLASS + ' .card-episode.focus .full-episode__img::after, body.' + GLARE_CLASS + ' .card-episode.hover .full-episode__img::after, body.' + GLARE_CLASS + ' .full-start-new__poster.focus::after, body.' + GLARE_CLASS + ' .full-start-new__poster.hover::after { opacity: 1 !important; }',
       'body.' + GLARE_CLASS + ' .card.focus .card__view, body.' + GLARE_CLASS + ' .card.hover .card__view, body.' + GLARE_CLASS + ' .card-episode.focus .full-episode, body.' + GLARE_CLASS + ' .card-episode.hover .full-episode, body.' + GLARE_CLASS + ' .full-start-new__poster.focus, body.' + GLARE_CLASS + ' .full-start-new__poster.hover { transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(1.055) translateY(-.06em) !important; transition: transform .08s linear, box-shadow .24s ease, filter .24s ease !important; }',
+      'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card .card__view > *, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode .full-episode > *:not(.full-episode__img) { transition: transform .14s ease-out; }',
+      'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.focus .card__view, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.hover .card__view, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.focus .full-episode, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.hover .full-episode, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .full-start-new__poster.focus, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .full-start-new__poster.hover { transform: perspective(1200px) rotateX(var(--atv-rx, 0deg)) rotateY(var(--atv-ry, 0deg)) scale(1.05) translateY(-.06em) !important; transition: transform .12s ease-out, box-shadow .24s ease, filter .24s ease !important; will-change: transform; }',
+      'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.focus .card__view, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.focus .full-episode__img, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .full-start-new__poster.focus { box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 0 0 2px rgba(86,141,255,.92), 0 28px 60px rgba(0,0,0,.55), 0 14px 32px rgba(0,0,0,.38), 0 6px 14px rgba(0,0,0,.22) !important; filter: saturate(1.08) brightness(1.03) drop-shadow(0 18px 28px rgba(0,0,0,.32)) !important; }',
+      'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.hover .card__view, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.hover .full-episode__img, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .full-start-new__poster.hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 20px 44px rgba(0,0,0,.42), 0 10px 22px rgba(0,0,0,.28) !important; filter: saturate(1.04) brightness(1.02) drop-shadow(0 12px 22px rgba(0,0,0,.26)) !important; }',
+      'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"][' + PERF_ATTR + '="low"] .card.focus .card__view, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"][' + PERF_ATTR + '="low"] .card.hover .card__view, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"][' + PERF_ATTR + '="low"] .card-episode.focus .full-episode__img, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"][' + PERF_ATTR + '="low"] .card-episode.hover .full-episode__img { filter: none !important; }',
+      'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.focus .card__view > *:not(.card__img):not(.card__image):not(.card__svg-icon):not(.streaming-card__svg-icon):not(.card__button-label):not(.card__genre-label), body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.hover .card__view > *:not(.card__img):not(.card__image):not(.card__svg-icon):not(.streaming-card__svg-icon):not(.card__button-label):not(.card__genre-label), body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.focus .full-episode__body, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.hover .full-episode__body, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.focus .full-episode__num, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.hover .full-episode__num { transform: translate(var(--atv-lx, 0em), var(--atv-ly, 0em)) !important; will-change: transform; }',
       'body.' + BODY_CLASS + ' .card__vote, body.' + BODY_CLASS + ' .card__quality, body.' + BODY_CLASS + ' .card__type, body.' + BODY_CLASS + ' .card__promo-text, body.' + BODY_CLASS + ' .card__promo-title, body.' + BODY_CLASS + ' .full-person__photo, body.' + BODY_CLASS + ' .nfx-card-overlay__match { display:none !important; }',
       'body.' + BODY_CLASS + ' .card__title, body.' + BODY_CLASS + ' .card__age { display:none !important; }',
       'body.' + BODY_CLASS + ' .nfx-card-overlay { position:absolute; left:0; right:0; bottom:0; z-index:0; display:flex !important; flex-direction:column; justify-content:center; align-items:flex-start; opacity:1 !important; visibility:visible !important; border-radius:0 0 1.55em 1.55em !important; background:transparent !important; padding:2.15em 1.02em .92em !important; transform: translateZ(14px); transition: transform .28s cubic-bezier(.22,.61,.36,1), opacity .24s ease; pointer-events:none; }',
@@ -3316,6 +3428,12 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       '  box-shadow: 0 8px 24px rgba(0,0,0,.45) !important;',
       '  animation: none !important;',
       '}',
+      'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"].selectbox--open .selectbox__content,',
+      'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"].selectbox--open .selectbox__content.layer--height,',
+      'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"].selectbox--open .selectbox__content,',
+      'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"].selectbox--open .selectbox__content.layer--height {',
+      '  transform: translate3d(0, 0, 0) !important;',
+      '}',
       'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .selectbox__layer { animation: none !important; }',
       'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .selectbox-item.selector { transition: none !important; }',
       'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .selectbox-item.focus,',
@@ -3386,6 +3504,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       'body.' + BODY_CLASS + ' .agnative-beta-badge { display:inline-block; margin-left:.6em; padding:.12em .5em; font-size:.55em; font-weight:800; letter-spacing:.06em; color:#fff; background:linear-gradient(135deg, #ff6b35, #c1272d); border-radius:.4em; vertical-align:middle; line-height:1.2; box-shadow:0 1px 4px rgba(193,39,45,.4); }',
       'body.' + BODY_CLASS + ' .agnative-hero { position:relative; width:auto; margin:1em 2.5em 1.5em; height:52vh; min-height:380px; overflow:hidden; border-radius:1.5em; opacity:1; transition:opacity .6s ease; flex-shrink:0; display:block; z-index:8; box-shadow:0 16px 40px rgba(0,0,0,.32), 0 6px 14px rgba(0,0,0,.18); }',
       'body.' + BODY_CLASS + ' .agnative-hero__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center top; border-radius:1.5em; opacity:1; transition:opacity .4s ease; pointer-events:none; }',
+      '@keyframes agnative-hero-pan { from { object-position: center 0%; } to { object-position: center 100%; } }',
       'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__bg { opacity:0; }',
       'body.' + BODY_CLASS + ' .activity--active .items-line, body.' + BODY_CLASS + ' .activity--active .scroll__content { position:relative; z-index:10; }',
       'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--visible { opacity:1; }',
@@ -4745,8 +4864,19 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     });
   }
 
+  function isSursButtonCard(cardEl) {
+    if (!cardEl || !cardEl.classList) return false;
+    return cardEl.classList.contains('card--button-compact') ||
+           cardEl.classList.contains('streaming-card--button-compact') ||
+           cardEl.classList.contains('card--genre-compact');
+  }
+
   function switchCardToBackdrop(cardEl) {
     if (cardEl.getAttribute('data-nfx-switched')) return;
+    if (isSursButtonCard(cardEl)) {
+      cardEl.setAttribute('data-nfx-switched', 'surs');
+      return;
+    }
     cardEl.setAttribute('data-nfx-switched', '1');
 
     var data = extractCardData(cardEl);
@@ -5086,14 +5216,18 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     var lastClientX = 0;
     var lastClientY = 0;
     var rafScheduled = false;
-    var glareOn = glareEnabled();
+    var cardAnimMode = getCardAnim();
 
-    if (window.Lampa && Lampa.Storage && typeof Lampa.Storage.listener === 'function' && Lampa.Storage.listener.follow) {
+    if (window.Lampa && Lampa.Storage && Lampa.Storage.listener && Lampa.Storage.listener.follow) {
       try {
         Lampa.Storage.listener.follow('change', function (e) {
-          if (e && e.name === GLARE_KEY) glareOn = glareEnabled();
+          if (e && (e.name === CARD_ANIM_KEY || e.name === GLARE_KEY)) cardAnimMode = getCardAnim();
         });
       } catch (err) { }
+    }
+
+    function animActive() {
+      return cardAnimMode !== 'off' && resolvePerfLevel() !== 'ultra';
     }
 
     function flushGlare() {
@@ -5106,10 +5240,17 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       var xPct = (x / w) * 2 - 1;
       var yPct = (y / h) * 2 - 1;
       var s = activeCard.style;
-      s.setProperty('--gx', x + 'px');
-      s.setProperty('--gy', y + 'px');
-      s.setProperty('--rx', (yPct * -7) + 'deg');
-      s.setProperty('--ry', (xPct * 7) + 'deg');
+      if (cardAnimMode === 'appletv') {
+        s.setProperty('--atv-rx', (yPct * -4) + 'deg');
+        s.setProperty('--atv-ry', (xPct * 4) + 'deg');
+        s.setProperty('--atv-lx', (xPct * 0.3) + 'em');
+        s.setProperty('--atv-ly', (yPct * 0.3) + 'em');
+      } else {
+        s.setProperty('--gx', x + 'px');
+        s.setProperty('--gy', y + 'px');
+        s.setProperty('--rx', (yPct * -7) + 'deg');
+        s.setProperty('--ry', (xPct * 7) + 'deg');
+      }
     }
 
     function setActiveCard(card) {
@@ -5119,7 +5260,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     }
 
     document.body.addEventListener('mouseover', function (e) {
-      if (!glareOn || resolvePerfLevel() === 'ultra') { activeCard = null; activeRect = null; return; }
+      if (!animActive()) { activeCard = null; activeRect = null; return; }
       var card = e.target.closest ? e.target.closest(GLARE_SEL) : null;
       setActiveCard(card);
     });
@@ -5152,6 +5293,10 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       s.setProperty('--ry', '0deg');
       s.setProperty('--gx', '50%');
       s.setProperty('--gy', '50%');
+      s.removeProperty('--atv-rx');
+      s.removeProperty('--atv-ry');
+      s.removeProperty('--atv-lx');
+      s.removeProperty('--atv-ly');
       if (activeCard === card) { activeCard = null; activeRect = null; }
     });
   }
