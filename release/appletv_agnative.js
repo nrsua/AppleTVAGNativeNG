@@ -1656,18 +1656,36 @@
         if (logoEl) { logoEl.src = ''; logoEl.style.display = 'none'; }
 
         if (id) {
-          fetchLogo(id, type, function (logo) {
+          var requestedId = id;
+          var logoType = item.name ? 'tv' : 'movie';
+          fetchLogo(id, logoType, function (logo) {
+            if (!heroCurrentItem || heroCurrentItem.id !== requestedId) return;
             var h = document.querySelector('.agnative-hero');
             if (!h) return;
             var lEl = h.querySelector('.agnative-hero__logo');
             var tEl = h.querySelector('.agnative-hero__title');
-            if (logo && logo.path) {
-              if (lEl) { lEl.src = Lampa.TMDB.image('t/p/w500' + logo.path); lEl.style.display = ''; }
-              if (tEl) tEl.style.display = 'none';
-            } else {
+            if (!logo || !logo.path) {
               if (lEl) lEl.style.display = 'none';
               if (tEl) tEl.style.display = '';
+              return;
             }
+            var logoUrl = logoImgUrl(logo.path);
+            imgLoad(logoUrl, function (src) {
+              if (!heroCurrentItem || heroCurrentItem.id !== requestedId) {
+                if (src !== logoUrl) { try { URL.revokeObjectURL(src); } catch (e) {} }
+                return;
+              }
+              if (!lEl) return;
+              lEl.onload = function () { if (src !== logoUrl) { try { URL.revokeObjectURL(src); } catch (e) {} } };
+              lEl.onerror = function () {
+                if (src !== logoUrl) { try { URL.revokeObjectURL(src); } catch (e) {} }
+                lEl.style.display = 'none';
+                if (tEl) tEl.style.display = '';
+              };
+              lEl.src = src;
+              lEl.style.display = '';
+              if (tEl) tEl.style.display = 'none';
+            });
           });
         }
 
