@@ -69,7 +69,7 @@
     TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size'
   };
 
-  const PLUGIN_VERSION = '0.3.24';
+  const PLUGIN_VERSION = '0.3.25';
   const PLUGIN_AUTHORS = 'llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96';
 
   const ru = {
@@ -3048,7 +3048,8 @@
         '  filter: none !important;',
         '}',
         'body.' + BODY_CLASS + ' .activity__slides { padding-top:3.5em !important; }',
-        'body.' + BODY_CLASS + ' .full-start__body, body.' + BODY_CLASS + ' .full-start-new__body { padding-top:1.5em !important; }',
+        'body.' + BODY_CLASS + ' .full-start__body, body.' + BODY_CLASS + ' .full-start-new__body { transform: translateY(3em) !important; }',
+        'body.' + BODY_CLASS + ' .full-start-new ~ .items-line, body.' + BODY_CLASS + ' .full-start ~ .items-line, body.' + BODY_CLASS + ' .full-start-new + *, body.' + BODY_CLASS + ' .full-start + * { transform: translateY(3em) !important; }',
         'body.' + BODY_CLASS + ' .activity.layer--width.activity--active,',
         'body.' + BODY_CLASS + ' .activity.layer--width.activity--active.application,',
         'body.' + BODY_CLASS + ' .activity.layer--width.activity--active.applecation {',
