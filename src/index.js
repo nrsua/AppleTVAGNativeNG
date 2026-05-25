@@ -639,7 +639,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       Lampa.Storage.set(HERO_ALIGN_KEY, 'top');
       Lampa.Storage.set(HERO_INDICATORS_KEY, 'false');
       Lampa.Storage.set(HERO_ANIMATION_KEY, 'true');
-      Lampa.Storage.set(HERO_INTERVAL_KEY, '8');
+      Lampa.Storage.set(HERO_INTERVAL_KEY, '40');
       Lampa.Storage.set(HERO_BG_ANIM_KEY, 'off');
       Lampa.Storage.set(HERO_QUALITY_KEY, 'w1280');
       Lampa.Storage.set(TOPNAV_ITEMS_KEY, ['main', 'movie', 'tv', 'cartoon']);
@@ -741,12 +741,12 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
 
   function getHeroIntervalMs() {
     try {
-      if (!window.Lampa || !Lampa.Storage) return 8000;
-      var v = parseInt(Lampa.Storage.get(HERO_INTERVAL_KEY, '8'), 10);
-      if (!v || v < 2) v = 8;
+      if (!window.Lampa || !Lampa.Storage) return 40000;
+      var v = parseInt(Lampa.Storage.get(HERO_INTERVAL_KEY, '40'), 10);
+      if (!v || v < 2) v = 40;
       if (v > 60) v = 60;
       return v * 1000;
-    } catch (e) { return 8000; }
+    } catch (e) { return 40000; }
   }
 
   var HERO_BG_ANIM_VALUES = ['off', 'pan-down', 'pan-up', 'zoom-in', 'zoom-out', 'drift', 'breathe'];
@@ -794,7 +794,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     else if (anim === 'zoom-in')  bg.style.animation = 'agnative-hero-zoom-in '   + dur + ' ease-in-out forwards';
     else if (anim === 'zoom-out') bg.style.animation = 'agnative-hero-zoom-out '  + dur + ' ease-in-out forwards';
     else if (anim === 'drift')    bg.style.animation = 'agnative-hero-drift '     + dur + ' ease-in-out forwards';
-    else if (anim === 'breathe')  bg.style.animation = 'agnative-hero-breathe 8s ease-in-out infinite';
+    else if (anim === 'breathe')  bg.style.animation = 'agnative-hero-breathe ' + dur + ' ease-in-out infinite';
   }
 
   function syncHeroAttrs(hero) {
@@ -1014,6 +1014,31 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     } catch (e) { }
   }
 
+  var heroTransitionTimer = null;
+
+  function transitionHeroToIndex(idx) {
+    if (idx < 0 || idx >= heroItems.length || !heroItems[idx]) return;
+    if (idx === heroCurrentIndex) return;
+    var hero = document.querySelector('.agnative-hero');
+    if (!hero) return;
+    if (heroTransitionTimer) { clearTimeout(heroTransitionTimer); heroTransitionTimer = null; }
+    heroCurrentIndex = idx;
+    updateHeroIndicators();
+    if (heroAnimationEnabled()) {
+      hero.classList.add('agnative-hero--switching');
+      heroTransitionTimer = setTimeout(function () {
+        heroTransitionTimer = null;
+        renderHeroSlide(heroItems[idx]);
+        setTimeout(function () {
+          var hh = document.querySelector('.agnative-hero.agnative-hero--switching');
+          if (hh) hh.classList.remove('agnative-hero--switching');
+        }, 2000);
+      }, 320);
+    } else {
+      renderHeroSlide(heroItems[idx]);
+    }
+  }
+
   function startHeroRotation() {
     stopHeroRotation();
     if (heroItems.length < 2) return;
@@ -1021,19 +1046,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       var hero = document.querySelector('.agnative-hero');
       if (!hero) { stopHeroRotation(); return; }
       var nextIdx = (heroCurrentIndex + 1) % heroItems.length;
-      heroCurrentIndex = nextIdx;
-      if (heroAnimationEnabled()) {
-        hero.classList.add('agnative-hero--switching');
-        setTimeout(function () {
-          renderHeroSlide(heroItems[nextIdx]);
-          setTimeout(function () {
-            var hh = document.querySelector('.agnative-hero.agnative-hero--switching');
-            if (hh) hh.classList.remove('agnative-hero--switching');
-          }, 2000);
-        }, 320);
-      } else {
-        renderHeroSlide(heroItems[nextIdx]);
-      }
+      transitionHeroToIndex(nextIdx);
     }, getHeroIntervalMs());
   }
 
@@ -1054,11 +1067,8 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         dot.setAttribute('data-hero-index', String(idx));
         container.appendChild(dot);
         bindAction(dot, function () {
-          stopHeroRotation();
-          if (heroCurrentIndex !== idx) {
-            heroCurrentIndex = idx;
-            renderHeroSlide(heroItems[idx]);
-          }
+          transitionHeroToIndex(idx);
+          startHeroRotation();
         });
         try {
           var $$ = window.$ || window.jQuery;
@@ -1070,11 +1080,8 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
               h.classList.remove('agnative-hero--hidden');
               if (document.body) document.body.classList.remove('agnative-hero-collapsed');
               heroExitDirection = null;
-              stopHeroRotation();
-              if (heroCurrentIndex !== idx) {
-                heroCurrentIndex = idx;
-                renderHeroSlide(heroItems[idx]);
-              }
+              transitionHeroToIndex(idx);
+              startHeroRotation();
             });
             $$(dot).on('hover:blur.agnativeHeroState hover:out.agnativeHeroState', function () {
               var h = document.querySelector('.agnative-hero');
@@ -1084,6 +1091,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
                 h.classList.add('agnative-hero--hidden');
                 if (document.body) document.body.classList.add('agnative-hero-collapsed');
               }
+              startHeroRotation();
             });
           }
         } catch (e) { }
