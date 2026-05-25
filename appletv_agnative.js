@@ -17,6 +17,8 @@
     TMDB_KEY: '4ef0d7355d9ffb5151e987764708ce96',
     ENABLE_KEY: 'appletv_agnative_topnav_enabled',
     GLARE_KEY: 'appletv_agnative_topnav_glare_enabled',
+    CARD_ANIM_KEY: 'appletv_agnative_card_anim',
+    CARD_ANIM_ATTR: 'data-agnative-card-anim',
     TOPNAV_ITEMS_KEY: 'appletv_agnative_topnav_items',
     LOGO_LANG_KEY: 'appletv_agnative_logo_lang',
     FONT_SIZE_KEY: 'appletv_agnative_font_size',
@@ -52,19 +54,37 @@
     CARD_IMAGE_MODE_ATTR: 'data-agnative-card-image-mode',
     LOGO_TITLE_KEY: 'appletv_agnative_logo_title_fallback',
     HERO_KEY: 'appletv_agnative_hero_enabled',
+    HERO_SETTINGS_COMPONENT: 'agnative_hero',
+    HERO_ALIGN_KEY: 'appletv_agnative_hero_align',
+    HERO_ALIGN_ATTR: 'data-agnative-hero-align',
+    HERO_INDICATORS_KEY: 'appletv_agnative_hero_indicators',
+    HERO_ANIMATION_KEY: 'appletv_agnative_hero_animation',
+    HERO_ANIMATION_ATTR: 'data-agnative-hero-anim',
+    HERO_INTERVAL_KEY: 'appletv_agnative_hero_interval',
+    HERO_PAN_KEY: 'appletv_agnative_hero_pan',
+    HERO_BG_ANIM_KEY: 'appletv_agnative_hero_bg_anim',
+    HERO_QUALITY_KEY: 'appletv_agnative_hero_quality',
     TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible',
     TOPNAV_SIZE_KEY: 'appletv_agnative_topnav_size',
     TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size'
   };
 
+  const PLUGIN_VERSION = '0.3.22';
+  const PLUGIN_AUTHORS = 'llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96';
+
   const ru = {
     nav_feed: 'Лента',
     badge_movie: 'ФИЛЬМ', badge_tv: 'СЕРИАЛ',
-    set_about_desc: 'Версия 0.3.18  Авторы: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_version: 'Версия',
+    set_about_authors: 'Авторы',
     set_main_title: 'Основные настройки',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Включает и выключает плагин',
-    set_glare_name: 'Наклон veoveo.ru', set_glare_desc: 'от arabian_q',
+    set_card_anim_name: 'Анимация карточек',
+    set_card_anim_desc: 'Эффект при наведении/фокусе на карточку',
+    val_card_anim_off: 'Выключено',
+    val_card_anim_veoveo: 'Наклон veoveo.ru (arabian_q)',
+    val_card_anim_appletv: 'DepthTV (based on marcreichel)',
     set_topnav_name: 'Пункты Topnav', set_topnav_desc: 'Меню вверху страницы',
     set_topnav_title: 'Пункты верхнего меню',
     set_topnav_item_desc: 'Пункт menu_list: ',
@@ -130,6 +150,28 @@
     val_logo_title_above: 'Да, сверху логотипа',
     set_hero_name: 'Hero баннер',
     set_hero_desc: 'Большой баннер вверху главного экрана',
+    set_hero_title: 'Настройки Hero баннера',
+    set_hero_enable_name: 'Hero баннер',
+    set_hero_enable_desc: 'Большой баннер вверху главного экрана',
+    set_hero_align_name: 'Положение текста',
+    set_hero_align_desc: 'Где расположен блок с названием и описанием',
+    val_hero_align_top: 'Сверху',
+    val_hero_align_center: 'По центру',
+    val_hero_align_bottom: 'Снизу',
+    set_hero_indicators_name: 'Полоски карточек',
+    set_hero_indicators_desc: 'Показывать индикаторы, по нажатию открывают соответствующую карточку',
+    set_hero_animation_name: 'Плавная анимация',
+    set_hero_animation_desc: 'Плавная смена контента баннера при ротации',
+    set_hero_interval_name: 'Интервал смены',
+    set_hero_interval_desc: 'Как часто баннер переключается на следующую карточку',
+    set_hero_bg_anim_name: 'Анимация фона',
+    set_hero_bg_anim_desc: 'Плавное движение фоновой картинки за время одного слайда',
+    val_anim_pan_down: 'Панорама ↓', val_anim_pan_up: 'Панорама ↑',
+    val_anim_zoom_in: 'Приближение', val_anim_zoom_out: 'Отдаление',
+    val_anim_drift: 'Дрейф', val_anim_breathe: 'Дыхание',
+    set_hero_quality_name: 'Качество фона',
+    set_hero_quality_desc: 'Разрешение фоновой картинки баннера',
+    val_sec_short: 'сек',
     hero_btn_watch: 'Смотреть',
     set_section_beta: 'Beta - функции',
     set_topnav_enable_name: 'Верхняя панель навигации',
@@ -142,11 +184,16 @@
   const en = {
     nav_feed: 'Feed',
     badge_movie: 'MOVIE', badge_tv: 'TV SHOW',
-    set_about_desc: 'Version 0.3.18  Authors: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_version: 'Version',
+    set_about_authors: 'Authors',
     set_main_title: 'Main settings',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Enables and disables the plugin',
-    set_glare_name: 'Tilt veoveo.ru', set_glare_desc: 'by arabian_q',
+    set_card_anim_name: 'Card animation',
+    set_card_anim_desc: 'Effect on card hover / focus',
+    val_card_anim_off: 'Off',
+    val_card_anim_veoveo: 'veoveo.ru tilt (arabian_q)',
+    val_card_anim_appletv: 'DepthTV (based on marcreichel)',
     set_topnav_name: 'Topnav items', set_topnav_desc: 'Top page menu',
     set_topnav_title: 'Top navigation items',
     set_topnav_item_desc: 'menu_list item: ',
@@ -212,6 +259,28 @@
     val_logo_title_above: 'Yes, above logo',
     set_hero_name: 'Hero banner',
     set_hero_desc: 'Large banner at the top of the main screen',
+    set_hero_title: 'Hero banner settings',
+    set_hero_enable_name: 'Hero banner',
+    set_hero_enable_desc: 'Large banner at the top of the main screen',
+    set_hero_align_name: 'Text position',
+    set_hero_align_desc: 'Where the title and description block sits',
+    val_hero_align_top: 'Top',
+    val_hero_align_center: 'Center',
+    val_hero_align_bottom: 'Bottom',
+    set_hero_indicators_name: 'Card strips',
+    set_hero_indicators_desc: 'Show indicator strips, pressing opens the matching card',
+    set_hero_animation_name: 'Smooth animation',
+    set_hero_animation_desc: 'Smooth content transition when the banner rotates',
+    set_hero_interval_name: 'Slide interval',
+    set_hero_interval_desc: 'How often the banner rotates to the next card',
+    set_hero_bg_anim_name: 'Background animation',
+    set_hero_bg_anim_desc: 'Ambient motion applied to the backdrop image during each slide',
+    val_anim_pan_down: 'Pan ↓', val_anim_pan_up: 'Pan ↑',
+    val_anim_zoom_in: 'Zoom in', val_anim_zoom_out: 'Zoom out',
+    val_anim_drift: 'Drift', val_anim_breathe: 'Breathe',
+    set_hero_quality_name: 'Background quality',
+    set_hero_quality_desc: 'Banner backdrop image resolution',
+    val_sec_short: 'sec',
     hero_btn_watch: 'Watch',
     set_section_beta: 'Beta features',
     set_topnav_enable_name: 'Top navigation bar',
@@ -224,11 +293,16 @@
   const uk = {
     nav_feed: 'Стрічка',
     badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРІАЛ',
-    set_about_desc: 'Версія 0.3.18  Автори: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_version: 'Версія',
+    set_about_authors: 'Автори',
     set_main_title: 'Основні налаштування',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Вмикає та вимикає плагін',
-    set_glare_name: 'Нахил veoveo.ru', set_glare_desc: 'від arabian_q',
+    set_card_anim_name: 'Анімація карток',
+    set_card_anim_desc: 'Ефект при наведенні/фокусі на картку',
+    val_card_anim_off: 'Вимкнено',
+    val_card_anim_veoveo: 'Нахил veoveo.ru (arabian_q)',
+    val_card_anim_appletv: 'DepthTV (based on marcreichel)',
     set_topnav_name: 'Пункти Topnav', set_topnav_desc: 'Меню вгорі сторінки',
     set_topnav_title: 'Пункти верхнього меню',
     set_topnav_item_desc: 'Пункт menu_list: ',
@@ -294,6 +368,28 @@
     val_logo_title_above: 'Так, зверху логотипу',
     set_hero_name: 'Hero банер',
     set_hero_desc: 'Великий банер вгорі головного екрану',
+    set_hero_title: 'Налаштування Hero банера',
+    set_hero_enable_name: 'Hero банер',
+    set_hero_enable_desc: 'Великий банер вгорі головного екрану',
+    set_hero_align_name: 'Положення тексту',
+    set_hero_align_desc: 'Де розташований блок з назвою та описом',
+    val_hero_align_top: 'Зверху',
+    val_hero_align_center: 'По центру',
+    val_hero_align_bottom: 'Знизу',
+    set_hero_indicators_name: 'Смужки карток',
+    set_hero_indicators_desc: 'Показувати індикатори, по натисканню відкривають відповідну картку',
+    set_hero_animation_name: 'Плавна анімація',
+    set_hero_animation_desc: 'Плавна зміна контенту банера при ротації',
+    set_hero_interval_name: 'Інтервал зміни',
+    set_hero_interval_desc: 'Як часто банер перемикається на наступну картку',
+    set_hero_bg_anim_name: 'Анімація фону',
+    set_hero_bg_anim_desc: 'Плавний рух фонової картинки за час одного слайда',
+    val_anim_pan_down: 'Панорама ↓', val_anim_pan_up: 'Панорама ↑',
+    val_anim_zoom_in: 'Наближення', val_anim_zoom_out: 'Віддалення',
+    val_anim_drift: 'Дрейф', val_anim_breathe: 'Дихання',
+    set_hero_quality_name: 'Якість фону',
+    set_hero_quality_desc: 'Роздільна здатність фонової картинки банера',
+    val_sec_short: 'сек',
     hero_btn_watch: 'Дивитися',
     set_section_beta: 'Beta - функції',
     set_topnav_enable_name: 'Верхня панель навігації',
@@ -306,11 +402,16 @@
   const be = {
     nav_feed: 'Стужка',
     badge_movie: 'ФІЛЬМ', badge_tv: 'СЕРЫЯЛ',
-    set_about_desc: 'Версія 0.3.18 Аўтары: llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96',
+    set_about_version: 'Версія',
+    set_about_authors: 'Аўтары',
     set_main_title: 'Асноўныя налады',
     set_enable_name: 'AppleTV AgNative',
     set_enable_desc: 'Уключае і выключае плагін',
-    set_glare_name: 'Нахіл veoveo.ru', set_glare_desc: 'ад arabian_q',
+    set_card_anim_name: 'Анімацыя картак',
+    set_card_anim_desc: 'Эфект пры навядзенні/фокусе на картку',
+    val_card_anim_off: 'Выключана',
+    val_card_anim_veoveo: 'Нахіл veoveo.ru (arabian_q)',
+    val_card_anim_appletv: 'DepthTV (based on marcreichel)',
     set_topnav_name: 'Пункты Topnav', set_topnav_desc: 'Меню ўверсе старонкі',
     set_topnav_title: 'Пункты верхняга меню',
     set_topnav_item_desc: 'Пункт menu_list: ',
@@ -376,6 +477,28 @@
     val_logo_title_above: 'Так, над лагатыкам',
     set_hero_name: 'Hero банер',
     set_hero_desc: 'Вялікі банер угары галоўнага экрана',
+    set_hero_title: 'Налады Hero банера',
+    set_hero_enable_name: 'Hero банер',
+    set_hero_enable_desc: 'Вялікі банер угары галоўнага экрана',
+    set_hero_align_name: 'Размяшчэнне тэксту',
+    set_hero_align_desc: 'Дзе размешчаны блок з назвай і апісаннем',
+    val_hero_align_top: 'Зверху',
+    val_hero_align_center: 'Па цэнтры',
+    val_hero_align_bottom: 'Знізу',
+    set_hero_indicators_name: 'Палоскі картак',
+    set_hero_indicators_desc: 'Паказваць індыкатары, націсканне адкрывае адпаведную картку',
+    set_hero_animation_name: 'Плыўная анімацыя',
+    set_hero_animation_desc: 'Плыўная змена кантэнту банера пры ратацыі',
+    set_hero_interval_name: 'Інтэрвал змены',
+    set_hero_interval_desc: 'Як часта банер пераключаецца на наступную картку',
+    set_hero_bg_anim_name: 'Анімацыя фону',
+    set_hero_bg_anim_desc: 'Плыўны рух фонавай карцінкі за час аднаго слайда',
+    val_anim_pan_down: 'Панарама ↓', val_anim_pan_up: 'Панарама ↑',
+    val_anim_zoom_in: 'Набліжэнне', val_anim_zoom_out: 'Аддаленне',
+    val_anim_drift: 'Дрэйф', val_anim_breathe: 'Дыханне',
+    set_hero_quality_name: 'Якасць фону',
+    set_hero_quality_desc: 'Раздзяляльная здольнасць фонавай карцінкі банера',
+    val_sec_short: 'сек',
     hero_btn_watch: 'Глядзець',
     set_section_beta: 'Beta - функцыі',
     set_topnav_enable_name: 'Верхняя панэль навігацыі',
@@ -647,6 +770,8 @@
       TMDB_KEY,
       ENABLE_KEY,
       GLARE_KEY,
+      CARD_ANIM_KEY,
+      CARD_ANIM_ATTR,
       TOPNAV_ITEMS_KEY,
       LOGO_LANG_KEY,
       FONT_SIZE_KEY,
@@ -682,6 +807,16 @@
       CARD_IMAGE_MODE_ATTR,
       LOGO_TITLE_KEY,
       HERO_KEY,
+      HERO_SETTINGS_COMPONENT,
+      HERO_ALIGN_KEY,
+      HERO_ALIGN_ATTR,
+      HERO_INDICATORS_KEY,
+      HERO_ANIMATION_KEY,
+      HERO_ANIMATION_ATTR,
+      HERO_INTERVAL_KEY,
+      HERO_PAN_KEY,
+      HERO_BG_ANIM_KEY,
+      HERO_QUALITY_KEY,
       TOPNAV_ENABLE_KEY,
       TOPNAV_SIZE_KEY,
       TOPNAV_SIZE_ATTR
@@ -935,13 +1070,19 @@
       return key;
     }
 
-    function glareEnabled() {
+    function getCardAnim() {
       try {
-        if (!window.Lampa || !Lampa.Storage) return true;
-        return Lampa.Storage.get(GLARE_KEY, 'on') !== 'off';
-      } catch (e) {
-        return true;
-      }
+        if (!window.Lampa || !Lampa.Storage) return 'veoveo';
+        var raw = Lampa.Storage.get(CARD_ANIM_KEY, null);
+        if (raw === 'off' || raw === 'veoveo' || raw === 'appletv') return raw;
+        var legacy = Lampa.Storage.get(GLARE_KEY, 'on');
+        if (legacy === 'off') return 'off';
+        return 'veoveo';
+      } catch (e) { return 'veoveo'; }
+    }
+
+    function glareEnabled() {
+      return getCardAnim() === 'veoveo';
     }
 
     function sceneActive() {
@@ -953,6 +1094,7 @@
         if (document.body) {
           document.body.classList.remove(BODY_CLASS);
           document.body.classList.remove(GLARE_CLASS);
+          document.body.removeAttribute(CARD_ANIM_ATTR);
           document.body.removeAttribute(FONT_SIZE_ATTR);
           document.body.removeAttribute(CATEGORY_SIZE_ATTR);
           document.body.removeAttribute(CARD_SIZE_ATTR);
@@ -1001,6 +1143,33 @@
       } catch (e) { }
     }
 
+    function showReloadConfirm(cancel) {
+      try {
+        if (!window.Lampa || !Lampa.Modal || !Lampa.Lang || !window.$) return;
+        Lampa.Modal.open({
+          title: '',
+          align: 'center',
+          zIndex: 300,
+          html: $('<div class="about">' + Lampa.Lang.translate('plugins_need_reload') + '</div>'),
+          buttons: [
+            {
+              name: Lampa.Lang.translate('settings_param_no'),
+              onSelect: function () {
+                Lampa.Modal.close();
+                if (typeof cancel === 'function') cancel();
+              }
+            },
+            {
+              name: Lampa.Lang.translate('settings_param_yes'),
+              onSelect: function () {
+                window.location.reload();
+              }
+            }
+          ]
+        });
+      } catch (e) { }
+    }
+
     function openSettingsSection(name, back) {
       if (!name || !window.Lampa || !Lampa.Settings || !Lampa.Settings.create) return;
       setTimeout(function () {
@@ -1022,6 +1191,17 @@
             Lampa.Settings.create(SETTINGS_COMPONENT);
             setTimeout(function () { startPlugin(); }, 50);
             setTimeout(function () { schedulePatch(); }, 120);
+          }
+        });
+      }, 0);
+    }
+
+    function openHeroSettingsSection() {
+      if (!window.Lampa || !Lampa.Settings || !Lampa.Settings.create) return;
+      setTimeout(function () {
+        Lampa.Settings.create(HERO_SETTINGS_COMPONENT, {
+          onBack: function () {
+            Lampa.Settings.create(SETTINGS_COMPONENT);
           }
         });
       }, 0);
@@ -1102,6 +1282,9 @@
       if (!document.body) return;
       if (glareEnabled() && pluginEnabled()) document.body.classList.add(GLARE_CLASS);
       else document.body.classList.remove(GLARE_CLASS);
+      var mode = pluginEnabled() ? getCardAnim() : 'off';
+      if (resolvePerfLevel() === 'ultra') mode = 'off';
+      document.body.setAttribute(CARD_ANIM_ATTR, mode);
     }
 
     function syncFontSize() {
@@ -1189,6 +1372,7 @@
         if (!window.Lampa || !Lampa.Storage) return;
         Lampa.Storage.set(ENABLE_KEY, 'on');
         Lampa.Storage.set(GLARE_KEY, 'on');
+        Lampa.Storage.set(CARD_ANIM_KEY, 'veoveo');
         Lampa.Storage.set(UI_LANG_KEY, 'auto');
         Lampa.Storage.set(LOGO_LANG_KEY, 'auto');
         Lampa.Storage.set(FONT_SIZE_KEY, 'md');
@@ -1205,6 +1389,12 @@
         Lampa.Storage.set(OVERLAY_ALIGN_KEY, 'start');
         Lampa.Storage.set(CARD_IMAGE_MODE_KEY, 'backdrop');
         Lampa.Storage.set(LOGO_TITLE_KEY, 'off');
+        Lampa.Storage.set(HERO_ALIGN_KEY, 'top');
+        Lampa.Storage.set(HERO_INDICATORS_KEY, 'false');
+        Lampa.Storage.set(HERO_ANIMATION_KEY, 'true');
+        Lampa.Storage.set(HERO_INTERVAL_KEY, '8');
+        Lampa.Storage.set(HERO_BG_ANIM_KEY, 'off');
+        Lampa.Storage.set(HERO_QUALITY_KEY, 'w1280');
         Lampa.Storage.set(TOPNAV_ITEMS_KEY, ['main', 'movie', 'tv', 'cartoon']);
         logoCache = {};
         titledBackdropCache = {};
@@ -1271,7 +1461,90 @@
     }
 
     function heroBannerEnabled() {
-      try { return window.Lampa && Lampa.Storage.get(HERO_KEY, 'off') === 'on'; } catch (e) { return false; }
+      try {
+        if (!window.Lampa || !Lampa.Storage) return false;
+        var v = Lampa.Storage.get(HERO_KEY, 'false');
+        return v === true || v === 'true' || v === 'on';
+      } catch (e) { return false; }
+    }
+
+    function getHeroAlign() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return 'top';
+        var v = Lampa.Storage.get(HERO_ALIGN_KEY, 'top') || 'top';
+        return (v === 'center' || v === 'bottom') ? v : 'top';
+      } catch (e) { return 'top'; }
+    }
+
+    function heroIndicatorsEnabled() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return false;
+        var v = Lampa.Storage.get(HERO_INDICATORS_KEY, 'false');
+        return v === true || v === 'true' || v === 'on';
+      } catch (e) { return false; }
+    }
+
+    function heroAnimationEnabled() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return true;
+        var v = Lampa.Storage.get(HERO_ANIMATION_KEY, 'true');
+        return !(v === false || v === 'false' || v === 'off');
+      } catch (e) { return true; }
+    }
+
+    function getHeroIntervalMs() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return 8000;
+        var v = parseInt(Lampa.Storage.get(HERO_INTERVAL_KEY, '8'), 10);
+        if (!v || v < 2) v = 8;
+        if (v > 60) v = 60;
+        return v * 1000;
+      } catch (e) { return 8000; }
+    }
+
+    var HERO_BG_ANIM_VALUES = ['off', 'pan-down', 'pan-up', 'zoom-in', 'zoom-out', 'drift', 'breathe'];
+
+    function getHeroBgAnim() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return 'off';
+        // backward compat: old pan toggle on → treat as pan-down if new key not set
+        var legacy = Lampa.Storage.get(HERO_PAN_KEY, 'false');
+        var v = Lampa.Storage.get(HERO_BG_ANIM_KEY, '');
+        if (!v && (legacy === true || legacy === 'true' || legacy === 'on')) return 'pan-down';
+        return HERO_BG_ANIM_VALUES.indexOf(v) >= 0 ? v : 'off';
+      } catch (e) { return 'off'; }
+    }
+
+    function getHeroQuality() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return 'w1280';
+        var v = Lampa.Storage.get(HERO_QUALITY_KEY, 'w1280') || 'w1280';
+        if (v === 'w780' || v === 'w1280' || v === 'original') return v;
+        return 'w1280';
+      } catch (e) { return 'w1280'; }
+    }
+
+    function applyHeroBgAnim() {
+      var bg = document.querySelector('.agnative-hero__bg');
+      if (!bg) return;
+      bg.style.animation = 'none';
+      var anim = getHeroBgAnim();
+      if (anim === 'off') return;
+      void bg.offsetWidth;
+      var dur = (getHeroIntervalMs() / 1000) + 's';
+      if      (anim === 'pan-down') bg.style.animation = 'agnative-hero-pan-down '  + dur + ' linear forwards';
+      else if (anim === 'pan-up')   bg.style.animation = 'agnative-hero-pan-up '    + dur + ' linear forwards';
+      else if (anim === 'zoom-in')  bg.style.animation = 'agnative-hero-zoom-in '   + dur + ' ease-in-out forwards';
+      else if (anim === 'zoom-out') bg.style.animation = 'agnative-hero-zoom-out '  + dur + ' ease-in-out forwards';
+      else if (anim === 'drift')    bg.style.animation = 'agnative-hero-drift '     + dur + ' ease-in-out forwards';
+      else if (anim === 'breathe')  bg.style.animation = 'agnative-hero-breathe 8s ease-in-out infinite';
+    }
+
+    function syncHeroAttrs(hero) {
+      if (!hero) hero = document.querySelector('.agnative-hero');
+      if (!hero) return;
+      hero.setAttribute(HERO_ALIGN_ATTR, getHeroAlign());
+      hero.setAttribute(HERO_ANIMATION_ATTR, heroAnimationEnabled() ? 'on' : 'off');
     }
 
     function stopHeroRotation() {
@@ -1338,17 +1611,19 @@
       var hero = document.querySelector('.agnative-hero');
       if (!hero || !item) return;
       heroCurrentItem = item;
+      updateHeroIndicators();
       try {
         var id = item.id;
         var type = detectHeroItemType(item);
 
         var bg = hero.querySelector('.agnative-hero__bg');
         if (bg) {
-          var newSrc = item.backdrop_path ? Lampa.TMDB.image('t/p/w1280' + item.backdrop_path) : (item._heroFallbackImg || '');
+          var newSrc = item.backdrop_path ? Lampa.TMDB.image('t/p/' + getHeroQuality() + item.backdrop_path) : (item._heroFallbackImg || '');
           if (bg.src !== newSrc) {
             bg.src = newSrc;
             extractDominantColor(newSrc, applyHeroAccent);
           }
+          applyHeroBgAnim();
         }
 
         var badgeEl = hero.querySelector('.agnative-hero__badge');
@@ -1398,6 +1673,24 @@
       } catch (e) { }
     }
 
+    function scrollActivityToHero(hero) {
+      try {
+        if (!hero) hero = document.querySelector('.agnative-hero');
+        if (!hero) return;
+        var scrollBody = hero.closest ? hero.closest('.scroll__body') : null;
+        if (!scrollBody) {
+          scrollBody = document.querySelector('.activity--active .scroll__body') ||
+                       document.querySelector('.scroll__body');
+        }
+        if (scrollBody) {
+          scrollBody.style.transform = 'translate3d(0px, 0px, 0px)';
+          scrollBody.style.webkitTransform = 'translate3d(0px, 0px, 0px)';
+        }
+        var scrollHost = hero.closest ? hero.closest('.scroll') : null;
+        if (scrollHost) scrollHost.scrollTop = 0;
+      } catch (e) { }
+    }
+
     function ensureHeroController() {
       if (window.__AGNATIVE_HERO_CONTROLLER__) return;
       if (!window.Lampa || !Lampa.Controller || !Lampa.Controller.add || !window.$) return;
@@ -1413,24 +1706,41 @@
           heroExitDirection = null;
           hero.classList.remove('agnative-hero--hidden');
           if (document.body) document.body.classList.remove('agnative-hero-collapsed');
+          scrollActivityToHero(hero);
           try {
             Lampa.Controller.collectionSet($(hero));
             Lampa.Controller.collectionFocus(btn, $(hero));
           } catch (e) { }
         },
         up: function () {
+          if (window.Navigator && Navigator.canmove && Navigator.canmove('up')) {
+            Navigator.move('up');
+            return;
+          }
           heroExitDirection = 'up';
           try { Lampa.Controller.toggle('head'); } catch (e) { }
         },
         down: function () {
+          if (window.Navigator && Navigator.canmove && Navigator.canmove('down')) {
+            Navigator.move('down');
+            return;
+          }
           heroExitDirection = 'down';
           try { Lampa.Controller.toggle('content'); } catch (e) { }
         },
         left: function () {
+          if (window.Navigator && Navigator.canmove && Navigator.canmove('left')) {
+            Navigator.move('left');
+            return;
+          }
           heroExitDirection = 'left';
           try { Lampa.Controller.toggle('menu'); } catch (e) { }
         },
-        right: function () { },
+        right: function () {
+          if (window.Navigator && Navigator.canmove && Navigator.canmove('right')) {
+            Navigator.move('right');
+          }
+        },
         back: function () {
           try { if (Lampa.Activity && Lampa.Activity.backward) Lampa.Activity.backward(); } catch (e) { }
         }
@@ -1452,14 +1762,96 @@
       heroRotationTimer = setInterval(function () {
         var hero = document.querySelector('.agnative-hero');
         if (!hero) { stopHeroRotation(); return; }
-        heroCurrentIndex = (heroCurrentIndex + 1) % heroItems.length;
-        hero.classList.remove('agnative-hero--visible');
-        setTimeout(function () {
-          renderHeroSlide(heroItems[heroCurrentIndex]);
-          var h = document.querySelector('.agnative-hero');
-          if (h) h.classList.add('agnative-hero--visible');
-        }, 350);
-      }, 8000);
+        var nextIdx = (heroCurrentIndex + 1) % heroItems.length;
+        heroCurrentIndex = nextIdx;
+        if (heroAnimationEnabled()) {
+          hero.classList.add('agnative-hero--switching');
+          setTimeout(function () {
+            renderHeroSlide(heroItems[nextIdx]);
+            var h = document.querySelector('.agnative-hero');
+            if (h) {
+              requestAnimationFrame(function () {
+                h.classList.remove('agnative-hero--switching');
+              });
+            }
+          }, 280);
+        } else {
+          renderHeroSlide(heroItems[nextIdx]);
+        }
+      }, getHeroIntervalMs());
+    }
+
+    function buildHeroIndicators(container) {
+      if (!container) return;
+      container.innerHTML = '';
+      if (!heroIndicatorsEnabled()) {
+        container.style.display = 'none';
+        return;
+      }
+      container.style.display = '';
+      for (var i = 0; i < heroItems.length; i++) {
+        (function (idx) {
+          var dot = document.createElement('div');
+          dot.className = 'agnative-hero__indicator selector';
+          dot.setAttribute('tabindex', '0');
+          dot.setAttribute('data-selector', 'true');
+          dot.setAttribute('data-hero-index', String(idx));
+          container.appendChild(dot);
+          bindAction(dot, function () {
+            stopHeroRotation();
+            if (heroCurrentIndex !== idx) {
+              heroCurrentIndex = idx;
+              renderHeroSlide(heroItems[idx]);
+            }
+          });
+          try {
+            var $$ = window.$ || window.jQuery;
+            if ($$) {
+              $$(dot).on('hover:focus.agnativeHeroState hover:hover.agnativeHeroState', function () {
+                var h = document.querySelector('.agnative-hero');
+                if (!h) return;
+                h.classList.remove('agnative-hero--unfocused');
+                h.classList.remove('agnative-hero--hidden');
+                if (document.body) document.body.classList.remove('agnative-hero-collapsed');
+                heroExitDirection = null;
+                stopHeroRotation();
+                if (heroCurrentIndex !== idx) {
+                  heroCurrentIndex = idx;
+                  renderHeroSlide(heroItems[idx]);
+                }
+              });
+              $$(dot).on('hover:blur.agnativeHeroState hover:out.agnativeHeroState', function () {
+                var h = document.querySelector('.agnative-hero');
+                if (!h) return;
+                h.classList.add('agnative-hero--unfocused');
+                if (heroExitDirection === 'down') {
+                  h.classList.add('agnative-hero--hidden');
+                  if (document.body) document.body.classList.add('agnative-hero-collapsed');
+                }
+              });
+            }
+          } catch (e) { }
+        })(i);
+      }
+      updateHeroIndicators();
+    }
+
+    function updateHeroIndicators() {
+      var dots = document.querySelectorAll('.agnative-hero__indicator');
+      for (var i = 0; i < dots.length; i++) {
+        if (i === heroCurrentIndex) dots[i].classList.add('agnative-hero__indicator--active');
+        else dots[i].classList.remove('agnative-hero__indicator--active');
+      }
+    }
+
+    function openHeroItemAt(idx) {
+      try {
+        var item = heroItems[idx];
+        if (!item || !window.Lampa || !Lampa.Activity) return;
+        var type = detectHeroItemType(item);
+        var src = (Lampa.Storage && Lampa.Storage.field) ? Lampa.Storage.field('source') : 'tmdb';
+        Lampa.Activity.push({ url: '', title: item.title || item.name || '', component: 'full', id: item.id, method: type, source: src, card: item });
+      } catch (e) { }
     }
 
     function buildHeroBanner() {
@@ -1534,16 +1926,21 @@
         content.appendChild(metaEl);
         content.appendChild(overviewEl);
         content.appendChild(playBtn);
+
+        var indicatorsEl = document.createElement('div');
+        indicatorsEl.className = 'agnative-hero__indicators';
+
         hero.appendChild(bg);
         hero.appendChild(content);
+        hero.appendChild(indicatorsEl);
+        syncHeroAttrs(hero);
 
-        // Insert before the first items-line in its actual parent (not scrollContent — items-line may be nested)
         var insertParent = firstLine.parentNode;
         try { insertParent.insertBefore(hero, firstLine); }
         catch (e) { scrollContent.insertBefore(hero, scrollContent.firstChild); }
 
-        // Bind action ONCE on the play button — handler reads heroCurrentItem at click time
         bindAction(playBtn, openHeroCurrentItem);
+        buildHeroIndicators(indicatorsEl);
 
         // Track hero focus state:
         // - hero gets --unfocused class when focus leaves (used for margin animation)
@@ -1574,9 +1971,19 @@
         renderHeroSlide(heroItems[0]);
         startHeroRotation();
         ensureHeroController();
-        // Auto-focus on play button when hero is built (initial load on main)
-        setTimeout(focusHeroPlayButton, 100);
+        if (!isUiLayerOpen()) setTimeout(focusHeroPlayButton, 100);
       } catch (e) { }
+    }
+
+    function isUiLayerOpen() {
+      try {
+        if (!document.body) return false;
+        if (document.body.classList.contains('settings--open')) return true;
+        if (document.body.classList.contains('selectbox--open')) return true;
+        if (document.body.classList.contains('search--open')) return true;
+        if (document.querySelector('.modal, .player, .youtube-player, .search-box')) return true;
+        return false;
+      } catch (e) { return false; }
     }
 
     function registerSettings() {
@@ -1587,6 +1994,7 @@
         if (Lampa.Template && Lampa.Template.add) {
           Lampa.Template.add('settings_' + SETTINGS_COMPONENT, '<div></div>');
           Lampa.Template.add('settings_' + TOPNAV_SETTINGS_COMPONENT, '<div></div>');
+          Lampa.Template.add('settings_' + HERO_SETTINGS_COMPONENT, '<div></div>');
         }
 
         Lampa.SettingsApi.addComponent({
@@ -1600,7 +2008,7 @@
           param: { name: 'agnative_about_info', type: 'static' },
           field: {
             name: 'AppleTV AgNative',
-            description: t('set_about_desc')
+            description: t('set_about_version') + ' ' + PLUGIN_VERSION + '  ' + t('set_about_authors') + ': ' + PLUGIN_AUTHORS
           }
         });
 
@@ -1657,51 +2065,27 @@
             syncPerfMode();
             initGlareRuntime();
             perfModeDirty = true;
-            try {
-              if (window.Lampa && Lampa.Modal && Lampa.Lang) {
-                Lampa.Modal.open({
-
-                  html: $('<div style="padding: 20px; text-align: center;">' +
-                    '<div style="margin-bottom: 15px;">' + Lampa.Lang.translate('plugins_need_reload') + '</div>' +
-                  '</div>'),
-                  buttons: [
-                    {
-                      name: Lampa.Lang.translate('settings_param_yes'),
-                      onSelect: function () {
-                        Lampa.Modal.close();
-                        window.location.reload();
-                      }
-                    },
-                    {
-                      name: Lampa.Lang.translate('settings_param_no'),
-                      onSelect: function () {
-                        Lampa.Modal.close();
-                        Lampa.Controller.toggle('settings_component');
-                      }
-                    }
-                  ],
-                  onBack: function () {
-                    Lampa.Controller.toggle('settings_component');
-                  }
-                });
-              }
-            } catch (e) {
-              console.error('Error showing reload dialog:', e);
-            }
+            showReloadConfirm(function () {
+              try { Lampa.Controller.toggle('settings_component'); } catch (e) { }
+            });
           }
         });
 
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
           param: {
-            name: GLARE_KEY,
+            name: CARD_ANIM_KEY,
             type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
-            default: 'on'
+            values: {
+              off: t('val_card_anim_off'),
+              veoveo: t('val_card_anim_veoveo'),
+              appletv: t('val_card_anim_appletv')
+            },
+            default: 'veoveo'
           },
           field: {
-            name: t('set_glare_name'),
-            description: t('set_glare_desc')
+            name: t('set_card_anim_name'),
+            description: t('set_card_anim_desc')
           },
           onChange: function () {
             syncGlareClass();
@@ -2133,6 +2517,24 @@
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
+          field: { name: t('set_section_beta') + ' <span class="agnative-beta-badge">BETA</span>' }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_COMPONENT,
+          param: { name: 'agnative_open_hero_settings', type: 'button' },
+          field: {
+            name: t('set_hero_name'),
+            description: t('set_hero_desc')
+          },
+          onChange: function () {
+            openHeroSettingsSection();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_COMPONENT,
+          param: { type: 'title' },
           field: { name: t('set_section_data') }
         });
 
@@ -2161,30 +2563,6 @@
 
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
-          param: { type: 'title' },
-          field: { name: t('set_section_beta') }
-        });
-
-        Lampa.SettingsApi.addParam({
-          component: SETTINGS_COMPONENT,
-          param: {
-            name: HERO_KEY,
-            type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
-            default: 'off'
-          },
-          field: {
-            name: t('set_hero_name'),
-            description: t('set_hero_desc')
-          },
-          onChange: function (value) {
-            if (value === 'off') removeHeroBanner();
-            else buildHeroBanner();
-          }
-        });
-
-        Lampa.SettingsApi.addParam({
-          component: SETTINGS_COMPONENT,
           param: { name: 'agnative_reset_button', type: 'button' },
           field: {
             name: t('set_reset_name'),
@@ -2192,6 +2570,167 @@
           },
           onChange: function () {
             resetSettings();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: { type: 'title' },
+          field: { name: t('set_hero_title') }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_KEY,
+            type: 'trigger',
+            default: 'false'
+          },
+          field: {
+            name: t('set_hero_enable_name'),
+            description: t('set_hero_enable_desc')
+          },
+          onChange: function () {
+            if (heroBannerEnabled()) buildHeroBanner();
+            else removeHeroBanner();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_ALIGN_KEY,
+            type: 'select',
+            values: {
+              top: t('val_hero_align_top'),
+              center: t('val_hero_align_center'),
+              bottom: t('val_hero_align_bottom')
+            },
+            default: 'top'
+          },
+          field: {
+            name: t('set_hero_align_name'),
+            description: t('set_hero_align_desc')
+          },
+          onChange: function () {
+            syncHeroAttrs();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_INDICATORS_KEY,
+            type: 'trigger',
+            default: 'false'
+          },
+          field: {
+            name: t('set_hero_indicators_name'),
+            description: t('set_hero_indicators_desc')
+          },
+          onChange: function () {
+            var hero = document.querySelector('.agnative-hero');
+            if (!hero) return;
+            var indicators = hero.querySelector('.agnative-hero__indicators');
+            if (indicators) buildHeroIndicators(indicators);
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_ANIMATION_KEY,
+            type: 'trigger',
+            default: 'true'
+          },
+          field: {
+            name: t('set_hero_animation_name'),
+            description: t('set_hero_animation_desc')
+          },
+          onChange: function () {
+            syncHeroAttrs();
+          }
+        });
+
+        var heroIntervalSec = t('val_sec_short');
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_INTERVAL_KEY,
+            type: 'select',
+            values: {
+              '5': '5 ' + heroIntervalSec,
+              '10': '10 ' + heroIntervalSec,
+              '15': '15 ' + heroIntervalSec,
+              '20': '20 ' + heroIntervalSec,
+              '25': '25 ' + heroIntervalSec,
+              '30': '30 ' + heroIntervalSec,
+              '35': '35 ' + heroIntervalSec,
+              '40': '40 ' + heroIntervalSec,
+              '50': '50 ' + heroIntervalSec,
+              '60': '60 ' + heroIntervalSec
+            },
+            default: '40'
+          },
+          field: {
+            name: t('set_hero_interval_name'),
+            description: t('set_hero_interval_desc')
+          },
+          onChange: function () {
+            if (document.querySelector('.agnative-hero')) {
+              startHeroRotation();
+              applyHeroBgAnim();
+            }
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_BG_ANIM_KEY,
+            type: 'select',
+            values: {
+              'off':      t('val_off'),
+              'pan-down': t('val_anim_pan_down'),
+              'pan-up':   t('val_anim_pan_up'),
+              'zoom-in':  t('val_anim_zoom_in'),
+              'zoom-out': t('val_anim_zoom_out'),
+              'drift':    t('val_anim_drift'),
+              'breathe':  t('val_anim_breathe')
+            },
+            default: 'off'
+          },
+          field: {
+            name: t('set_hero_bg_anim_name'),
+            description: t('set_hero_bg_anim_desc')
+          },
+          onChange: function () {
+            applyHeroBgAnim();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_QUALITY_KEY,
+            type: 'select',
+            values: {
+              w780: t('val_size_md'),
+              w1280: t('val_size_lg'),
+              original: t('val_size_xl')
+            },
+            default: 'w1280'
+          },
+          field: {
+            name: t('set_hero_quality_name'),
+            description: t('set_hero_quality_desc')
+          },
+          onChange: function () {
+            if (heroCurrentItem) {
+              var bg = document.querySelector('.agnative-hero__bg');
+              if (bg) bg.src = '';
+              renderHeroSlide(heroCurrentItem);
+            }
           }
         });
 
@@ -2263,6 +2802,7 @@
                 processCards(body);
               } catch (err) { }
             }, 500);
+            setTimeout(triggerExtraRowRender, 900);
             schedulePatch();
             try {
               var comp = e.object && e.object.component;
@@ -2307,7 +2847,7 @@
             return;
           }
 
-          if (e.name === GLARE_KEY) {
+          if (e.name === GLARE_KEY || e.name === CARD_ANIM_KEY) {
             syncGlareClass();
             return;
           }
@@ -2372,6 +2912,23 @@
 
     function isMobile() {
       return window.innerWidth < 768 || (window.innerWidth < 1024 && 'ontouchstart' in window);
+    }
+
+    // On mobile Lampa only renders rows visible in the initial viewport (~4).
+    // Simulate a scroll-down so the IntersectionObserver triggers 2 extra rows,
+    // then snap back to top — invisible to the user but forces 6 rows to render.
+    function triggerExtraRowRender() {
+      if (!isMobile()) return;
+      var scroll = document.querySelector('.activity--active .scroll.scroll--mask.scroll--over') ||
+                   document.querySelector('.activity--active .scroll');
+      if (!scroll || scroll.scrollTop !== 0) return;
+      var rowHeight = Math.round(window.innerHeight * 0.38); // ~height of 2 rows
+      scroll.scrollTop = rowHeight * 2;
+      setTimeout(function () {
+        var s = document.querySelector('.activity--active .scroll.scroll--mask.scroll--over') ||
+                document.querySelector('.activity--active .scroll');
+        if (s && s.scrollTop > 0) s.scrollTop = 0;
+      }, 120);
     }
 
     function escapeHtml(str) {
@@ -2455,6 +3012,7 @@
         '  filter: none !important;',
         '}',
         'body.' + BODY_CLASS + ' .activity__slides { padding-top:3.5em !important; }',
+        'body.' + BODY_CLASS + ' .full-start__body, body.' + BODY_CLASS + ' .full-start-new__body { padding-top:1.5em !important; }',
         'body.' + BODY_CLASS + ' .activity.layer--width.activity--active,',
         'body.' + BODY_CLASS + ' .activity.layer--width.activity--active.application,',
         'body.' + BODY_CLASS + ' .activity.layer--width.activity--active.applecation {',
@@ -2720,8 +3278,7 @@
         '  content: none !important;',
         '}',
 
-        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .settings-param[data-name="' + GLARE_KEY + '"],',
-        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .settings-param[data-name="' + GLARE_KEY + '"] { display: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .settings-param[data-name="' + CARD_ANIM_KEY + '"] { display: none !important; }',
         'body.' + BODY_CLASS + '[' + RATING_ATTR + '="off"] .settings-param[data-name="' + RATING_STYLE_KEY + '"] { display: none !important; }',
         'body.' + BODY_CLASS + '[' + CARD_IMAGE_MODE_ATTR + '="poster"] .settings-param[data-name="' + LOGO_SIZE_KEY + '"] { display: none !important; }',
         'body.' + BODY_CLASS + ' .wrap__content.layer--height.layer--width::after,',
@@ -2937,6 +3494,16 @@
         'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .items-line .card { width:21.2em !important; }',
         'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"][' + BACKDROP_ATTR + '="off"] .items-line .card { width:15.6em !important; }',
         // Compact service/genre cards (e.g. from SURS plugin) — half size of regular cards
+        'body.' + BODY_CLASS + ' .card.card--button-compact .nfx-card-overlay, body.' + BODY_CLASS + ' .card.card--button-compact .nfx-card-logo, body.' + BODY_CLASS + ' .card.card--button-compact .nfx-card-rating, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .nfx-card-overlay, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .nfx-card-logo, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .nfx-card-rating, body.' + BODY_CLASS + ' .card.card--genre-compact .nfx-card-overlay, body.' + BODY_CLASS + ' .card.card--genre-compact .nfx-card-logo, body.' + BODY_CLASS + ' .card.card--genre-compact .nfx-card-rating { display:none !important; }',
+        'body.' + BODY_CLASS + ' .card.card--button-compact .card__view, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .card__view, body.' + BODY_CLASS + ' .card.card--genre-compact .card__view { display:flex !important; align-items:center !important; justify-content:center !important; padding-bottom:56% !important; background-color:rgba(200,200,200,.16) !important; }',
+        'body.' + BODY_CLASS + ' .card.card--button-compact .card__button-label, body.' + BODY_CLASS + ' .card.card--genre-compact .card__genre-label { display:block !important; position:absolute !important; bottom:.42em !important; left:0 !important; right:0 !important; text-align:center !important; color:#fff !important; padding:.34em !important; font-size:calc(.78em * var(--agnative-scale, 1)) !important; font-weight:600 !important; line-height:1.1 !important; z-index:2 !important; text-shadow:0 1px 2px rgba(0,0,0,.7) !important; pointer-events:none !important; }',
+        'body.' + BODY_CLASS + ' .card.card--button-compact .card__svg-icon, body.' + BODY_CLASS + ' .card.card--genre-compact .card__svg-icon { position:absolute !important; top:42% !important; left:50% !important; transform:translate(-50%, -50%) !important; width:42% !important; height:42% !important; display:flex !important; align-items:center !important; justify-content:center !important; z-index:1 !important; }',
+        'body.' + BODY_CLASS + ' .card.streaming-card--button-compact .streaming-card__svg-icon { position:absolute !important; top:50% !important; left:50% !important; transform:translate(-50%, -50%) !important; width:60% !important; height:60% !important; display:flex !important; align-items:center !important; justify-content:center !important; z-index:1 !important; }',
+        'body.' + BODY_CLASS + ' .card.card--button-compact .card__svg-icon svg, body.' + BODY_CLASS + ' .card.card--genre-compact .card__svg-icon svg, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .streaming-card__svg-icon svg, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .streaming-card__svg-icon img { width:100% !important; height:100% !important; object-fit:contain !important; }',
+        'body.' + BODY_CLASS + ' .card.card--button-compact .card__svg-icon, body.' + BODY_CLASS + ' .card.card--genre-compact .card__svg-icon, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .streaming-card__svg-icon { transform: translate(-50%, -50%) !important; transition: transform .14s ease-out !important; }',
+        'body.' + BODY_CLASS + ' .card.card--button-compact .card__button-label, body.' + BODY_CLASS + ' .card.card--genre-compact .card__genre-label { transform: translate(0, 0) !important; transition: transform .14s ease-out !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--button-compact.focus .card__svg-icon, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--button-compact.hover .card__svg-icon, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--genre-compact.focus .card__svg-icon, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--genre-compact.hover .card__svg-icon, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.streaming-card--button-compact.focus .streaming-card__svg-icon, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.streaming-card--button-compact.hover .streaming-card__svg-icon { transform: translate(calc(-50% + var(--atv-lx, 0em)), calc(-50% + var(--atv-ly, 0em))) !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--button-compact.focus .card__button-label, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--button-compact.hover .card__button-label, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--genre-compact.focus .card__genre-label, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.card--genre-compact.hover .card__genre-label { transform: translate(var(--atv-lx, 0em), var(--atv-ly, 0em)) !important; }',
         'body.' + BODY_CLASS + ' .items-line .card.card--button-compact, body.' + BODY_CLASS + ' .items-line .card.streaming-card--button-compact, body.' + BODY_CLASS + ' .items-line .card.card--genre-compact { width:8.8em !important; flex:0 0 auto !important; }',
         'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"] .items-line .card.card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"] .items-line .card.streaming-card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xs"] .items-line .card.card--genre-compact { width:7em !important; }',
         'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"] .items-line .card.card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"] .items-line .card.streaming-card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="sm"] .items-line .card.card--genre-compact { width:7.9em !important; }',
@@ -2992,6 +3559,12 @@
         'body.' + GLARE_CLASS + ' .card .card__view::after, body.' + GLARE_CLASS + ' .card-episode .full-episode__img::after, body.' + GLARE_CLASS + ' .full-start-new__poster::after { content:"" !important; display:block !important; position:absolute; inset:-10%; border-radius:inherit; background: radial-gradient(ellipse at var(--gx, 50%) var(--gy, 50%), rgba(255,255,255,.20) 0%, rgba(255,255,255,.16) 12%, rgba(255,255,255,.10) 26%, rgba(255,255,255,.05) 42%, rgba(255,255,255,.02) 58%, rgba(255,255,255,0) 78%) !important; opacity:0; filter: blur(18px); transition: opacity .22s ease, transform .22s ease; pointer-events:none; z-index:8; mix-blend-mode: screen; }',
         'body.' + GLARE_CLASS + ' .card.focus .card__view::after, body.' + GLARE_CLASS + ' .card.hover .card__view::after, body.' + GLARE_CLASS + ' .card-episode.focus .full-episode__img::after, body.' + GLARE_CLASS + ' .card-episode.hover .full-episode__img::after, body.' + GLARE_CLASS + ' .full-start-new__poster.focus::after, body.' + GLARE_CLASS + ' .full-start-new__poster.hover::after { opacity: 1 !important; }',
         'body.' + GLARE_CLASS + ' .card.focus .card__view, body.' + GLARE_CLASS + ' .card.hover .card__view, body.' + GLARE_CLASS + ' .card-episode.focus .full-episode, body.' + GLARE_CLASS + ' .card-episode.hover .full-episode, body.' + GLARE_CLASS + ' .full-start-new__poster.focus, body.' + GLARE_CLASS + ' .full-start-new__poster.hover { transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(1.055) translateY(-.06em) !important; transition: transform .08s linear, box-shadow .24s ease, filter .24s ease !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card .card__view > *, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode .full-episode > *:not(.full-episode__img) { transition: transform .14s ease-out; }',
+        'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.focus .card__view, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.hover .card__view, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.focus .full-episode, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.hover .full-episode, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .full-start-new__poster.focus, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .full-start-new__poster.hover { transform: perspective(1200px) rotateX(var(--atv-rx, 0deg)) rotateY(var(--atv-ry, 0deg)) scale(1.05) translateY(-.06em) !important; transition: transform .12s ease-out, box-shadow .24s ease, filter .24s ease !important; will-change: transform; }',
+        'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.focus .card__view, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.focus .full-episode__img, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .full-start-new__poster.focus { box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 0 0 2px rgba(86,141,255,.92), 0 28px 60px rgba(0,0,0,.55), 0 14px 32px rgba(0,0,0,.38), 0 6px 14px rgba(0,0,0,.22) !important; filter: saturate(1.08) brightness(1.03) drop-shadow(0 18px 28px rgba(0,0,0,.32)) !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.hover .card__view, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.hover .full-episode__img, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .full-start-new__poster.hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 20px 44px rgba(0,0,0,.42), 0 10px 22px rgba(0,0,0,.28) !important; filter: saturate(1.04) brightness(1.02) drop-shadow(0 12px 22px rgba(0,0,0,.26)) !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"][' + PERF_ATTR + '="low"] .card.focus .card__view, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"][' + PERF_ATTR + '="low"] .card.hover .card__view, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"][' + PERF_ATTR + '="low"] .card-episode.focus .full-episode__img, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"][' + PERF_ATTR + '="low"] .card-episode.hover .full-episode__img { filter: none !important; }',
+        'body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.focus .card__view > *:not(.card__img):not(.card__image):not(.card__svg-icon):not(.streaming-card__svg-icon):not(.card__button-label):not(.card__genre-label), body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card.hover .card__view > *:not(.card__img):not(.card__image):not(.card__svg-icon):not(.streaming-card__svg-icon):not(.card__button-label):not(.card__genre-label), body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.focus .full-episode__body, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.hover .full-episode__body, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.focus .full-episode__num, body.' + BODY_CLASS + '[' + CARD_ANIM_ATTR + '="appletv"] .card-episode.hover .full-episode__num { transform: translate(var(--atv-lx, 0em), var(--atv-ly, 0em)) !important; will-change: transform; }',
         'body.' + BODY_CLASS + ' .card__vote, body.' + BODY_CLASS + ' .card__quality, body.' + BODY_CLASS + ' .card__type, body.' + BODY_CLASS + ' .card__promo-text, body.' + BODY_CLASS + ' .card__promo-title, body.' + BODY_CLASS + ' .full-person__photo, body.' + BODY_CLASS + ' .nfx-card-overlay__match { display:none !important; }',
         'body.' + BODY_CLASS + ' .card__title, body.' + BODY_CLASS + ' .card__age { display:none !important; }',
         'body.' + BODY_CLASS + ' .nfx-card-overlay { position:absolute; left:0; right:0; bottom:0; z-index:0; display:flex !important; flex-direction:column; justify-content:center; align-items:flex-start; opacity:1 !important; visibility:visible !important; border-radius:0 0 1.55em 1.55em !important; background:transparent !important; padding:2.15em 1.02em .92em !important; transform: translateZ(14px); transition: transform .28s cubic-bezier(.22,.61,.36,1), opacity .24s ease; pointer-events:none; }',
@@ -3046,6 +3619,7 @@
         'body.' + BODY_CLASS + '[' + BADGE_ATTR + '="off"] .nfx-card-logo { display:none !important; }',
         'body.' + BODY_CLASS + '[' + RATING_ATTR + '="off"] .nfx-card-rating { display:none !important; }',
         'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card .card__view { padding-bottom:140% !important; }',
+        'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card.card--button-compact .card__view, body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card.streaming-card--button-compact .card__view, body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card.card--genre-compact .card__view { padding-bottom:56% !important; }',
         'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card__img, body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card__image { object-position:center center !important; }',
         'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .nfx-card-overlay { display:flex !important; background:transparent !important; padding:5em 1em 1em !important; border-radius:0 0 1.55em 1.55em !important; }',
         'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .nfx-card-rating { display:inline-flex !important; }',
@@ -3648,6 +4222,12 @@
         '  box-shadow: 0 8px 24px rgba(0,0,0,.45) !important;',
         '  animation: none !important;',
         '}',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"].selectbox--open .selectbox__content,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"].selectbox--open .selectbox__content.layer--height,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"].selectbox--open .selectbox__content,',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"].selectbox--open .selectbox__content.layer--height {',
+        '  transform: translate3d(0, 0, 0) !important;',
+        '}',
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .selectbox__layer { animation: none !important; }',
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .selectbox-item.selector { transition: none !important; }',
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .selectbox-item.focus,',
@@ -3715,23 +4295,91 @@
         '  }',
         '  body.' + BODY_CLASS + ' .settings__body { font-size: 1.1em !important; }',
         '}',
-        'body.' + BODY_CLASS + ' .settings-param[data-name="' + HERO_KEY + '"] .settings-param__name::after { content:"BETA"; display:inline-block; margin-left:.6em; padding:.12em .5em; font-size:.55em; font-weight:800; letter-spacing:.06em; color:#fff; background:linear-gradient(135deg, #ff6b35, #c1272d); border-radius:.4em; vertical-align:middle; line-height:1.2; box-shadow:0 1px 4px rgba(193,39,45,.4); }',
-        'body.' + BODY_CLASS + ' .agnative-hero { position:relative; width:auto; margin:1em 2.5em 1.5em; height:52vh; min-height:380px; overflow:hidden; border-radius:1.5em; opacity:1; transition:opacity .6s ease; flex-shrink:0; display:block; z-index:8; box-shadow:0 16px 40px rgba(0,0,0,.32), 0 6px 14px rgba(0,0,0,.18); }',
-        'body.' + BODY_CLASS + ' .agnative-hero__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center center; border-radius:1.5em; opacity:1; transition:opacity .4s ease; pointer-events:none; }',
+        'body.' + BODY_CLASS + ' .agnative-beta-badge { display:inline-block; margin-left:.6em; padding:.12em .5em; font-size:.55em; font-weight:800; letter-spacing:.06em; color:#fff; background:linear-gradient(135deg, #ff6b35, #c1272d); border-radius:.4em; vertical-align:middle; line-height:1.2; box-shadow:0 1px 4px rgba(193,39,45,.4); }',
+        'body.' + BODY_CLASS + ' .agnative-hero { position:relative; width:auto; margin:1em 2.5em 1.5em; height:52vh; min-height:380px; overflow:hidden; border-radius:1.5em; opacity:1; transition:opacity .6s ease, transform .3s cubic-bezier(.22,.61,.36,1), box-shadow .3s ease; flex-shrink:0; display:block; z-index:8; box-shadow:0 16px 40px rgba(0,0,0,.32), 0 6px 14px rgba(0,0,0,.18); }',
+        'body.' + BODY_CLASS + ' .agnative-hero__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center top; border-radius:1.5em; opacity:1; transition:opacity .4s ease; pointer-events:none; transform-origin:center center; }',
+        '@keyframes agnative-hero-pan-down { from { object-position: center 0%; } to { object-position: center 100%; } }',
+        '@keyframes agnative-hero-pan-up { from { object-position: center 100%; } to { object-position: center 0%; } }',
+        '@keyframes agnative-hero-zoom-in { from { transform: scale(1); } to { transform: scale(1.1); } }',
+        '@keyframes agnative-hero-zoom-out { from { transform: scale(1.1); } to { transform: scale(1); } }',
+        '@keyframes agnative-hero-drift { from { transform: scale(1) translate(-2%, -1.5%); } to { transform: scale(1.1) translate(2%, 1.5%); } }',
+        '@keyframes agnative-hero-breathe { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }',
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__bg { opacity:0; }',
         'body.' + BODY_CLASS + ' .activity--active .items-line, body.' + BODY_CLASS + ' .activity--active .scroll__content { position:relative; z-index:10; }',
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--visible { opacity:1; }',
         'body.' + BODY_CLASS + ' .agnative-hero::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.30) 28%, rgba(0,0,0,.05) 55%, transparent 78%); pointer-events:none; z-index:1; border-radius:1.5em; }',
         'body.' + BODY_CLASS + ' .agnative-hero__content { position:absolute; left:2.4em; right:auto; top:2em; bottom:auto; max-width:40%; display:flex; flex-direction:column; align-items:flex-start; z-index:2; }',
-        'body.' + BODY_CLASS + ' .agnative-hero__badge { font-size:.68em; font-weight:800; letter-spacing:.22em; color:rgba(255,255,255,.78); margin-bottom:.7em; padding:0; background:transparent; border:0; text-transform:uppercase; text-shadow:0 1px 6px rgba(0,0,0,.6); }',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ALIGN_ATTR + '="center"] .agnative-hero__content { top:50%; bottom:auto; transform:translateY(-50%); }',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ALIGN_ATTR + '="bottom"] .agnative-hero__content { top:auto; bottom:2em; transform:none; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__badge { display:none !important; }',
         'body.' + BODY_CLASS + ' .agnative-hero__logo { max-height:4.2em; max-width:70%; object-fit:contain; object-position:left center; filter:drop-shadow(0 4px 12px rgba(0,0,0,.7)); margin:.1em 0 .45em; }',
         'body.' + BODY_CLASS + ' .agnative-hero__title { font-size:2.3em; font-weight:900; color:#fff; text-shadow:0 2px 18px rgba(0,0,0,.85); line-height:1.05; margin:0 0 .25em; letter-spacing:.005em; }',
         'body.' + BODY_CLASS + ' .agnative-hero__year { font-size:.92em; font-weight:700; color:rgba(255,255,255,.85); margin-bottom:.35em; text-shadow:0 1px 8px rgba(0,0,0,.6); }',
-        'body.' + BODY_CLASS + ' .agnative-hero__meta { font-size:.8em; color:rgba(255,255,255,.78); margin:0 0 .6em; text-shadow:0 1px 8px rgba(0,0,0,.5); }',
+        'body.' + BODY_CLASS + ' .agnative-hero__meta { display:none !important; }',
         'body.' + BODY_CLASS + ' .agnative-hero__overview { font-size:.95em; line-height:1.4; color:rgba(255,255,255,.94); margin:0 0 1.1em; text-shadow:0 1px 8px rgba(0,0,0,.6); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; max-width:100%; font-weight:500; }',
-        'body.' + BODY_CLASS + ' .agnative-hero__play.selector { display:inline-flex; align-items:center; justify-content:center; padding:.7em 2em; border-radius:999px; background:rgba(255,255,255,.94); border:0; color:#0a0a0f; font-size:.92em; font-weight:700; cursor:pointer; outline:none; transition:background .2s ease, transform .2s ease, box-shadow .2s ease; }',
-        'body.' + BODY_CLASS + ' .agnative-hero__play.focus, body.' + BODY_CLASS + ' .agnative-hero__play.hover { background:#fff !important; box-shadow:0 12px 32px rgba(0,0,0,.55) !important; transform:scale(1.06) !important; color:#0a0a0f !important; outline:none !important; }',
-        'body.' + BODY_CLASS + ' .agnative-hero__overview:empty, body.' + BODY_CLASS + ' .agnative-hero__year:empty, body.' + BODY_CLASS + ' .agnative-hero__meta:empty, body.' + BODY_CLASS + ' .agnative-hero__badge:empty { display:none; }'
+        'body.' + BODY_CLASS + ' .agnative-hero__play.selector { position:absolute; inset:0; display:block; padding:0; background:transparent !important; border:0 !important; color:transparent !important; font-size:0 !important; cursor:pointer; outline:none; z-index:3; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__play.focus, body.' + BODY_CLASS + ' .agnative-hero__play.hover { background:transparent !important; box-shadow:none !important; transform:none !important; color:transparent !important; outline:none !important; }',
+        'body.' + BODY_CLASS + ' .agnative-hero:has(.agnative-hero__play.focus), body.' + BODY_CLASS + ' .agnative-hero:has(.agnative-hero__play.hover) { transform:scale(1.012); box-shadow:0 0 0 1.5px rgba(255,255,255,.9), 0 24px 60px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.3); }',
+        'body.' + BODY_CLASS + ' .agnative-hero__indicators { position:absolute; right:2.4em; bottom:1.6em; display:flex; gap:.5em; align-items:center; z-index:3; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__indicator.selector { display:inline-block; width:1.8em; height:.28em; border-radius:999px; background:rgba(255,255,255,.35); border:0; padding:0; cursor:pointer; outline:none; transition:background .25s ease, transform .25s ease, width .25s ease, box-shadow .25s ease; box-shadow:0 1px 4px rgba(0,0,0,.5); }',
+        'body.' + BODY_CLASS + ' .agnative-hero__indicator.agnative-hero__indicator--active { background:rgba(255,255,255,.92); width:2.6em; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__indicator.focus, body.' + BODY_CLASS + ' .agnative-hero__indicator.hover { background:#fff !important; transform:scaleY(1.6) !important; box-shadow:0 4px 14px rgba(0,0,0,.6) !important; outline:none !important; }',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__title,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__logo,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__year,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__meta,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__overview,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__badge { transition: opacity .45s ease, transform .55s ease; }',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__bg { transition: opacity .6s ease, transform .8s ease; }',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__title,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__logo,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__year,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__meta,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__overview,',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__badge { opacity:0; transform:translateY(.6em); }',
+        'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__bg { opacity:.35; transform:scale(1.04); }',
+        'body.' + BODY_CLASS + ' .agnative-hero__overview:empty, body.' + BODY_CLASS + ' .agnative-hero__year:empty, body.' + BODY_CLASS + ' .agnative-hero__meta:empty, body.' + BODY_CLASS + ' .agnative-hero__badge:empty { display:none; }',
+
+        /* ── Explorer (online / torrent source picker) ── */
+        // Main layout — hide left info panel, center the files list in a tidy zone
+        'body.' + BODY_CLASS + ' .explorer.layer--width { background:transparent !important; box-shadow:none !important; display:block !important; }',
+        'body.' + BODY_CLASS + ' .explorer__left, body.' + BODY_CLASS + ' .explorer__card { display:none !important; }',
+        'body.' + BODY_CLASS + ' .explorer__files { width:100% !important; max-width:78em !important; margin:0 auto !important; padding:3em 1.5em 0 1.5em !important; }',
+        'body.' + BODY_CLASS + ' .explorer__files-head { padding:1.1em 0 .8em !important; }',
+
+        // Filter / search buttons
+        'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button { background:rgba(255,255,255,.08) !important; border:1px solid rgba(255,255,255,.13) !important; border-radius:999px !important; padding:.42em 1.15em !important; color:rgba(255,255,255,.88) !important; font-size:.88em !important; font-weight:600 !important; transition:background .18s ease, box-shadow .18s ease, transform .18s ease !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.08) !important; }',
+        'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.focus, body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.hover { background:rgba(255,255,255,.18) !important; border-color:rgba(255,255,255,.16) !important; outline:none !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.16), 0 6px 18px rgba(0,0,0,.28) !important; transform:scale(1.1) !important; color:#fff !important; }',
+
+        // Torrent / online-prestige / watched-history result rows
+        'body.' + BODY_CLASS + ' .torrent-item.selector, body.' + BODY_CLASS + ' .online-prestige.selector, body.' + BODY_CLASS + ' .watched-history.selector { background:rgba(255,255,255,.055) !important; border:1px solid rgba(255,255,255,.09) !important; border-radius:1.1em !important; margin-bottom:.55em !important; padding:.85em 1.1em !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.06) !important; transition:background .2s ease, box-shadow .2s ease, transform .2s ease !important; }',
+        'body.' + BODY_CLASS + ' .torrent-item.selector.focus, body.' + BODY_CLASS + ' .torrent-item.selector.hover, body.' + BODY_CLASS + ' .online-prestige.selector.focus, body.' + BODY_CLASS + ' .online-prestige.selector.hover, body.' + BODY_CLASS + ' .watched-history.selector.focus, body.' + BODY_CLASS + ' .watched-history.selector.hover { background:rgba(255,255,255,.13) !important; border-color:rgba(255,255,255,.14) !important; outline:none !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 14px 36px rgba(0,0,0,.4), 0 6px 16px rgba(0,0,0,.22) !important; transform:scale(1.025) !important; position:relative !important; z-index:5 !important; }',
+        'body.' + BODY_CLASS + ' .torrent-item.selector.focus::after, body.' + BODY_CLASS + ' .torrent-item.selector.focus::before, body.' + BODY_CLASS + ' .torrent-item.selector.hover::after, body.' + BODY_CLASS + ' .torrent-item.selector.hover::before, body.' + BODY_CLASS + ' .online-prestige.selector.focus::after, body.' + BODY_CLASS + ' .online-prestige.selector.focus::before, body.' + BODY_CLASS + ' .online-prestige.selector.hover::after, body.' + BODY_CLASS + ' .online-prestige.selector.hover::before, body.' + BODY_CLASS + ' .watched-history.selector.focus::after, body.' + BODY_CLASS + ' .watched-history.selector.focus::before, body.' + BODY_CLASS + ' .watched-history.selector.hover::after, body.' + BODY_CLASS + ' .watched-history.selector.hover::before { display:none !important; content:none !important; border:0 !important; box-shadow:none !important; }',
+
+        // Row content
+        'body.' + BODY_CLASS + ' .torrent-item__title { font-size:.92em !important; font-weight:600 !important; color:rgba(255,255,255,.92) !important; line-height:1.35 !important; margin-bottom:.45em !important; }',
+        'body.' + BODY_CLASS + ' .torrent-item__details { display:flex !important; flex-wrap:wrap !important; gap:.3em !important; margin-bottom:.45em !important; align-items:center !important; }',
+        'body.' + BODY_CLASS + ' .torrent-item__bitrate.bitrate, body.' + BODY_CLASS + ' .bitrate > span { background:rgba(255,255,255,.1) !important; border-radius:.4em !important; padding:.12em .45em !important; font-size:.7em !important; font-weight:700 !important; color:rgba(255,255,255,.8) !important; border:0 !important; }',
+        'body.' + BODY_CLASS + ' .torrent-item__size { background:rgba(255,255,255,.14) !important; border-radius:.55em !important; padding:.22em .7em !important; font-size:.78em !important; font-weight:700 !important; color:#fff !important; white-space:nowrap !important; }',
+        'body.' + BODY_CLASS + ' .torrent-item__date, body.' + BODY_CLASS + ' .torrent-item__tracker { font-size:.7em !important; color:rgba(255,255,255,.45) !important; }',
+        'body.' + BODY_CLASS + ' .torrent-item__seeds, body.' + BODY_CLASS + ' .torrent-item__grabs { font-size:.7em !important; color:rgba(255,255,255,.45) !important; }',
+        'body.' + BODY_CLASS + ' .torrent-item__viewed { opacity:.5 !important; }',
+
+        // Torrent serial (season/episode list within item)
+        'body.' + BODY_CLASS + ' .torrent-serial.selector { background:rgba(255,255,255,.04) !important; border:1px solid rgba(255,255,255,.08) !important; border-radius:1em !important; margin-bottom:.4em !important; transition:background .18s ease, box-shadow .18s ease !important; }',
+        'body.' + BODY_CLASS + ' .torrent-serial.selector.focus, body.' + BODY_CLASS + ' .torrent-serial.selector.hover { background:rgba(255,255,255,.11) !important; border-color:rgba(255,255,255,.12) !important; outline:none !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 10px 28px rgba(0,0,0,.32) !important; transform:scale(1.02) !important; position:relative !important; z-index:5 !important; }',
+        'body.' + BODY_CLASS + ' .torrent-serial.selector.focus::after, body.' + BODY_CLASS + ' .torrent-serial.selector.focus::before, body.' + BODY_CLASS + ' .torrent-serial.selector.hover::after, body.' + BODY_CLASS + ' .torrent-serial.selector.hover::before { display:none !important; content:none !important; border:0 !important; box-shadow:none !important; }',
+
+        // Performance mode "low" — smaller scale, lighter shadows
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-item.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-serial.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .online-prestige.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .watched-history.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .explorer__files .torrent-filter .simple-button { transition: background .15s ease, transform .15s ease !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-item.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-item.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .online-prestige.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .online-prestige.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .watched-history.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .watched-history.selector.hover { transform:scale(1.015) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 6px 16px rgba(0,0,0,.28) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-serial.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-serial.selector.hover { transform:scale(1.012) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 4px 12px rgba(0,0,0,.22) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .explorer__files .torrent-filter .simple-button.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .explorer__files .torrent-filter .simple-button.hover { transform:scale(1.06) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 4px 10px rgba(0,0,0,.22) !important; }',
+
+        // Performance mode "ultra" — no scale, no shadows, only background change
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-item.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-serial.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .online-prestige.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .watched-history.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .explorer__files .torrent-filter .simple-button { transition:none !important; will-change:auto !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-item.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-item.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-serial.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-serial.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .online-prestige.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .online-prestige.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .watched-history.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .watched-history.selector.hover { transform:none !important; box-shadow:none !important; background:rgba(255,255,255,.18) !important; border-color:rgba(255,255,255,.28) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .explorer__files .torrent-filter .simple-button.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .explorer__files .torrent-filter .simple-button.hover { transform:none !important; box-shadow:none !important; background:rgba(255,255,255,.26) !important; }'
       ].join('\n');
       if (style.textContent !== text) style.textContent = text;
       if (!style.parentNode) {
@@ -4519,6 +5167,12 @@
       }
     }
 
+    function heroReadyForRouting() {
+      if (!window.__AGNATIVE_HERO_CONTROLLER__) return false;
+      if (!document.body || !document.body.classList.contains('agnative-has-hero')) return false;
+      return !!document.querySelector('.agnative-hero');
+    }
+
     function patchControllerToggleForLeftdock() {
       if (controllerTogglePatched) return;
       if (!window.Lampa || !Lampa.Controller || typeof Lampa.Controller.toggle !== 'function') return;
@@ -4527,6 +5181,17 @@
         controllerToggleOriginal = Lampa.Controller.toggle.bind(Lampa.Controller);
         Lampa.Controller.toggle = function (name) {
           if (name && name !== 'agnative_leftdock') hideLeftdock(true, true);
+          try {
+            if (name && heroReadyForRouting()) {
+              var enabled = Lampa.Controller.enabled && Lampa.Controller.enabled();
+              var current = enabled && enabled.name;
+              if (name === 'head' && (current === 'items_line' || current === 'content')) {
+                name = 'agnative_hero';
+              } else if (name === 'content' && current === 'head') {
+                name = 'agnative_hero';
+              }
+            }
+          } catch (err) { }
           return controllerToggleOriginal(name);
         };
       } catch (e) {
@@ -5040,8 +5705,19 @@
       });
     }
 
+    function isSursButtonCard(cardEl) {
+      if (!cardEl || !cardEl.classList) return false;
+      return cardEl.classList.contains('card--button-compact') ||
+             cardEl.classList.contains('streaming-card--button-compact') ||
+             cardEl.classList.contains('card--genre-compact');
+    }
+
     function switchCardToBackdrop(cardEl) {
       if (cardEl.getAttribute('data-nfx-switched')) return;
+      if (isSursButtonCard(cardEl)) {
+        cardEl.setAttribute('data-nfx-switched', 'surs');
+        return;
+      }
       cardEl.setAttribute('data-nfx-switched', '1');
 
       var data = extractCardData(cardEl);
@@ -5381,14 +6057,18 @@
       var lastClientX = 0;
       var lastClientY = 0;
       var rafScheduled = false;
-      var glareOn = glareEnabled();
+      var cardAnimMode = getCardAnim();
 
-      if (window.Lampa && Lampa.Storage && typeof Lampa.Storage.listener === 'function' && Lampa.Storage.listener.follow) {
+      if (window.Lampa && Lampa.Storage && Lampa.Storage.listener && Lampa.Storage.listener.follow) {
         try {
           Lampa.Storage.listener.follow('change', function (e) {
-            if (e && e.name === GLARE_KEY) glareOn = glareEnabled();
+            if (e && (e.name === CARD_ANIM_KEY || e.name === GLARE_KEY)) cardAnimMode = getCardAnim();
           });
         } catch (err) { }
+      }
+
+      function animActive() {
+        return cardAnimMode !== 'off' && resolvePerfLevel() !== 'ultra';
       }
 
       function flushGlare() {
@@ -5401,10 +6081,17 @@
         var xPct = (x / w) * 2 - 1;
         var yPct = (y / h) * 2 - 1;
         var s = activeCard.style;
-        s.setProperty('--gx', x + 'px');
-        s.setProperty('--gy', y + 'px');
-        s.setProperty('--rx', (yPct * -7) + 'deg');
-        s.setProperty('--ry', (xPct * 7) + 'deg');
+        if (cardAnimMode === 'appletv') {
+          s.setProperty('--atv-rx', (yPct * -4) + 'deg');
+          s.setProperty('--atv-ry', (xPct * 4) + 'deg');
+          s.setProperty('--atv-lx', (xPct * 0.3) + 'em');
+          s.setProperty('--atv-ly', (yPct * 0.3) + 'em');
+        } else {
+          s.setProperty('--gx', x + 'px');
+          s.setProperty('--gy', y + 'px');
+          s.setProperty('--rx', (yPct * -7) + 'deg');
+          s.setProperty('--ry', (xPct * 7) + 'deg');
+        }
       }
 
       function setActiveCard(card) {
@@ -5414,7 +6101,7 @@
       }
 
       document.body.addEventListener('mouseover', function (e) {
-        if (!glareOn || resolvePerfLevel() === 'ultra') { activeCard = null; activeRect = null; return; }
+        if (!animActive()) { activeCard = null; activeRect = null; return; }
         var card = e.target.closest ? e.target.closest(GLARE_SEL) : null;
         setActiveCard(card);
       });
@@ -5447,6 +6134,10 @@
         s.setProperty('--ry', '0deg');
         s.setProperty('--gx', '50%');
         s.setProperty('--gy', '50%');
+        s.removeProperty('--atv-rx');
+        s.removeProperty('--atv-ry');
+        s.removeProperty('--atv-lx');
+        s.removeProperty('--atv-ly');
         if (activeCard === card) { activeCard = null; activeRect = null; }
       });
     }

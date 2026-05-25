@@ -62,6 +62,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     HERO_ANIMATION_ATTR,
     HERO_INTERVAL_KEY,
     HERO_PAN_KEY,
+    HERO_BG_ANIM_KEY,
     HERO_QUALITY_KEY,
     TOPNAV_ENABLE_KEY,
     TOPNAV_SIZE_KEY,
@@ -639,7 +640,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       Lampa.Storage.set(HERO_INDICATORS_KEY, 'false');
       Lampa.Storage.set(HERO_ANIMATION_KEY, 'true');
       Lampa.Storage.set(HERO_INTERVAL_KEY, '8');
-      Lampa.Storage.set(HERO_PAN_KEY, 'false');
+      Lampa.Storage.set(HERO_BG_ANIM_KEY, 'off');
       Lampa.Storage.set(HERO_QUALITY_KEY, 'w1280');
       Lampa.Storage.set(TOPNAV_ITEMS_KEY, ['main', 'movie', 'tv', 'cartoon']);
       logoCache = {};
@@ -748,12 +749,17 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     } catch (e) { return 8000; }
   }
 
-  function heroPanEnabled() {
+  var HERO_BG_ANIM_VALUES = ['off', 'pan-down', 'pan-up', 'zoom-in', 'zoom-out', 'drift', 'breathe'];
+
+  function getHeroBgAnim() {
     try {
-      if (!window.Lampa || !Lampa.Storage) return false;
-      var v = Lampa.Storage.get(HERO_PAN_KEY, 'false');
-      return v === true || v === 'true' || v === 'on';
-    } catch (e) { return false; }
+      if (!window.Lampa || !Lampa.Storage) return 'off';
+      // backward compat: old pan toggle on → treat as pan-down if new key not set
+      var legacy = Lampa.Storage.get(HERO_PAN_KEY, 'false');
+      var v = Lampa.Storage.get(HERO_BG_ANIM_KEY, '');
+      if (!v && (legacy === true || legacy === 'true' || legacy === 'on')) return 'pan-down';
+      return HERO_BG_ANIM_VALUES.indexOf(v) >= 0 ? v : 'off';
+    } catch (e) { return 'off'; }
   }
 
   function getHeroQuality() {
@@ -765,14 +771,20 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     } catch (e) { return 'w1280'; }
   }
 
-  function startHeroPan() {
+  function applyHeroBgAnim() {
     var bg = document.querySelector('.agnative-hero__bg');
     if (!bg) return;
     bg.style.animation = 'none';
-    if (!heroPanEnabled()) return;
-    var dur = (getHeroIntervalMs() / 1000) + 's';
+    var anim = getHeroBgAnim();
+    if (anim === 'off') return;
     void bg.offsetWidth;
-    bg.style.animation = 'agnative-hero-pan ' + dur + ' linear forwards';
+    var dur = (getHeroIntervalMs() / 1000) + 's';
+    if      (anim === 'pan-down') bg.style.animation = 'agnative-hero-pan-down '  + dur + ' linear forwards';
+    else if (anim === 'pan-up')   bg.style.animation = 'agnative-hero-pan-up '    + dur + ' linear forwards';
+    else if (anim === 'zoom-in')  bg.style.animation = 'agnative-hero-zoom-in '   + dur + ' ease-in-out forwards';
+    else if (anim === 'zoom-out') bg.style.animation = 'agnative-hero-zoom-out '  + dur + ' ease-in-out forwards';
+    else if (anim === 'drift')    bg.style.animation = 'agnative-hero-drift '     + dur + ' ease-in-out forwards';
+    else if (anim === 'breathe')  bg.style.animation = 'agnative-hero-breathe 8s ease-in-out infinite';
   }
 
   function syncHeroAttrs(hero) {
@@ -858,7 +870,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
           bg.src = newSrc;
           extractDominantColor(newSrc, applyHeroAccent);
         }
-        startHeroPan();
+        applyHeroBgAnim();
       }
 
       var badgeEl = hero.querySelector('.agnative-hero__badge');
@@ -1914,7 +1926,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         onChange: function () {
           if (document.querySelector('.agnative-hero')) {
             startHeroRotation();
-            startHeroPan();
+            applyHeroBgAnim();
           }
         }
       });
@@ -1922,16 +1934,25 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       Lampa.SettingsApi.addParam({
         component: HERO_SETTINGS_COMPONENT,
         param: {
-          name: HERO_PAN_KEY,
-          type: 'trigger',
-          default: 'false'
+          name: HERO_BG_ANIM_KEY,
+          type: 'select',
+          values: {
+            'off':      t('val_off'),
+            'pan-down': t('val_anim_pan_down'),
+            'pan-up':   t('val_anim_pan_up'),
+            'zoom-in':  t('val_anim_zoom_in'),
+            'zoom-out': t('val_anim_zoom_out'),
+            'drift':    t('val_anim_drift'),
+            'breathe':  t('val_anim_breathe')
+          },
+          default: 'off'
         },
         field: {
-          name: t('set_hero_pan_name'),
-          description: t('set_hero_pan_desc')
+          name: t('set_hero_bg_anim_name'),
+          description: t('set_hero_bg_anim_desc')
         },
         onChange: function () {
-          startHeroPan();
+          applyHeroBgAnim();
         }
       });
 
@@ -2028,6 +2049,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
               processCards(body);
             } catch (err) { }
           }, 500);
+          setTimeout(triggerExtraRowRender, 900);
           schedulePatch();
           try {
             var comp = e.object && e.object.component;
@@ -2139,6 +2161,23 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     return window.innerWidth < 768 || (window.innerWidth < 1024 && 'ontouchstart' in window);
   }
 
+  // On mobile Lampa only renders rows visible in the initial viewport (~4).
+  // Simulate a scroll-down so the IntersectionObserver triggers 2 extra rows,
+  // then snap back to top — invisible to the user but forces 6 rows to render.
+  function triggerExtraRowRender() {
+    if (!isMobile()) return;
+    var scroll = document.querySelector('.activity--active .scroll.scroll--mask.scroll--over') ||
+                 document.querySelector('.activity--active .scroll');
+    if (!scroll || scroll.scrollTop !== 0) return;
+    var rowHeight = Math.round(window.innerHeight * 0.38); // ~height of 2 rows
+    scroll.scrollTop = rowHeight * 2;
+    setTimeout(function () {
+      var s = document.querySelector('.activity--active .scroll.scroll--mask.scroll--over') ||
+              document.querySelector('.activity--active .scroll');
+      if (s && s.scrollTop > 0) s.scrollTop = 0;
+    }, 120);
+  }
+
   function escapeHtml(str) {
     var div = document.createElement('div');
     div.appendChild(document.createTextNode(str));
@@ -2220,6 +2259,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       '  filter: none !important;',
       '}',
       'body.' + BODY_CLASS + ' .activity__slides { padding-top:3.5em !important; }',
+      'body.' + BODY_CLASS + ' .full-start__body, body.' + BODY_CLASS + ' .full-start-new__body { padding-top:1.5em !important; }',
       'body.' + BODY_CLASS + ' .activity.layer--width.activity--active,',
       'body.' + BODY_CLASS + ' .activity.layer--width.activity--active.application,',
       'body.' + BODY_CLASS + ' .activity.layer--width.activity--active.applecation {',
@@ -2826,6 +2866,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       'body.' + BODY_CLASS + '[' + BADGE_ATTR + '="off"] .nfx-card-logo { display:none !important; }',
       'body.' + BODY_CLASS + '[' + RATING_ATTR + '="off"] .nfx-card-rating { display:none !important; }',
       'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card .card__view { padding-bottom:140% !important; }',
+      'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card.card--button-compact .card__view, body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card.streaming-card--button-compact .card__view, body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card.card--genre-compact .card__view { padding-bottom:56% !important; }',
       'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card__img, body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .card__image { object-position:center center !important; }',
       'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .nfx-card-overlay { display:flex !important; background:transparent !important; padding:5em 1em 1em !important; border-radius:0 0 1.55em 1.55em !important; }',
       'body.' + BODY_CLASS + '[' + BACKDROP_ATTR + '="off"] .nfx-card-rating { display:inline-flex !important; }',
@@ -3502,9 +3543,14 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       '  body.' + BODY_CLASS + ' .settings__body { font-size: 1.1em !important; }',
       '}',
       'body.' + BODY_CLASS + ' .agnative-beta-badge { display:inline-block; margin-left:.6em; padding:.12em .5em; font-size:.55em; font-weight:800; letter-spacing:.06em; color:#fff; background:linear-gradient(135deg, #ff6b35, #c1272d); border-radius:.4em; vertical-align:middle; line-height:1.2; box-shadow:0 1px 4px rgba(193,39,45,.4); }',
-      'body.' + BODY_CLASS + ' .agnative-hero { position:relative; width:auto; margin:1em 2.5em 1.5em; height:52vh; min-height:380px; overflow:hidden; border-radius:1.5em; opacity:1; transition:opacity .6s ease; flex-shrink:0; display:block; z-index:8; box-shadow:0 16px 40px rgba(0,0,0,.32), 0 6px 14px rgba(0,0,0,.18); }',
-      'body.' + BODY_CLASS + ' .agnative-hero__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center top; border-radius:1.5em; opacity:1; transition:opacity .4s ease; pointer-events:none; }',
-      '@keyframes agnative-hero-pan { from { object-position: center 0%; } to { object-position: center 100%; } }',
+      'body.' + BODY_CLASS + ' .agnative-hero { position:relative; width:auto; margin:1em 2.5em 1.5em; height:52vh; min-height:380px; overflow:hidden; border-radius:1.5em; opacity:1; transition:opacity .6s ease, transform .3s cubic-bezier(.22,.61,.36,1), box-shadow .3s ease; flex-shrink:0; display:block; z-index:8; box-shadow:0 16px 40px rgba(0,0,0,.32), 0 6px 14px rgba(0,0,0,.18); }',
+      'body.' + BODY_CLASS + ' .agnative-hero__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center top; border-radius:1.5em; opacity:1; transition:opacity .4s ease; pointer-events:none; transform-origin:center center; }',
+      '@keyframes agnative-hero-pan-down { from { object-position: center 0%; } to { object-position: center 100%; } }',
+      '@keyframes agnative-hero-pan-up { from { object-position: center 100%; } to { object-position: center 0%; } }',
+      '@keyframes agnative-hero-zoom-in { from { transform: scale(1); } to { transform: scale(1.1); } }',
+      '@keyframes agnative-hero-zoom-out { from { transform: scale(1.1); } to { transform: scale(1); } }',
+      '@keyframes agnative-hero-drift { from { transform: scale(1) translate(-2%, -1.5%); } to { transform: scale(1.1) translate(2%, 1.5%); } }',
+      '@keyframes agnative-hero-breathe { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }',
       'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__bg { opacity:0; }',
       'body.' + BODY_CLASS + ' .activity--active .items-line, body.' + BODY_CLASS + ' .activity--active .scroll__content { position:relative; z-index:10; }',
       'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--visible { opacity:1; }',
@@ -3512,14 +3558,15 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       'body.' + BODY_CLASS + ' .agnative-hero__content { position:absolute; left:2.4em; right:auto; top:2em; bottom:auto; max-width:40%; display:flex; flex-direction:column; align-items:flex-start; z-index:2; }',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ALIGN_ATTR + '="center"] .agnative-hero__content { top:50%; bottom:auto; transform:translateY(-50%); }',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ALIGN_ATTR + '="bottom"] .agnative-hero__content { top:auto; bottom:2em; transform:none; }',
-      'body.' + BODY_CLASS + ' .agnative-hero__badge { font-size:.68em; font-weight:800; letter-spacing:.22em; color:rgba(255,255,255,.78); margin-bottom:.7em; padding:0; background:transparent; border:0; text-transform:uppercase; text-shadow:0 1px 6px rgba(0,0,0,.6); }',
+      'body.' + BODY_CLASS + ' .agnative-hero__badge { display:none !important; }',
       'body.' + BODY_CLASS + ' .agnative-hero__logo { max-height:4.2em; max-width:70%; object-fit:contain; object-position:left center; filter:drop-shadow(0 4px 12px rgba(0,0,0,.7)); margin:.1em 0 .45em; }',
       'body.' + BODY_CLASS + ' .agnative-hero__title { font-size:2.3em; font-weight:900; color:#fff; text-shadow:0 2px 18px rgba(0,0,0,.85); line-height:1.05; margin:0 0 .25em; letter-spacing:.005em; }',
       'body.' + BODY_CLASS + ' .agnative-hero__year { font-size:.92em; font-weight:700; color:rgba(255,255,255,.85); margin-bottom:.35em; text-shadow:0 1px 8px rgba(0,0,0,.6); }',
-      'body.' + BODY_CLASS + ' .agnative-hero__meta { font-size:.8em; color:rgba(255,255,255,.78); margin:0 0 .6em; text-shadow:0 1px 8px rgba(0,0,0,.5); }',
+      'body.' + BODY_CLASS + ' .agnative-hero__meta { display:none !important; }',
       'body.' + BODY_CLASS + ' .agnative-hero__overview { font-size:.95em; line-height:1.4; color:rgba(255,255,255,.94); margin:0 0 1.1em; text-shadow:0 1px 8px rgba(0,0,0,.6); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; max-width:100%; font-weight:500; }',
-      'body.' + BODY_CLASS + ' .agnative-hero__play.selector { display:inline-flex; align-items:center; justify-content:center; padding:.7em 2em; border-radius:999px; background:rgba(255,255,255,.94); border:0; color:#0a0a0f; font-size:.92em; font-weight:700; cursor:pointer; outline:none; transition:background .2s ease, transform .2s ease, box-shadow .2s ease; }',
-      'body.' + BODY_CLASS + ' .agnative-hero__play.focus, body.' + BODY_CLASS + ' .agnative-hero__play.hover { background:#fff !important; box-shadow:0 12px 32px rgba(0,0,0,.55) !important; transform:scale(1.06) !important; color:#0a0a0f !important; outline:none !important; }',
+      'body.' + BODY_CLASS + ' .agnative-hero__play.selector { position:absolute; inset:0; display:block; padding:0; background:transparent !important; border:0 !important; color:transparent !important; font-size:0 !important; cursor:pointer; outline:none; z-index:3; }',
+      'body.' + BODY_CLASS + ' .agnative-hero__play.focus, body.' + BODY_CLASS + ' .agnative-hero__play.hover { background:transparent !important; box-shadow:none !important; transform:none !important; color:transparent !important; outline:none !important; }',
+      'body.' + BODY_CLASS + ' .agnative-hero:has(.agnative-hero__play.focus), body.' + BODY_CLASS + ' .agnative-hero:has(.agnative-hero__play.hover) { transform:scale(1.012); box-shadow:0 0 0 1.5px rgba(255,255,255,.9), 0 24px 60px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.3); }',
       'body.' + BODY_CLASS + ' .agnative-hero__indicators { position:absolute; right:2.4em; bottom:1.6em; display:flex; gap:.5em; align-items:center; z-index:3; }',
       'body.' + BODY_CLASS + ' .agnative-hero__indicator.selector { display:inline-block; width:1.8em; height:.28em; border-radius:999px; background:rgba(255,255,255,.35); border:0; padding:0; cursor:pointer; outline:none; transition:background .25s ease, transform .25s ease, width .25s ease, box-shadow .25s ease; box-shadow:0 1px 4px rgba(0,0,0,.5); }',
       'body.' + BODY_CLASS + ' .agnative-hero__indicator.agnative-hero__indicator--active { background:rgba(255,255,255,.92); width:2.6em; }',
@@ -3538,7 +3585,48 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__overview,',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__badge { opacity:0; transform:translateY(.6em); }',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__bg { opacity:.35; transform:scale(1.04); }',
-      'body.' + BODY_CLASS + ' .agnative-hero__overview:empty, body.' + BODY_CLASS + ' .agnative-hero__year:empty, body.' + BODY_CLASS + ' .agnative-hero__meta:empty, body.' + BODY_CLASS + ' .agnative-hero__badge:empty { display:none; }'
+      'body.' + BODY_CLASS + ' .agnative-hero__overview:empty, body.' + BODY_CLASS + ' .agnative-hero__year:empty, body.' + BODY_CLASS + ' .agnative-hero__meta:empty, body.' + BODY_CLASS + ' .agnative-hero__badge:empty { display:none; }',
+
+      /* ── Explorer (online / torrent source picker) ── */
+      // Main layout — hide left info panel, center the files list in a tidy zone
+      'body.' + BODY_CLASS + ' .explorer.layer--width { background:transparent !important; box-shadow:none !important; display:block !important; }',
+      'body.' + BODY_CLASS + ' .explorer__left, body.' + BODY_CLASS + ' .explorer__card { display:none !important; }',
+      'body.' + BODY_CLASS + ' .explorer__files { width:100% !important; max-width:78em !important; margin:0 auto !important; padding:3em 1.5em 0 1.5em !important; }',
+      'body.' + BODY_CLASS + ' .explorer__files-head { padding:1.1em 0 .8em !important; }',
+
+      // Filter / search buttons
+      'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button { background:rgba(255,255,255,.08) !important; border:1px solid rgba(255,255,255,.13) !important; border-radius:999px !important; padding:.42em 1.15em !important; color:rgba(255,255,255,.88) !important; font-size:.88em !important; font-weight:600 !important; transition:background .18s ease, box-shadow .18s ease, transform .18s ease !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.08) !important; }',
+      'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.focus, body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.hover { background:rgba(255,255,255,.18) !important; border-color:rgba(255,255,255,.16) !important; outline:none !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.16), 0 6px 18px rgba(0,0,0,.28) !important; transform:scale(1.1) !important; color:#fff !important; }',
+
+      // Torrent / online-prestige / watched-history result rows
+      'body.' + BODY_CLASS + ' .torrent-item.selector, body.' + BODY_CLASS + ' .online-prestige.selector, body.' + BODY_CLASS + ' .watched-history.selector { background:rgba(255,255,255,.055) !important; border:1px solid rgba(255,255,255,.09) !important; border-radius:1.1em !important; margin-bottom:.55em !important; padding:.85em 1.1em !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.06) !important; transition:background .2s ease, box-shadow .2s ease, transform .2s ease !important; }',
+      'body.' + BODY_CLASS + ' .torrent-item.selector.focus, body.' + BODY_CLASS + ' .torrent-item.selector.hover, body.' + BODY_CLASS + ' .online-prestige.selector.focus, body.' + BODY_CLASS + ' .online-prestige.selector.hover, body.' + BODY_CLASS + ' .watched-history.selector.focus, body.' + BODY_CLASS + ' .watched-history.selector.hover { background:rgba(255,255,255,.13) !important; border-color:rgba(255,255,255,.14) !important; outline:none !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 14px 36px rgba(0,0,0,.4), 0 6px 16px rgba(0,0,0,.22) !important; transform:scale(1.025) !important; position:relative !important; z-index:5 !important; }',
+      'body.' + BODY_CLASS + ' .torrent-item.selector.focus::after, body.' + BODY_CLASS + ' .torrent-item.selector.focus::before, body.' + BODY_CLASS + ' .torrent-item.selector.hover::after, body.' + BODY_CLASS + ' .torrent-item.selector.hover::before, body.' + BODY_CLASS + ' .online-prestige.selector.focus::after, body.' + BODY_CLASS + ' .online-prestige.selector.focus::before, body.' + BODY_CLASS + ' .online-prestige.selector.hover::after, body.' + BODY_CLASS + ' .online-prestige.selector.hover::before, body.' + BODY_CLASS + ' .watched-history.selector.focus::after, body.' + BODY_CLASS + ' .watched-history.selector.focus::before, body.' + BODY_CLASS + ' .watched-history.selector.hover::after, body.' + BODY_CLASS + ' .watched-history.selector.hover::before { display:none !important; content:none !important; border:0 !important; box-shadow:none !important; }',
+
+      // Row content
+      'body.' + BODY_CLASS + ' .torrent-item__title { font-size:.92em !important; font-weight:600 !important; color:rgba(255,255,255,.92) !important; line-height:1.35 !important; margin-bottom:.45em !important; }',
+      'body.' + BODY_CLASS + ' .torrent-item__details { display:flex !important; flex-wrap:wrap !important; gap:.3em !important; margin-bottom:.45em !important; align-items:center !important; }',
+      'body.' + BODY_CLASS + ' .torrent-item__bitrate.bitrate, body.' + BODY_CLASS + ' .bitrate > span { background:rgba(255,255,255,.1) !important; border-radius:.4em !important; padding:.12em .45em !important; font-size:.7em !important; font-weight:700 !important; color:rgba(255,255,255,.8) !important; border:0 !important; }',
+      'body.' + BODY_CLASS + ' .torrent-item__size { background:rgba(255,255,255,.14) !important; border-radius:.55em !important; padding:.22em .7em !important; font-size:.78em !important; font-weight:700 !important; color:#fff !important; white-space:nowrap !important; }',
+      'body.' + BODY_CLASS + ' .torrent-item__date, body.' + BODY_CLASS + ' .torrent-item__tracker { font-size:.7em !important; color:rgba(255,255,255,.45) !important; }',
+      'body.' + BODY_CLASS + ' .torrent-item__seeds, body.' + BODY_CLASS + ' .torrent-item__grabs { font-size:.7em !important; color:rgba(255,255,255,.45) !important; }',
+      'body.' + BODY_CLASS + ' .torrent-item__viewed { opacity:.5 !important; }',
+
+      // Torrent serial (season/episode list within item)
+      'body.' + BODY_CLASS + ' .torrent-serial.selector { background:rgba(255,255,255,.04) !important; border:1px solid rgba(255,255,255,.08) !important; border-radius:1em !important; margin-bottom:.4em !important; transition:background .18s ease, box-shadow .18s ease !important; }',
+      'body.' + BODY_CLASS + ' .torrent-serial.selector.focus, body.' + BODY_CLASS + ' .torrent-serial.selector.hover { background:rgba(255,255,255,.11) !important; border-color:rgba(255,255,255,.12) !important; outline:none !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 10px 28px rgba(0,0,0,.32) !important; transform:scale(1.02) !important; position:relative !important; z-index:5 !important; }',
+      'body.' + BODY_CLASS + ' .torrent-serial.selector.focus::after, body.' + BODY_CLASS + ' .torrent-serial.selector.focus::before, body.' + BODY_CLASS + ' .torrent-serial.selector.hover::after, body.' + BODY_CLASS + ' .torrent-serial.selector.hover::before { display:none !important; content:none !important; border:0 !important; box-shadow:none !important; }',
+
+      // Performance mode "low" — smaller scale, lighter shadows
+      'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-item.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-serial.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .online-prestige.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .watched-history.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .explorer__files .torrent-filter .simple-button { transition: background .15s ease, transform .15s ease !important; }',
+      'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-item.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-item.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .online-prestige.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .online-prestige.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .watched-history.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .watched-history.selector.hover { transform:scale(1.015) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 6px 16px rgba(0,0,0,.28) !important; }',
+      'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-serial.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-serial.selector.hover { transform:scale(1.012) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 4px 12px rgba(0,0,0,.22) !important; }',
+      'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .explorer__files .torrent-filter .simple-button.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .explorer__files .torrent-filter .simple-button.hover { transform:scale(1.06) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 4px 10px rgba(0,0,0,.22) !important; }',
+
+      // Performance mode "ultra" — no scale, no shadows, only background change
+      'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-item.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-serial.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .online-prestige.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .watched-history.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .explorer__files .torrent-filter .simple-button { transition:none !important; will-change:auto !important; }',
+      'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-item.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-item.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-serial.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-serial.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .online-prestige.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .online-prestige.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .watched-history.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .watched-history.selector.hover { transform:none !important; box-shadow:none !important; background:rgba(255,255,255,.18) !important; border-color:rgba(255,255,255,.28) !important; }',
+      'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .explorer__files .torrent-filter .simple-button.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .explorer__files .torrent-filter .simple-button.hover { transform:none !important; box-shadow:none !important; background:rgba(255,255,255,.26) !important; }'
     ].join('\n');
     if (style.textContent !== text) style.textContent = text;
     if (!style.parentNode) {
