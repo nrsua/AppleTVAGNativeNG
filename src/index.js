@@ -707,6 +707,16 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     }).filter(Boolean);
   }
 
+  function isOnMainPage() {
+    try {
+      if (window.Lampa && Lampa.Activity && typeof Lampa.Activity.active === 'function') {
+        var active = Lampa.Activity.active();
+        if (active && active.component) return active.component === 'main';
+      }
+    } catch (e) {}
+    return false;
+  }
+
   function heroBannerEnabled() {
     try {
       if (!window.Lampa || !Lampa.Storage) return false;
@@ -1117,6 +1127,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     try {
       if (resolvePerfLevel() === 'ultra') return;
       if (!heroBannerEnabled()) return;
+      if (!isOnMainPage()) return;
       if (document.querySelector('.agnative-hero')) return;
 
       var scrollContent = document.querySelector('.activity--active .scroll__content') || document.querySelector('.scroll__content');
@@ -2085,9 +2096,8 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
                 setTimeout(buildHeroBanner, 900);
               }
             } else {
-              // On non-main screens: drop the body class so padding-top reset
-              // and other hero-related rules don't affect detail/settings pages
               if (document.body) document.body.classList.remove('agnative-has-hero');
+              removeHeroBanner();
             }
           } catch (err) { }
         }
