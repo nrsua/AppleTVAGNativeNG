@@ -1956,13 +1956,13 @@
         content.appendChild(yearEl);
         content.appendChild(metaEl);
         content.appendChild(overviewEl);
-        content.appendChild(playBtn);
 
         var indicatorsEl = document.createElement('div');
         indicatorsEl.className = 'agnative-hero__indicators';
 
         hero.appendChild(bg);
         hero.appendChild(content);
+        hero.appendChild(playBtn);
         hero.appendChild(indicatorsEl);
         syncHeroAttrs(hero);
 
