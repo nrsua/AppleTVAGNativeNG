@@ -4394,10 +4394,15 @@
         'body.' + BODY_CLASS + ' .explorer__left, body.' + BODY_CLASS + ' .explorer__card { display:none !important; }',
         'body.' + BODY_CLASS + ' .explorer__files { width:100% !important; max-width:78em !important; margin:0 auto !important; padding:3em 1.5em 0 1.5em !important; }',
         'body.' + BODY_CLASS + ' .explorer__files-head { padding:1.1em 0 .8em !important; }',
+        'body.' + BODY_CLASS + ' .explorer__files-head .torrent-filter { display:flex !important; justify-content:center !important; align-items:center !important; gap:.55em !important; flex-wrap:wrap !important; }',
 
         // Filter / search buttons
-        'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button { background:rgba(255,255,255,.08) !important; border:1px solid rgba(255,255,255,.13) !important; border-radius:999px !important; padding:.42em 1.15em !important; color:rgba(255,255,255,.88) !important; font-size:.88em !important; font-weight:600 !important; transition:background .18s ease, box-shadow .18s ease, transform .18s ease !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.08) !important; }',
+        'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button { background:rgba(255,255,255,.08) !important; border:1px solid rgba(255,255,255,.13) !important; border-radius:999px !important; padding:.42em 1.15em !important; color:rgba(255,255,255,.88) !important; font-size:.88em !important; font-weight:600 !important; transition:background .18s ease, box-shadow .18s ease, transform .18s ease !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.08) !important; margin:0 !important; height:auto !important; }',
         'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.focus, body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.hover { background:rgba(255,255,255,.18) !important; border-color:rgba(255,255,255,.16) !important; outline:none !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.16), 0 6px 18px rgba(0,0,0,.28) !important; transform:scale(1.1) !important; color:#fff !important; }',
+
+        'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.agnative-explorer-back { display:inline-flex !important; align-items:center !important; justify-content:center !important; width:2.6em !important; height:2.6em !important; padding:0 !important; border-radius:50% !important; flex-shrink:0 !important; line-height:0 !important; color:rgba(255,255,255,.95) !important; }',
+        'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.agnative-explorer-back > svg { display:block !important; width:1.25em !important; height:1.25em !important; color:inherit !important; fill:none !important; stroke:currentColor !important; margin:0 !important; flex-shrink:0 !important; }',
+        'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.agnative-explorer-back.focus, body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.agnative-explorer-back.hover { color:#fff !important; }',
 
         // Torrent / online-prestige / watched-history result rows
         'body.' + BODY_CLASS + ' .torrent-item.selector, body.' + BODY_CLASS + ' .online-prestige.selector, body.' + BODY_CLASS + ' .watched-history.selector { background:rgba(255,255,255,.055) !important; border:1px solid rgba(255,255,255,.09) !important; border-radius:1.1em !important; margin-bottom:.55em !important; padding:.85em 1.1em !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.06) !important; transition:background .2s ease, box-shadow .2s ease, transform .2s ease !important; }',
@@ -6032,6 +6037,32 @@
       for (var j = 0; j < eps.length; j++) switchEpisodeCardToBackdrop(eps[j]);
     }
 
+    function injectExplorerBackButton(scope) {
+      if (!scope || scope.nodeType !== 1) return;
+      var filters = [];
+      if (scope.classList && scope.classList.contains('torrent-filter')) {
+        filters.push(scope);
+      } else if (scope.querySelectorAll) {
+        var found = scope.querySelectorAll('.torrent-filter');
+        for (var k = 0; k < found.length; k++) filters.push(found[k]);
+      }
+      for (var i = 0; i < filters.length; i++) {
+        var filter = filters[i];
+        if (filter.__agnativeBackInjected) continue;
+        if (filter.querySelector('.agnative-explorer-back')) continue;
+        filter.__agnativeBackInjected = true;
+        var btn = document.createElement('div');
+        btn.className = 'simple-button selector agnative-explorer-back';
+        btn.setAttribute('data-selector', 'true');
+        btn.setAttribute('tabindex', '0');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        bindAction(btn, function () {
+          try { if (window.Lampa && Lampa.Activity && Lampa.Activity.backward) Lampa.Activity.backward(); } catch (e) {}
+        });
+        filter.insertBefore(btn, filter.firstChild);
+      }
+    }
+
     function observeCards() {
       if (!window.MutationObserver) return;
       if (window.__AGNATIVE_CARD_OBSERVER__) return;
@@ -6058,6 +6089,7 @@
             var eps = node.querySelectorAll('.card-episode');
             for (var m = 0; m < eps.length; m++) switchEpisodeCardToBackdrop(eps[m]);
           }
+          injectExplorerBackButton(node);
         }
         if (!document.querySelector('.agnative-hero')) setTimeout(buildHeroBanner, 200);
       }
@@ -6209,6 +6241,7 @@
       observeMenuChanges();
       if (!content) return;
       processCards(content);
+      injectExplorerBackButton(document.body);
       if (!document.querySelector('.agnative-hero')) setTimeout(buildHeroBanner, 300);
     }
 
