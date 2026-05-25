@@ -1061,40 +1061,17 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     for (var i = 0; i < heroItems.length; i++) {
       (function (idx) {
         var dot = document.createElement('div');
-        dot.className = 'agnative-hero__indicator selector';
-        dot.setAttribute('tabindex', '0');
-        dot.setAttribute('data-selector', 'true');
+        dot.className = 'agnative-hero__indicator';
         dot.setAttribute('data-hero-index', String(idx));
         container.appendChild(dot);
-        bindAction(dot, function () {
+        dot.addEventListener('mouseenter', function () {
           transitionHeroToIndex(idx);
           startHeroRotation();
         });
-        try {
-          var $$ = window.$ || window.jQuery;
-          if ($$) {
-            $$(dot).on('hover:focus.agnativeHeroState hover:hover.agnativeHeroState', function () {
-              var h = document.querySelector('.agnative-hero');
-              if (!h) return;
-              h.classList.remove('agnative-hero--unfocused');
-              h.classList.remove('agnative-hero--hidden');
-              if (document.body) document.body.classList.remove('agnative-hero-collapsed');
-              heroExitDirection = null;
-              transitionHeroToIndex(idx);
-              startHeroRotation();
-            });
-            $$(dot).on('hover:blur.agnativeHeroState hover:out.agnativeHeroState', function () {
-              var h = document.querySelector('.agnative-hero');
-              if (!h) return;
-              h.classList.add('agnative-hero--unfocused');
-              if (heroExitDirection === 'down') {
-                h.classList.add('agnative-hero--hidden');
-                if (document.body) document.body.classList.add('agnative-hero-collapsed');
-              }
-              startHeroRotation();
-            });
-          }
-        } catch (e) { }
+        dot.addEventListener('click', function () {
+          transitionHeroToIndex(idx);
+          startHeroRotation();
+        });
       })(i);
     }
     updateHeroIndicators();
@@ -3599,9 +3576,9 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       'body.' + BODY_CLASS + ' .agnative-hero__play.focus, body.' + BODY_CLASS + ' .agnative-hero__play.hover { background:transparent !important; box-shadow:none !important; transform:none !important; color:transparent !important; outline:none !important; }',
       'body.' + BODY_CLASS + ' .agnative-hero:has(.agnative-hero__play.focus), body.' + BODY_CLASS + ' .agnative-hero:has(.agnative-hero__play.hover) { transform:scale(1.012); box-shadow:0 0 0 1.5px rgba(255,255,255,.9), 0 24px 60px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.3); }',
       'body.' + BODY_CLASS + ' .agnative-hero__indicators { position:absolute; right:2.4em; bottom:1.6em; display:flex; gap:.5em; align-items:center; z-index:3; }',
-      'body.' + BODY_CLASS + ' .agnative-hero__indicator.selector { display:inline-block; width:1.8em; height:.28em; border-radius:999px; background:rgba(255,255,255,.35); border:0; padding:0; cursor:pointer; outline:none; transition:background .25s ease, transform .25s ease, width .25s ease, box-shadow .25s ease; box-shadow:0 1px 4px rgba(0,0,0,.5); }',
+      'body.' + BODY_CLASS + ' .agnative-hero__indicator { display:inline-block; width:1.8em; height:.28em; border-radius:999px; background:rgba(255,255,255,.35); border:0; padding:0; cursor:pointer; outline:none; transition:background .25s ease, transform .25s ease, width .25s ease, box-shadow .25s ease; box-shadow:0 1px 4px rgba(0,0,0,.5); }',
       'body.' + BODY_CLASS + ' .agnative-hero__indicator.agnative-hero__indicator--active { background:rgba(255,255,255,.92); width:2.6em; }',
-      'body.' + BODY_CLASS + ' .agnative-hero__indicator.focus, body.' + BODY_CLASS + ' .agnative-hero__indicator.hover { background:#fff !important; transform:scaleY(1.6) !important; box-shadow:0 4px 14px rgba(0,0,0,.6) !important; outline:none !important; }',
+      'body.' + BODY_CLASS + ' .agnative-hero__indicator:hover { background:#fff !important; transform:scaleY(1.6) !important; box-shadow:0 4px 14px rgba(0,0,0,.6) !important; outline:none !important; }',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__title,',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__logo,',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__year,',
