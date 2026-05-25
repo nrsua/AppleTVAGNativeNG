@@ -69,7 +69,7 @@
     TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size'
   };
 
-  const PLUGIN_VERSION = '0.3.24';
+  const PLUGIN_VERSION = '0.3.25';
   const PLUGIN_AUTHORS = 'llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96';
 
   const ru = {
