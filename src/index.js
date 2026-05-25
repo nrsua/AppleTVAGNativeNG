@@ -771,12 +771,22 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     } catch (e) { return 'w1280'; }
   }
 
+  function measureHeroPan(bg) {
+    if (!bg) bg = document.querySelector('.agnative-hero__bg');
+    if (!bg) return;
+    var hero = bg.parentNode;
+    if (!hero) return;
+    var overflow = bg.offsetHeight - hero.offsetHeight;
+    bg.style.setProperty('--hero-pan-y', Math.max(0, overflow) + 'px');
+  }
+
   function applyHeroBgAnim() {
     var bg = document.querySelector('.agnative-hero__bg');
     if (!bg) return;
     bg.style.animation = 'none';
     var anim = getHeroBgAnim();
     if (anim === 'off') return;
+    measureHeroPan(bg);
     void bg.offsetWidth;
     var dur = (getHeroIntervalMs() / 1000) + 's';
     if      (anim === 'pan-down') bg.style.animation = 'agnative-hero-pan-down '  + dur + ' linear forwards';
@@ -869,8 +879,9 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         if (bg.src !== newSrc) {
           bg.src = newSrc;
           extractDominantColor(newSrc, applyHeroAccent);
+        } else {
+          applyHeroBgAnim();
         }
-        applyHeroBgAnim();
       }
 
       var badgeEl = hero.querySelector('.agnative-hero__badge');
@@ -1015,13 +1026,11 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         hero.classList.add('agnative-hero--switching');
         setTimeout(function () {
           renderHeroSlide(heroItems[nextIdx]);
-          var h = document.querySelector('.agnative-hero');
-          if (h) {
-            requestAnimationFrame(function () {
-              h.classList.remove('agnative-hero--switching');
-            });
-          }
-        }, 280);
+          setTimeout(function () {
+            var hh = document.querySelector('.agnative-hero.agnative-hero--switching');
+            if (hh) hh.classList.remove('agnative-hero--switching');
+          }, 2000);
+        }, 320);
       } else {
         renderHeroSlide(heroItems[nextIdx]);
       }
@@ -1137,6 +1146,20 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       var bg = document.createElement('img');
       bg.className = 'agnative-hero__bg';
       bg.alt = '';
+      var clearHeroSwitching = function () {
+        var h = bg.parentNode;
+        if (h && h.classList && h.classList.contains('agnative-hero--switching')) {
+          requestAnimationFrame(function () {
+            h.classList.remove('agnative-hero--switching');
+          });
+        }
+      };
+      bg.addEventListener('load', function () {
+        measureHeroPan(bg);
+        applyHeroBgAnim();
+        clearHeroSwitching();
+      });
+      bg.addEventListener('error', clearHeroSwitching);
 
       var content = document.createElement('div');
       content.className = 'agnative-hero__content';
@@ -3544,13 +3567,13 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       '}',
       'body.' + BODY_CLASS + ' .agnative-beta-badge { display:inline-block; margin-left:.6em; padding:.12em .5em; font-size:.55em; font-weight:800; letter-spacing:.06em; color:#fff; background:linear-gradient(135deg, #ff6b35, #c1272d); border-radius:.4em; vertical-align:middle; line-height:1.2; box-shadow:0 1px 4px rgba(193,39,45,.4); }',
       'body.' + BODY_CLASS + ' .agnative-hero { position:relative; width:auto; margin:1em 2.5em 1.5em; height:52vh; min-height:380px; overflow:hidden; border-radius:1.5em; opacity:1; transition:opacity .6s ease, transform .3s cubic-bezier(.22,.61,.36,1), box-shadow .3s ease; flex-shrink:0; display:block; z-index:8; box-shadow:0 16px 40px rgba(0,0,0,.32), 0 6px 14px rgba(0,0,0,.18); }',
-      'body.' + BODY_CLASS + ' .agnative-hero__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center top; border-radius:1.5em; opacity:1; transition:opacity .4s ease; pointer-events:none; transform-origin:center center; }',
-      '@keyframes agnative-hero-pan-down { from { object-position: center 0%; } to { object-position: center 100%; } }',
-      '@keyframes agnative-hero-pan-up { from { object-position: center 100%; } to { object-position: center 0%; } }',
-      '@keyframes agnative-hero-zoom-in { from { transform: scale(1); } to { transform: scale(1.1); } }',
-      '@keyframes agnative-hero-zoom-out { from { transform: scale(1.1); } to { transform: scale(1); } }',
-      '@keyframes agnative-hero-drift { from { transform: scale(1) translate(-2%, -1.5%); } to { transform: scale(1.1) translate(2%, 1.5%); } }',
-      '@keyframes agnative-hero-breathe { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }',
+      'body.' + BODY_CLASS + ' .agnative-hero__bg { position:absolute; top:0; left:0; right:0; bottom:auto; width:100%; height:auto; min-height:100%; object-fit:cover; object-position:center top; border-radius:1.5em; opacity:1; transition:opacity .4s ease; pointer-events:none; transform-origin:center center; will-change:transform, opacity; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:translate3d(0,0,0); }',
+      '@keyframes agnative-hero-pan-down { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, calc(var(--hero-pan-y, 0px) * -1), 0); } }',
+      '@keyframes agnative-hero-pan-up { from { transform: translate3d(0, calc(var(--hero-pan-y, 0px) * -1), 0); } to { transform: translate3d(0, 0, 0); } }',
+      '@keyframes agnative-hero-zoom-in { from { transform: scale(1) translate3d(0,0,0); } to { transform: scale(1.1) translate3d(0,0,0); } }',
+      '@keyframes agnative-hero-zoom-out { from { transform: scale(1.1) translate3d(0,0,0); } to { transform: scale(1) translate3d(0,0,0); } }',
+      '@keyframes agnative-hero-drift { from { transform: scale(1.08) translate3d(-2%, -1.5%, 0); } to { transform: scale(1.08) translate3d(2%, 1.5%, 0); } }',
+      '@keyframes agnative-hero-breathe { 0% { transform: scale(1) translate3d(0,0,0); } 50% { transform: scale(1.04) translate3d(0,0,0); } 100% { transform: scale(1) translate3d(0,0,0); } }',
       'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__bg { opacity:0; }',
       'body.' + BODY_CLASS + ' .activity--active .items-line, body.' + BODY_CLASS + ' .activity--active .scroll__content { position:relative; z-index:10; }',
       'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--visible { opacity:1; }',
@@ -3577,14 +3600,14 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__meta,',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__overview,',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__badge { transition: opacity .45s ease, transform .55s ease; }',
-      'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__bg { transition: opacity .6s ease, transform .8s ease; }',
+      'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__bg { transition: opacity .35s ease; }',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__title,',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__logo,',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__year,',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__meta,',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__overview,',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__badge { opacity:0; transform:translateY(.6em); }',
-      'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__bg { opacity:.35; transform:scale(1.04); }',
+      'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__bg { opacity:0; }',
       'body.' + BODY_CLASS + ' .agnative-hero__overview:empty, body.' + BODY_CLASS + ' .agnative-hero__year:empty, body.' + BODY_CLASS + ' .agnative-hero__meta:empty, body.' + BODY_CLASS + ' .agnative-hero__badge:empty { display:none; }',
 
       /* ── Explorer (online / torrent source picker) ── */
