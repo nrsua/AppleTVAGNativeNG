@@ -104,5 +104,9 @@ export const be = {
   set_topnav_enable_desc: 'Паказаць або схаваць верхнюю панэль (меню / гадзіннік)',
   set_topnav_size_name: 'Памер верхняй панэлі',
   set_topnav_size_desc: 'Маштаб верхняй панэлі (пункты меню, гадзіннік, профіль)',
-  set_topnav_position: 'Пазіцыя'
+  set_topnav_position: 'Пазіцыя',
+  set_settings_hide_name: 'Схаваць раздзелы налад',
+  set_settings_hide_desc: 'Выбраць якія раздзелы верхняга ўзроўню схаваць у наладах Lampa',
+  set_settings_hide_title: 'Схаваць раздзелы',
+  set_settings_hide_item_desc: 'Схаваць гэты раздзел з галоўных налад Lampa'
 };

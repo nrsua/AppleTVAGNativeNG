@@ -104,5 +104,9 @@ export const en = {
   set_topnav_enable_desc: 'Show or hide the top navigation (logo / menu items / time)',
   set_topnav_size_name: 'Top navigation size',
   set_topnav_size_desc: 'Scale of the topnav bar (menu items, clock, profile)',
-  set_topnav_position: 'Position'
+  set_topnav_position: 'Position',
+  set_settings_hide_name: 'Hide settings sections',
+  set_settings_hide_desc: 'Choose which top-level sections to hide in Lampa settings',
+  set_settings_hide_title: 'Hide sections',
+  set_settings_hide_item_desc: 'Hide this section from main Lampa settings'
 };

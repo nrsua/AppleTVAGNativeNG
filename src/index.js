@@ -66,7 +66,9 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     HERO_QUALITY_KEY,
     TOPNAV_ENABLE_KEY,
     TOPNAV_SIZE_KEY,
-    TOPNAV_SIZE_ATTR
+    TOPNAV_SIZE_ATTR,
+    SETTINGS_HIDE_KEY,
+    SETTINGS_HIDE_COMPONENT
   } = AGNATIVE_KEYS;
 
   var scheduled = false;
@@ -452,6 +454,60 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         }
       });
     }, 0);
+  }
+
+  function openSettingsHideSection() {
+    if (!window.Lampa || !Lampa.Settings || !Lampa.Settings.create) return;
+    setTimeout(function () {
+      Lampa.Settings.create(SETTINGS_HIDE_COMPONENT, {
+        onBack: function () {
+          Lampa.Settings.create(SETTINGS_COMPONENT);
+          setTimeout(function () { schedulePatch(); }, 80);
+        }
+      });
+    }, 0);
+  }
+
+  // Standard Lampa top-level settings sections (data-component values in settings/main template).
+  function getSettingsSectionDefs() {
+    return [
+      { id: 'account',          label: langText('settings_cub_sync', 'Sync') },
+      { id: 'interface',        label: langText('settings_main_interface', 'Interface') },
+      { id: 'player',           label: langText('settings_main_player', 'Player') },
+      { id: 'parser',           label: langText('settings_main_parser', 'Parser') },
+      { id: 'server',           label: langText('settings_main_torrserver', 'TorrServer') },
+      { id: 'tmdb',             label: 'TMDB' },
+      { id: 'plugins',          label: langText('settings_main_plugins', 'Plugins') },
+      { id: 'parental_control', label: langText('title_parental_control', 'Parental control') },
+      { id: 'more',             label: langText('settings_main_rest', 'More') }
+    ];
+  }
+
+  function getHiddenSettingsSections() {
+    try {
+      if (!window.Lampa || !Lampa.Storage) return [];
+      var raw = Lampa.Storage.get(SETTINGS_HIDE_KEY, []);
+      if (typeof raw === 'string') {
+        try { raw = JSON.parse(raw); }
+        catch (e) { raw = raw.split(',').map(function (s) { return s.trim(); }).filter(Boolean); }
+      }
+      return Array.isArray(raw) ? raw : [];
+    } catch (e) { return []; }
+  }
+
+  function setHiddenSettingsSections(list) {
+    try {
+      if (!window.Lampa || !Lampa.Storage) return;
+      Lampa.Storage.set(SETTINGS_HIDE_KEY, Array.isArray(list) ? list : []);
+    } catch (e) { }
+  }
+
+  function toggleSettingsSectionHidden(id, hidden) {
+    var list = getHiddenSettingsSections();
+    var idx = list.indexOf(id);
+    if (hidden && idx === -1) list.push(id);
+    if (!hidden && idx !== -1) list.splice(idx, 1);
+    setHiddenSettingsSections(list);
   }
 
   function getFallbackTopnavItems() {
@@ -1279,6 +1335,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         Lampa.Template.add('settings_' + SETTINGS_COMPONENT, '<div></div>');
         Lampa.Template.add('settings_' + TOPNAV_SETTINGS_COMPONENT, '<div></div>');
         Lampa.Template.add('settings_' + HERO_SETTINGS_COMPONENT, '<div></div>');
+        Lampa.Template.add('settings_' + SETTINGS_HIDE_COMPONENT, '<div></div>');
       }
 
       Lampa.SettingsApi.addComponent({
@@ -1449,6 +1506,18 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         },
         onChange: function () {
           openTopnavSettingsSection();
+        }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
+        param: { name: 'agnative_open_settings_hide', type: 'button' },
+        field: {
+          name: t('set_settings_hide_name'),
+          description: t('set_settings_hide_desc')
+        },
+        onChange: function () {
+          openSettingsHideSection();
         }
       });
 
@@ -2061,7 +2130,53 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
           }
         });
       });
+
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_HIDE_COMPONENT,
+        param: { type: 'title' },
+        field: { name: t('set_settings_hide_title') }
+      });
+
+      var hiddenList = getHiddenSettingsSections();
+      getSettingsSectionDefs().forEach(function (sec) {
+        var isHidden = hiddenList.indexOf(sec.id) !== -1;
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_HIDE_COMPONENT,
+          param: {
+            name: 'agnative_settings_hide_' + sec.id,
+            type: 'trigger',
+            default: isHidden ? 'true' : 'false'
+          },
+          field: {
+            name: sec.label,
+            description: t('set_settings_hide_item_desc')
+          },
+          onChange: function (value) {
+            var hide = value === true || value === 'true' || value === 'on';
+            toggleSettingsSectionHidden(sec.id, hide);
+            applyHiddenSettingsSectionsCSS();
+          }
+        });
+      });
     } catch (e) { }
+  }
+
+  function applyHiddenSettingsSectionsCSS() {
+    var styleId = 'appletv-agnative-settings-hide-style';
+    var style = document.getElementById(styleId);
+    if (!style) {
+      style = document.createElement('style');
+      style.id = styleId;
+      (document.head || document.body || document.documentElement).appendChild(style);
+    }
+    var hidden = getHiddenSettingsSections();
+    if (!hidden.length) { style.textContent = ''; return; }
+    var rules = hidden.map(function (id) {
+      var safe = String(id).replace(/[^a-zA-Z0-9_-]/g, '');
+      return 'body.' + BODY_CLASS + ' .settings .settings-folder[data-component="' + safe + '"], ' +
+             'body.' + BODY_CLASS + ' .settings .settings__item[data-component="' + safe + '"] { display:none !important; }';
+    });
+    style.textContent = rules.join('\n');
   }
 
   function bindRuntimeListeners() {
@@ -5519,6 +5634,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     syncFlexGapFlag();
     syncOverlayAlign();
     syncTopnavSize();
+    applyHiddenSettingsSectionsCSS();
     observeCards();
     bindInputModeDetector();
     initGlareRuntime();

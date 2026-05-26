@@ -104,5 +104,9 @@ export const ru = {
   set_topnav_enable_desc: 'Показывать или скрыть верхнюю панель (меню / часы)',
   set_topnav_size_name: 'Размер верхней панели',
   set_topnav_size_desc: 'Масштаб панели сверху (пункты меню, часы, профиль)',
-  set_topnav_position: 'Позиция'
+  set_topnav_position: 'Позиция',
+  set_settings_hide_name: 'Скрыть разделы настроек',
+  set_settings_hide_desc: 'Выбрать какие разделы верхнего уровня скрыть в настройках Lampa',
+  set_settings_hide_title: 'Скрыть разделы',
+  set_settings_hide_item_desc: 'Скрыть этот раздел из главных настроек Lampa'
 };

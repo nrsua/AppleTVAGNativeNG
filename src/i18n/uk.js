@@ -104,5 +104,9 @@ export const uk = {
   set_topnav_enable_desc: 'Показувати або приховати верхню панель (меню / годинник)',
   set_topnav_size_name: 'Розмір верхньої панелі',
   set_topnav_size_desc: 'Масштаб панелі вгорі (пункти меню, годинник, профіль)',
-  set_topnav_position: 'Позиція'
+  set_topnav_position: 'Позиція',
+  set_settings_hide_name: 'Сховати розділи налаштувань',
+  set_settings_hide_desc: 'Вибрати які розділи верхнього рівня сховати в налаштуваннях Lampa',
+  set_settings_hide_title: 'Сховати розділи',
+  set_settings_hide_item_desc: 'Сховати цей розділ з головних налаштувань Lampa'
 };
