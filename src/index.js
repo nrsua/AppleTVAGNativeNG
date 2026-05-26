@@ -1353,6 +1353,9 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         }
       });
 
+      // ═══════════════════════════════════════════════════════════
+      // 1. Основные
+      // ═══════════════════════════════════════════════════════════
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
         param: { type: 'title' },
@@ -1388,6 +1391,29 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
         param: {
+          name: UI_LANG_KEY,
+          type: 'select',
+          values: {
+            auto: t('val_auto'),
+            ru: langText('filter_lang_ru', t('val_ru')),
+            en: langText('filter_lang_en', t('val_en')),
+            uk: langText('filter_lang_uk', t('val_uk')),
+            be: langText('filter_lang_be', t('val_be'))
+          },
+          default: 'auto'
+        },
+        field: {
+          name: langText('settings_interface_lang', t('set_ui_lang_name')),
+          description: t('set_ui_lang_desc')
+        },
+        onChange: function () {
+          setTimeout(function () { schedulePatch(); }, 80);
+        }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
+        param: {
           name: PERF_MODE_KEY,
           type: 'select',
           values: {
@@ -1414,46 +1440,23 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
 
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
-        param: {
-          name: CARD_ANIM_KEY,
-          type: 'select',
-          values: {
-            off: t('val_card_anim_off'),
-            veoveo: t('val_card_anim_veoveo'),
-            appletv: t('val_card_anim_appletv')
-          },
-          default: 'veoveo'
-        },
+        param: { name: 'agnative_reset_button', type: 'button' },
         field: {
-          name: t('set_card_anim_name'),
-          description: t('set_card_anim_desc')
+          name: t('set_reset_name'),
+          description: t('set_reset_desc')
         },
         onChange: function () {
-          syncGlareClass();
+          resetSettings();
         }
       });
 
+      // ═══════════════════════════════════════════════════════════
+      // 2. Верхняя панель
+      // ═══════════════════════════════════════════════════════════
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
-        param: {
-          name: UI_LANG_KEY,
-          type: 'select',
-          values: {
-            auto: t('val_auto'),
-            ru: langText('filter_lang_ru', t('val_ru')),
-            en: langText('filter_lang_en', t('val_en')),
-            uk: langText('filter_lang_uk', t('val_uk')),
-            be: langText('filter_lang_be', t('val_be'))
-          },
-          default: 'auto'
-        },
-        field: {
-          name: langText('settings_interface_lang', t('set_ui_lang_name')),
-          description: t('set_ui_lang_desc')
-        },
-        onChange: function () {
-          setTimeout(function () { schedulePatch(); }, 80);
-        }
+        param: { type: 'title' },
+        field: { name: t('set_section_topnav') }
       });
 
       Lampa.SettingsApi.addParam({
@@ -1509,18 +1512,30 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         }
       });
 
+      // ═══════════════════════════════════════════════════════════
+      // 3. Hero-баннер (BETA)
+      // ═══════════════════════════════════════════════════════════
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
-        param: { name: 'agnative_open_settings_hide', type: 'button' },
+        param: { type: 'title' },
+        field: { name: t('set_section_hero_banner') + ' <span class="agnative-beta-badge">BETA</span>' }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
+        param: { name: 'agnative_open_hero_settings', type: 'button' },
         field: {
-          name: t('set_settings_hide_name'),
-          description: t('set_settings_hide_desc')
+          name: t('set_hero_name'),
+          description: t('set_hero_desc')
         },
         onChange: function () {
-          openSettingsHideSection();
+          openHeroSettingsSection();
         }
       });
 
+      // ═══════════════════════════════════════════════════════════
+      // 4. Карточки
+      // ═══════════════════════════════════════════════════════════
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
         param: { type: 'title' },
@@ -1543,29 +1558,6 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
           syncCardFlags();
           resetCardSwitches();
           setTimeout(function () { schedulePatch(); }, 80);
-        }
-      });
-
-      Lampa.SettingsApi.addParam({
-        component: SETTINGS_COMPONENT,
-        param: {
-          name: CARD_SIZE_KEY,
-          type: 'select',
-          values: {
-            xs: t('val_size_xs'),
-            sm: t('val_size_sm'),
-            md: t('val_size_md'),
-            lg: t('val_size_lg'),
-            xl: t('val_size_xl')
-          },
-          default: 'md'
-        },
-        field: {
-          name: t('set_card_size_name'),
-          description: t('set_card_size_desc')
-        },
-        onChange: function () {
-          syncCardSize();
         }
       });
 
@@ -1598,83 +1590,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
         param: {
-          name: POSTER_QUALITY_KEY,
-          type: 'select',
-          values: {
-            w185: t('val_size_xs'),
-            w342: t('val_size_sm'),
-            w500: t('val_size_md'),
-            w780: t('val_size_lg'),
-            original: t('val_size_xl')
-          },
-          default: 'w500'
-        },
-        field: {
-          name: t('set_poster_quality_name'),
-          description: t('set_poster_quality_desc')
-        },
-        onChange: function () {
-          posterCache = {};
-          clearAll();
-          resetCardSwitches();
-          setTimeout(function () { schedulePatch(); }, 80);
-        }
-      });
-
-      Lampa.SettingsApi.addParam({
-        component: SETTINGS_COMPONENT,
-        param: {
-          name: LOGO_LANG_KEY,
-          type: 'select',
-          values: {
-            auto: t('val_auto'),
-            ru: langText('filter_lang_ru', t('val_ru')),
-            en: langText('filter_lang_en', t('val_en')),
-            uk: langText('filter_lang_uk', t('val_uk')),
-            be: langText('filter_lang_be', t('val_be'))
-          },
-          default: 'auto'
-        },
-        field: {
-          name: t('set_logo_lang_name'),
-          description: t('set_logo_lang_desc')
-        },
-        onChange: function () {
-          logoCache = {};
-          titledBackdropCache = {};
-          clearAll();
-          setTimeout(function () { schedulePatch(); }, 80);
-        }
-      });
-
-      Lampa.SettingsApi.addParam({
-        component: SETTINGS_COMPONENT,
-        param: {
-          name: LOGO_TITLE_KEY,
-          type: 'select',
-          values: {
-            off: t('val_logo_title_off'),
-            below: t('val_logo_title_below'),
-            above: t('val_logo_title_above')
-          },
-          default: 'off'
-        },
-        field: {
-          name: t('set_logo_title_name'),
-          description: t('set_logo_title_desc')
-        },
-        onChange: function () {
-          logoCache = {};
-          clearAll();
-          resetCardSwitches();
-          setTimeout(function () { schedulePatch(); }, 80);
-        }
-      });
-
-      Lampa.SettingsApi.addParam({
-        component: SETTINGS_COMPONENT,
-        param: {
-          name: LOGO_SIZE_KEY,
+          name: CARD_SIZE_KEY,
           type: 'select',
           values: {
             xs: t('val_size_xs'),
@@ -1686,11 +1602,11 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
           default: 'md'
         },
         field: {
-          name: t('set_logo_size_name'),
-          description: t('set_logo_size_desc')
+          name: t('set_card_size_name'),
+          description: t('set_card_size_desc')
         },
         onChange: function () {
-          syncLogoSize();
+          syncCardSize();
         }
       });
 
@@ -1776,6 +1692,138 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
 
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
+        param: {
+          name: CARD_ANIM_KEY,
+          type: 'select',
+          values: {
+            off: t('val_card_anim_off'),
+            veoveo: t('val_card_anim_veoveo'),
+            appletv: t('val_card_anim_appletv')
+          },
+          default: 'veoveo'
+        },
+        field: {
+          name: t('set_card_anim_name'),
+          description: t('set_card_anim_desc')
+        },
+        onChange: function () {
+          syncGlareClass();
+        }
+      });
+
+      // ═══════════════════════════════════════════════════════════
+      // 5. Логотипы и постеры
+      // ═══════════════════════════════════════════════════════════
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
+        param: { type: 'title' },
+        field: { name: t('set_section_logos') }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
+        param: {
+          name: LOGO_LANG_KEY,
+          type: 'select',
+          values: {
+            auto: t('val_auto'),
+            ru: langText('filter_lang_ru', t('val_ru')),
+            en: langText('filter_lang_en', t('val_en')),
+            uk: langText('filter_lang_uk', t('val_uk')),
+            be: langText('filter_lang_be', t('val_be'))
+          },
+          default: 'auto'
+        },
+        field: {
+          name: t('set_logo_lang_name'),
+          description: t('set_logo_lang_desc')
+        },
+        onChange: function () {
+          logoCache = {};
+          titledBackdropCache = {};
+          clearAll();
+          setTimeout(function () { schedulePatch(); }, 80);
+        }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
+        param: {
+          name: LOGO_TITLE_KEY,
+          type: 'select',
+          values: {
+            off: t('val_logo_title_off'),
+            below: t('val_logo_title_below'),
+            above: t('val_logo_title_above')
+          },
+          default: 'off'
+        },
+        field: {
+          name: t('set_logo_title_name'),
+          description: t('set_logo_title_desc')
+        },
+        onChange: function () {
+          logoCache = {};
+          clearAll();
+          resetCardSwitches();
+          setTimeout(function () { schedulePatch(); }, 80);
+        }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
+        param: {
+          name: LOGO_SIZE_KEY,
+          type: 'select',
+          values: {
+            xs: t('val_size_xs'),
+            sm: t('val_size_sm'),
+            md: t('val_size_md'),
+            lg: t('val_size_lg'),
+            xl: t('val_size_xl')
+          },
+          default: 'md'
+        },
+        field: {
+          name: t('set_logo_size_name'),
+          description: t('set_logo_size_desc')
+        },
+        onChange: function () {
+          syncLogoSize();
+        }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
+        param: {
+          name: POSTER_QUALITY_KEY,
+          type: 'select',
+          values: {
+            w185: t('val_size_xs'),
+            w342: t('val_size_sm'),
+            w500: t('val_size_md'),
+            w780: t('val_size_lg'),
+            original: t('val_size_xl')
+          },
+          default: 'w500'
+        },
+        field: {
+          name: t('set_poster_quality_name'),
+          description: t('set_poster_quality_desc')
+        },
+        onChange: function () {
+          posterCache = {};
+          clearAll();
+          resetCardSwitches();
+          setTimeout(function () { schedulePatch(); }, 80);
+        }
+      });
+
+      // ═══════════════════════════════════════════════════════════
+      // 6. Текст и шрифты
+      // ═══════════════════════════════════════════════════════════
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
         param: { type: 'title' },
         field: { name: t('set_section_text') }
       });
@@ -1826,6 +1874,9 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         }
       });
 
+      // ═══════════════════════════════════════════════════════════
+      // 7. Часы и панель
+      // ═══════════════════════════════════════════════════════════
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
         param: { type: 'title' },
@@ -1869,22 +1920,19 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
 
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
-        param: { type: 'title' },
-        field: { name: t('set_section_beta') + ' <span class="agnative-beta-badge">BETA</span>' }
-      });
-
-      Lampa.SettingsApi.addParam({
-        component: SETTINGS_COMPONENT,
-        param: { name: 'agnative_open_hero_settings', type: 'button' },
+        param: { name: 'agnative_open_settings_hide', type: 'button' },
         field: {
-          name: t('set_hero_name'),
-          description: t('set_hero_desc')
+          name: t('set_settings_hide_name'),
+          description: t('set_settings_hide_desc')
         },
         onChange: function () {
-          openHeroSettingsSection();
+          openSettingsHideSection();
         }
       });
 
+      // ═══════════════════════════════════════════════════════════
+      // 8. Данные
+      // ═══════════════════════════════════════════════════════════
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
         param: { type: 'title' },
@@ -1911,18 +1959,6 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         },
         onChange: function () {
           prune(getCacheMaxBytes());
-        }
-      });
-
-      Lampa.SettingsApi.addParam({
-        component: SETTINGS_COMPONENT,
-        param: { name: 'agnative_reset_button', type: 'button' },
-        field: {
-          name: t('set_reset_name'),
-          description: t('set_reset_desc')
-        },
-        onChange: function () {
-          resetSettings();
         }
       });
 
