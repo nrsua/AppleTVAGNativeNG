@@ -66,7 +66,9 @@
     HERO_QUALITY_KEY: 'appletv_agnative_hero_quality',
     TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible',
     TOPNAV_SIZE_KEY: 'appletv_agnative_topnav_size',
-    TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size'
+    TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size',
+    SETTINGS_HIDE_KEY: 'appletv_agnative_settings_hide',
+    SETTINGS_HIDE_COMPONENT: 'agnative_settings_hide'
   };
 
   const PLUGIN_VERSION = '0.3.25';
@@ -178,7 +180,11 @@
     set_topnav_enable_desc: 'Показывать или скрыть верхнюю панель (меню / часы)',
     set_topnav_size_name: 'Размер верхней панели',
     set_topnav_size_desc: 'Масштаб панели сверху (пункты меню, часы, профиль)',
-    set_topnav_position: 'Позиция'
+    set_topnav_position: 'Позиция',
+    set_settings_hide_name: 'Скрыть разделы настроек',
+    set_settings_hide_desc: 'Выбрать какие разделы верхнего уровня скрыть в настройках Lampa',
+    set_settings_hide_title: 'Скрыть разделы',
+    set_settings_hide_item_desc: 'Скрыть этот раздел из главных настроек Lampa'
   };
 
   const en = {
@@ -287,7 +293,11 @@
     set_topnav_enable_desc: 'Show or hide the top navigation (logo / menu items / time)',
     set_topnav_size_name: 'Top navigation size',
     set_topnav_size_desc: 'Scale of the topnav bar (menu items, clock, profile)',
-    set_topnav_position: 'Position'
+    set_topnav_position: 'Position',
+    set_settings_hide_name: 'Hide settings sections',
+    set_settings_hide_desc: 'Choose which top-level sections to hide in Lampa settings',
+    set_settings_hide_title: 'Hide sections',
+    set_settings_hide_item_desc: 'Hide this section from main Lampa settings'
   };
 
   const uk = {
@@ -396,7 +406,11 @@
     set_topnav_enable_desc: 'Показувати або приховати верхню панель (меню / годинник)',
     set_topnav_size_name: 'Розмір верхньої панелі',
     set_topnav_size_desc: 'Масштаб панелі вгорі (пункти меню, годинник, профіль)',
-    set_topnav_position: 'Позиція'
+    set_topnav_position: 'Позиція',
+    set_settings_hide_name: 'Сховати розділи налаштувань',
+    set_settings_hide_desc: 'Вибрати які розділи верхнього рівня сховати в налаштуваннях Lampa',
+    set_settings_hide_title: 'Сховати розділи',
+    set_settings_hide_item_desc: 'Сховати цей розділ з головних налаштувань Lampa'
   };
 
   const be = {
@@ -505,7 +519,11 @@
     set_topnav_enable_desc: 'Паказаць або схаваць верхнюю панэль (меню / гадзіннік)',
     set_topnav_size_name: 'Памер верхняй панэлі',
     set_topnav_size_desc: 'Маштаб верхняй панэлі (пункты меню, гадзіннік, профіль)',
-    set_topnav_position: 'Пазіцыя'
+    set_topnav_position: 'Пазіцыя',
+    set_settings_hide_name: 'Схаваць раздзелы налад',
+    set_settings_hide_desc: 'Выбраць якія раздзелы верхняга ўзроўню схаваць у наладах Lampa',
+    set_settings_hide_title: 'Схаваць раздзелы',
+    set_settings_hide_item_desc: 'Схаваць гэты раздзел з галоўных налад Lampa'
   };
 
   const GENRE_MAP_LOCALIZED = {
@@ -819,7 +837,9 @@
       HERO_QUALITY_KEY,
       TOPNAV_ENABLE_KEY,
       TOPNAV_SIZE_KEY,
-      TOPNAV_SIZE_ATTR
+      TOPNAV_SIZE_ATTR,
+      SETTINGS_HIDE_KEY,
+      SETTINGS_HIDE_COMPONENT
     } = AGNATIVE_KEYS;
 
     var scheduled = false;
@@ -1205,6 +1225,60 @@
           }
         });
       }, 0);
+    }
+
+    function openSettingsHideSection() {
+      if (!window.Lampa || !Lampa.Settings || !Lampa.Settings.create) return;
+      setTimeout(function () {
+        Lampa.Settings.create(SETTINGS_HIDE_COMPONENT, {
+          onBack: function () {
+            Lampa.Settings.create(SETTINGS_COMPONENT);
+            setTimeout(function () { schedulePatch(); }, 80);
+          }
+        });
+      }, 0);
+    }
+
+    // Standard Lampa top-level settings sections (data-component values in settings/main template).
+    function getSettingsSectionDefs() {
+      return [
+        { id: 'account',          label: langText('settings_cub_sync', 'Sync') },
+        { id: 'interface',        label: langText('settings_main_interface', 'Interface') },
+        { id: 'player',           label: langText('settings_main_player', 'Player') },
+        { id: 'parser',           label: langText('settings_main_parser', 'Parser') },
+        { id: 'server',           label: langText('settings_main_torrserver', 'TorrServer') },
+        { id: 'tmdb',             label: 'TMDB' },
+        { id: 'plugins',          label: langText('settings_main_plugins', 'Plugins') },
+        { id: 'parental_control', label: langText('title_parental_control', 'Parental control') },
+        { id: 'more',             label: langText('settings_main_rest', 'More') }
+      ];
+    }
+
+    function getHiddenSettingsSections() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return [];
+        var raw = Lampa.Storage.get(SETTINGS_HIDE_KEY, []);
+        if (typeof raw === 'string') {
+          try { raw = JSON.parse(raw); }
+          catch (e) { raw = raw.split(',').map(function (s) { return s.trim(); }).filter(Boolean); }
+        }
+        return Array.isArray(raw) ? raw : [];
+      } catch (e) { return []; }
+    }
+
+    function setHiddenSettingsSections(list) {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return;
+        Lampa.Storage.set(SETTINGS_HIDE_KEY, Array.isArray(list) ? list : []);
+      } catch (e) { }
+    }
+
+    function toggleSettingsSectionHidden(id, hidden) {
+      var list = getHiddenSettingsSections();
+      var idx = list.indexOf(id);
+      if (hidden && idx === -1) list.push(id);
+      if (!hidden && idx !== -1) list.splice(idx, 1);
+      setHiddenSettingsSections(list);
     }
 
     function getFallbackTopnavItems() {
@@ -2032,6 +2106,7 @@
           Lampa.Template.add('settings_' + SETTINGS_COMPONENT, '<div></div>');
           Lampa.Template.add('settings_' + TOPNAV_SETTINGS_COMPONENT, '<div></div>');
           Lampa.Template.add('settings_' + HERO_SETTINGS_COMPONENT, '<div></div>');
+          Lampa.Template.add('settings_' + SETTINGS_HIDE_COMPONENT, '<div></div>');
         }
 
         Lampa.SettingsApi.addComponent({
@@ -2202,6 +2277,18 @@
           },
           onChange: function () {
             openTopnavSettingsSection();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_COMPONENT,
+          param: { name: 'agnative_open_settings_hide', type: 'button' },
+          field: {
+            name: t('set_settings_hide_name'),
+            description: t('set_settings_hide_desc')
+          },
+          onChange: function () {
+            openSettingsHideSection();
           }
         });
 
@@ -2814,7 +2901,53 @@
             }
           });
         });
+
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_HIDE_COMPONENT,
+          param: { type: 'title' },
+          field: { name: t('set_settings_hide_title') }
+        });
+
+        var hiddenList = getHiddenSettingsSections();
+        getSettingsSectionDefs().forEach(function (sec) {
+          var isHidden = hiddenList.indexOf(sec.id) !== -1;
+          Lampa.SettingsApi.addParam({
+            component: SETTINGS_HIDE_COMPONENT,
+            param: {
+              name: 'agnative_settings_hide_' + sec.id,
+              type: 'trigger',
+              default: isHidden ? 'true' : 'false'
+            },
+            field: {
+              name: sec.label,
+              description: t('set_settings_hide_item_desc')
+            },
+            onChange: function (value) {
+              var hide = value === true || value === 'true' || value === 'on';
+              toggleSettingsSectionHidden(sec.id, hide);
+              applyHiddenSettingsSectionsCSS();
+            }
+          });
+        });
       } catch (e) { }
+    }
+
+    function applyHiddenSettingsSectionsCSS() {
+      var styleId = 'appletv-agnative-settings-hide-style';
+      var style = document.getElementById(styleId);
+      if (!style) {
+        style = document.createElement('style');
+        style.id = styleId;
+        (document.head || document.body || document.documentElement).appendChild(style);
+      }
+      var hidden = getHiddenSettingsSections();
+      if (!hidden.length) { style.textContent = ''; return; }
+      var rules = hidden.map(function (id) {
+        var safe = String(id).replace(/[^a-zA-Z0-9_-]/g, '');
+        return 'body.' + BODY_CLASS + ' .settings .settings-folder[data-component="' + safe + '"], ' +
+               'body.' + BODY_CLASS + ' .settings .settings__item[data-component="' + safe + '"] { display:none !important; }';
+      });
+      style.textContent = rules.join('\n');
     }
 
     function bindRuntimeListeners() {
@@ -6272,6 +6405,7 @@
       syncFlexGapFlag();
       syncOverlayAlign();
       syncTopnavSize();
+      applyHiddenSettingsSectionsCSS();
       observeCards();
       bindInputModeDetector();
       initGlareRuntime();
