@@ -54,5 +54,7 @@ export const AGNATIVE_KEYS = {
   HERO_QUALITY_KEY: 'appletv_agnative_hero_quality',
   TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible',
   TOPNAV_SIZE_KEY: 'appletv_agnative_topnav_size',
-  TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size'
+  TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size',
+  SETTINGS_HIDE_KEY: 'appletv_agnative_settings_hide',
+  SETTINGS_HIDE_COMPONENT: 'agnative_settings_hide'
 };
