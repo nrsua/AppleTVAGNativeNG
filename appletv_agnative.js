@@ -65,6 +65,7 @@
     HERO_BG_ANIM_KEY: 'appletv_agnative_hero_bg_anim',
     HERO_QUALITY_KEY: 'appletv_agnative_hero_quality',
     TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible',
+    TOPNAV_ICONS_ORDER_KEY: 'appletv_agnative_topnav_icons_order',
     TOPNAV_SIZE_KEY: 'appletv_agnative_topnav_size',
     TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size',
     SETTINGS_HIDE_KEY: 'appletv_agnative_settings_hide',
@@ -183,6 +184,11 @@
     set_topnav_enable_desc: 'Показывать или скрыть верхнюю панель (меню / часы)',
     set_topnav_size_name: 'Размер верхней панели',
     set_topnav_size_desc: 'Масштаб панели сверху (пункты меню, часы, профиль)',
+    set_topnav_icons_order_name: 'Поиск и избранное',
+    set_topnav_icons_order_desc: 'Где разместить иконки поиска и избранного на верхней панели',
+    val_topnav_icons_end: 'Оба в конце',
+    val_topnav_icons_start: 'Оба в начале',
+    val_topnav_icons_split: 'Поиск в начале, избранное в конце',
     set_topnav_position: 'Позиция',
     set_settings_hide_name: 'Скрыть разделы настроек',
     set_settings_hide_desc: 'Выбрать какие разделы верхнего уровня скрыть в настройках Lampa',
@@ -299,6 +305,11 @@
     set_topnav_enable_desc: 'Show or hide the top navigation (logo / menu items / time)',
     set_topnav_size_name: 'Top navigation size',
     set_topnav_size_desc: 'Scale of the topnav bar (menu items, clock, profile)',
+    set_topnav_icons_order_name: 'Search & favorites',
+    set_topnav_icons_order_desc: 'Where to place the search and favorites icons on the top navigation',
+    val_topnav_icons_end: 'Both at the end',
+    val_topnav_icons_start: 'Both at the start',
+    val_topnav_icons_split: 'Search at start, favorites at end',
     set_topnav_position: 'Position',
     set_settings_hide_name: 'Hide settings sections',
     set_settings_hide_desc: 'Choose which top-level sections to hide in Lampa settings',
@@ -415,6 +426,11 @@
     set_topnav_enable_desc: 'Показувати або приховати верхню панель (меню / годинник)',
     set_topnav_size_name: 'Розмір верхньої панелі',
     set_topnav_size_desc: 'Масштаб панелі вгорі (пункти меню, годинник, профіль)',
+    set_topnav_icons_order_name: 'Пошук та обране',
+    set_topnav_icons_order_desc: 'Де розмістити іконки пошуку та обраного на верхній панелі',
+    val_topnav_icons_end: 'Обидва в кінці',
+    val_topnav_icons_start: 'Обидва на початку',
+    val_topnav_icons_split: 'Пошук на початку, обране в кінці',
     set_topnav_position: 'Позиція',
     set_settings_hide_name: 'Сховати розділи налаштувань',
     set_settings_hide_desc: 'Вибрати які розділи верхнього рівня сховати в налаштуваннях Lampa',
@@ -531,6 +547,11 @@
     set_topnav_enable_desc: 'Паказаць або схаваць верхнюю панэль (меню / гадзіннік)',
     set_topnav_size_name: 'Памер верхняй панэлі',
     set_topnav_size_desc: 'Маштаб верхняй панэлі (пункты меню, гадзіннік, профіль)',
+    set_topnav_icons_order_name: 'Пошук і абранае',
+    set_topnav_icons_order_desc: 'Дзе размясціць іконкі пошуку і абранага на верхняй панэлі',
+    val_topnav_icons_end: 'Абодва ў канцы',
+    val_topnav_icons_start: 'Абодва ў пачатку',
+    val_topnav_icons_split: 'Пошук у пачатку, абранае ў канцы',
     set_topnav_position: 'Пазіцыя',
     set_settings_hide_name: 'Схаваць раздзелы налад',
     set_settings_hide_desc: 'Выбраць якія раздзелы верхняга ўзроўню схаваць у наладах Lampa',
@@ -848,6 +869,7 @@
       HERO_BG_ANIM_KEY,
       HERO_QUALITY_KEY,
       TOPNAV_ENABLE_KEY,
+      TOPNAV_ICONS_ORDER_KEY,
       TOPNAV_SIZE_KEY,
       TOPNAV_SIZE_ATTR,
       SETTINGS_HIDE_KEY,
@@ -2280,6 +2302,27 @@
           },
           onChange: function () {
             syncTopnavSize();
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_COMPONENT,
+          param: {
+            name: TOPNAV_ICONS_ORDER_KEY,
+            type: 'select',
+            values: {
+              end: t('val_topnav_icons_end'),
+              start: t('val_topnav_icons_start'),
+              split: t('val_topnav_icons_split')
+            },
+            default: 'end'
+          },
+          field: {
+            name: t('set_topnav_icons_order_name'),
+            description: t('set_topnav_icons_order_desc')
+          },
+          onChange: function () {
+            setTimeout(function () { schedulePatch(); }, 50);
           }
         });
 
@@ -5692,6 +5735,13 @@
       try { return window.Lampa && Lampa.Storage.get(TOPNAV_ENABLE_KEY, 'on') !== 'off'; } catch (e) { return true; }
     }
 
+    function getTopnavIconsOrder() {
+      var v = 'end';
+      try { v = Lampa.Storage.get(TOPNAV_ICONS_ORDER_KEY, 'end'); } catch (e) { }
+      if (v !== 'start' && v !== 'split') v = 'end';
+      return v;
+    }
+
     function syncTopnavSize() {
       if (!document.body) return;
       var size = 'md';
@@ -5753,15 +5803,7 @@
         itemsWrap.appendChild(btn);
       });
 
-      var iconItems = [
-        { role: 'search', svg: iconSearch(), handler: triggerSearch },
-        { role: 'favorite', svg: iconFavorite(), handler: triggerFavorite }
-      ];
-      if (!controlPanelEnabled()) {
-        iconItems.push({ role: 'settings', svg: iconSettings(), handler: triggerSettings });
-      }
-
-      iconItems.forEach(function (def) {
+      function buildIconButton(def) {
         var btn = document.createElement('div');
         btn.className = 'agnative-topnav-shell__item agnative-topnav-shell__item--icon selector';
         btn.setAttribute('data-role', def.role);
@@ -5769,7 +5811,34 @@
         btn.setAttribute('tabindex', '0');
         btn.innerHTML = def.svg;
         bindAction(btn, def.handler);
-        rightWrap.appendChild(btn);
+        return btn;
+      }
+
+      var searchDef = { role: 'search', svg: iconSearch(), handler: triggerSearch };
+      var favoriteDef = { role: 'favorite', svg: iconFavorite(), handler: triggerFavorite };
+
+      var order = getTopnavIconsOrder();
+      var startDefs = [];
+      var endDefs = [];
+      if (order === 'start') {
+        startDefs = [searchDef, favoriteDef];
+      } else if (order === 'split') {
+        startDefs = [searchDef];
+        endDefs = [favoriteDef];
+      } else {
+        endDefs = [searchDef, favoriteDef];
+      }
+      // Settings icon (shown only when the clock control panel is off) always stays at the end.
+      if (!controlPanelEnabled()) {
+        endDefs.push({ role: 'settings', svg: iconSettings(), handler: triggerSettings });
+      }
+
+      var firstMenu = itemsWrap.firstChild;
+      startDefs.forEach(function (def) {
+        itemsWrap.insertBefore(buildIconButton(def), firstMenu);
+      });
+      endDefs.forEach(function (def) {
+        rightWrap.appendChild(buildIconButton(def));
       });
 
       registerTopnavController(shell);
