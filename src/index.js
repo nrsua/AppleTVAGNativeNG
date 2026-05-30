@@ -64,6 +64,8 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     HERO_PAN_KEY,
     HERO_BG_ANIM_KEY,
     HERO_QUALITY_KEY,
+    HERO_TRAILER_KEY,
+    HERO_TRAILER_DELAY_KEY,
     TOPNAV_ENABLE_KEY,
     TOPNAV_ICONS_ORDER_KEY,
     TOPNAV_SIZE_KEY,
@@ -85,6 +87,14 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
   var heroCurrentIndex = 0;
   var heroItems = [];
   var heroCurrentItem = null;
+  var heroIdleTimer = null;
+  var heroTrailerActive = false;
+  var heroTrailerCache = {};
+  var heroTrailerPending = {};
+  var heroYtPlayer = null;
+  var heroUnplayable = {};
+  var ytApiState = 'none';
+  var ytApiCallbacks = [];
   var storageListenerBound = false;
   var activityListenerBound = false;
   var fullListenerBound = false;
@@ -816,6 +826,24 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     } catch (e) { return 40000; }
   }
 
+  function heroTrailerEnabled() {
+    try {
+      if (!window.Lampa || !Lampa.Storage) return true;
+      var v = Lampa.Storage.get(HERO_TRAILER_KEY, 'true');
+      return !(v === false || v === 'false' || v === 'off');
+    } catch (e) { return true; }
+  }
+
+  function getHeroTrailerDelayMs() {
+    try {
+      if (!window.Lampa || !Lampa.Storage) return 8000;
+      var v = parseInt(Lampa.Storage.get(HERO_TRAILER_DELAY_KEY, '8'), 10);
+      if (!v || v < 2) v = 8;
+      if (v > 60) v = 60;
+      return v * 1000;
+    } catch (e) { return 8000; }
+  }
+
   var HERO_BG_ANIM_VALUES = ['off', 'pan-down', 'pan-up', 'zoom-in', 'zoom-out', 'drift', 'breathe'];
 
   function getHeroBgAnim() {
@@ -877,6 +905,8 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
 
   function removeHeroBanner() {
     stopHeroRotation();
+    if (heroIdleTimer) { clearTimeout(heroIdleTimer); heroIdleTimer = null; }
+    heroTrailerActive = false;
     var hero = document.querySelector('.agnative-hero');
     if (hero) hero.remove();
     heroItems = [];
@@ -925,8 +955,10 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
   function detectHeroItemType(item) {
     if (!item) return 'movie';
     if (item.media_type === 'tv' || item.media_type === 'movie') return item.media_type;
+    if (item.number_of_seasons || item.seasons || item.episode_run_time) return 'tv';
+    if (item.runtime) return 'movie';
     if (item.first_air_date && !item.release_date) return 'tv';
-    if (item.release_date) return 'movie';
+    if (item.release_date && !item.first_air_date) return 'movie';
     if (item.name && !item.title) return 'tv';
     return 'movie';
   }
@@ -1056,6 +1088,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         } catch (e) { }
       },
       up: function () {
+        heroClearIdle();
         if (window.Navigator && Navigator.canmove && Navigator.canmove('up')) {
           Navigator.move('up');
           return;
@@ -1064,6 +1097,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         try { Lampa.Controller.toggle('head'); } catch (e) { }
       },
       down: function () {
+        heroClearIdle();
         if (window.Navigator && Navigator.canmove && Navigator.canmove('down')) {
           Navigator.move('down');
           return;
@@ -1072,16 +1106,25 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         try { Lampa.Controller.toggle('content'); } catch (e) { }
       },
       left: function () {
-        if (window.Navigator && Navigator.canmove && Navigator.canmove('left')) {
-          Navigator.move('left');
+        // Browse hero items leftwards; at the first item hand off to the left menu.
+        stopHeroTrailer();
+        if (heroItems.length > 1 && heroCurrentIndex > 0) {
+          transitionHeroToIndex(heroCurrentIndex - 1);
+          startHeroRotation();
+          heroResetIdle();
           return;
         }
+        heroClearIdle();
         heroExitDirection = 'left';
         try { Lampa.Controller.toggle('menu'); } catch (e) { }
       },
       right: function () {
-        if (window.Navigator && Navigator.canmove && Navigator.canmove('right')) {
-          Navigator.move('right');
+        // Browse hero items rightwards; stop at the last item.
+        stopHeroTrailer();
+        if (heroItems.length > 1 && heroCurrentIndex < heroItems.length - 1) {
+          transitionHeroToIndex(heroCurrentIndex + 1);
+          startHeroRotation();
+          heroResetIdle();
         }
       },
       back: function () {
@@ -1106,8 +1149,10 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     if (idx === heroCurrentIndex) return;
     var hero = document.querySelector('.agnative-hero');
     if (!hero) return;
+    if (heroTrailerActive) stopHeroTrailer();
     if (heroTransitionTimer) { clearTimeout(heroTransitionTimer); heroTransitionTimer = null; }
     heroCurrentIndex = idx;
+    heroResetIdle();
     updateHeroIndicators();
     if (heroAnimationEnabled()) {
       hero.classList.add('agnative-hero--switching');
@@ -1133,6 +1178,146 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       var nextIdx = (heroCurrentIndex + 1) % heroItems.length;
       transitionHeroToIndex(nextIdx);
     }, getHeroIntervalMs());
+  }
+
+  function heroPlayFocused() {
+    var btn = document.querySelector('.agnative-hero__play');
+    return !!(btn && (btn.classList.contains('focus') || btn.classList.contains('hover')));
+  }
+
+  function stopHeroTrailer() {
+    var hero = document.querySelector('.agnative-hero');
+    var wasActive = heroTrailerActive;
+    heroTrailerActive = false;
+    if (heroYtPlayer) {
+      try { heroYtPlayer.destroy(); } catch (e) { }
+      heroYtPlayer = null;
+    }
+    if (hero) {
+      hero.classList.remove('agnative-hero--trailer');
+      var wrap = hero.querySelector('.agnative-hero__trailer');
+      if (wrap) { wrap.innerHTML = ''; wrap.remove(); }
+    }
+    // Resume the slide rotation that was paused while the trailer played.
+    if (wasActive && hero && heroItems.length > 1) startHeroRotation();
+  }
+
+  function ensureYoutubeApi(cb) {
+    if (window.YT && window.YT.Player) { cb(); return; }
+    ytApiCallbacks.push(cb);
+    if (ytApiState === 'loading') return;
+    ytApiState = 'loading';
+    var prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = function () {
+      if (typeof prev === 'function') { try { prev(); } catch (e) { } }
+      ytApiState = 'ready';
+      var cbs = ytApiCallbacks.slice();
+      ytApiCallbacks = [];
+      for (var i = 0; i < cbs.length; i++) { try { cbs[i](); } catch (e) { } }
+    };
+    try {
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      (document.head || document.body).appendChild(tag);
+    } catch (e) { ytApiState = 'none'; }
+  }
+
+  function heroClearIdle() {
+    if (heroIdleTimer) { clearTimeout(heroIdleTimer); heroIdleTimer = null; }
+    stopHeroTrailer();
+  }
+
+  function heroResetIdle() {
+    if (heroIdleTimer) { clearTimeout(heroIdleTimer); heroIdleTimer = null; }
+    if (!heroTrailerEnabled()) return;
+    var lvl = resolvePerfLevel();
+    if (lvl === 'low' || lvl === 'ultra') return;
+    if (!heroPlayFocused()) return;
+    if (isUiLayerOpen()) return;
+    heroIdleTimer = setTimeout(heroStartTrailer, getHeroTrailerDelayMs());
+  }
+
+  // Validity check after any async step: trailer still wanted, same item, hero present.
+  function heroValid(reqId) {
+    return heroTrailerActive && heroPlayFocused() &&
+      heroCurrentItem && heroCurrentItem.id === reqId &&
+      !!document.querySelector('.agnative-hero');
+  }
+
+  function heroEnsureTrailerWrap() {
+    var hero = document.querySelector('.agnative-hero');
+    if (!hero) return null;
+    var wrap = hero.querySelector('.agnative-hero__trailer');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.className = 'agnative-hero__trailer';
+      var bgEl = hero.querySelector('.agnative-hero__bg');
+      if (bgEl && bgEl.nextSibling) hero.insertBefore(wrap, bgEl.nextSibling);
+      else hero.appendChild(wrap);
+    }
+    wrap.innerHTML = '';
+    return wrap;
+  }
+
+  function heroRevealTrailer() {
+    var h = document.querySelector('.agnative-hero');
+    if (h && heroTrailerActive) h.classList.add('agnative-hero--trailer');
+  }
+
+  function heroStartTrailer() {
+    if (!heroTrailerEnabled() || !heroPlayFocused()) return;
+    var item = heroCurrentItem;
+    if (!item || !item.id) return;
+    if (!document.querySelector('.agnative-hero')) return;
+
+    var reqId = item.id;
+    var type = detectHeroItemType(item);
+
+    heroTrailerActive = true;
+    stopHeroRotation();
+
+    fetchHeroTrailer(item.id, type, function (key) {
+      if (!heroValid(reqId)) { stopHeroTrailer(); return; }
+      if (!key || heroUnplayable[key]) { stopHeroTrailer(); return; }
+
+      var wrap = heroEnsureTrailerWrap();
+      if (!wrap) { stopHeroTrailer(); return; }
+      var holder = document.createElement('div');
+      wrap.appendChild(holder);
+
+      ensureYoutubeApi(function () {
+        if (!heroValid(reqId) || !holder.parentNode) { stopHeroTrailer(); return; }
+        if (!window.YT || !window.YT.Player) { stopHeroTrailer(); return; }
+        try {
+          heroYtPlayer = new window.YT.Player(holder, {
+            videoId: key,
+            host: 'https://www.youtube-nocookie.com',
+            playerVars: {
+              autoplay: 1, mute: 1, controls: 0, disablekb: 1, fs: 0,
+              modestbranding: 1, rel: 0, playsinline: 1, loop: 1, playlist: key,
+              iv_load_policy: 3, origin: location.origin
+            },
+            events: {
+              onReady: function (e) { try { e.target.mute(); e.target.playVideo(); } catch (_) { } },
+              onError: function () {
+                // Embedding disabled / unavailable — hide silently, never retry this key.
+                heroUnplayable[key] = true;
+                stopHeroTrailer();
+              },
+              onStateChange: function (e) {
+                if (e && e.data === 1) {            // playing — reveal now
+                  heroRevealTrailer();
+                } else if (e && e.data === 0) {     // ended — loop
+                  try { e.target.playVideo(); } catch (_) { }
+                }
+              }
+            }
+          });
+        } catch (e) {
+          stopHeroTrailer();
+        }
+      });
+    });
   }
 
   function buildHeroIndicators(container) {
@@ -1295,9 +1480,11 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
             hero.classList.remove('agnative-hero--hidden');
             if (document.body) document.body.classList.remove('agnative-hero-collapsed');
             heroExitDirection = null;
+            heroResetIdle();
           });
           $$(playBtn).on('hover:blur.agnativeHeroState hover:out.agnativeHeroState', function () {
             hero.classList.add('agnative-hero--unfocused');
+            heroClearIdle();
             if (heroExitDirection === 'down') {
               hero.classList.add('agnative-hero--hidden');
               if (document.body) document.body.classList.add('agnative-hero-collapsed');
@@ -2142,6 +2329,48 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
             if (bg) bg.src = '';
             renderHeroSlide(heroCurrentItem);
           }
+        }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: HERO_SETTINGS_COMPONENT,
+        param: {
+          name: HERO_TRAILER_KEY,
+          type: 'trigger',
+          default: 'true'
+        },
+        field: {
+          name: t('set_hero_trailer_name'),
+          description: t('set_hero_trailer_desc')
+        },
+        onChange: function () {
+          heroClearIdle();
+          if (heroTrailerEnabled()) heroResetIdle();
+        }
+      });
+
+      var heroTrailerSec = t('val_sec_short');
+      Lampa.SettingsApi.addParam({
+        component: HERO_SETTINGS_COMPONENT,
+        param: {
+          name: HERO_TRAILER_DELAY_KEY,
+          type: 'select',
+          values: {
+            '4': '4 ' + heroTrailerSec,
+            '6': '6 ' + heroTrailerSec,
+            '8': '8 ' + heroTrailerSec,
+            '12': '12 ' + heroTrailerSec,
+            '15': '15 ' + heroTrailerSec,
+            '20': '20 ' + heroTrailerSec
+          },
+          default: '8'
+        },
+        field: {
+          name: t('set_hero_trailer_delay_name'),
+          description: t('set_hero_trailer_delay_desc')
+        },
+        onChange: function () {
+          heroResetIdle();
         }
       });
 
@@ -3778,6 +4007,10 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       '@keyframes agnative-hero-drift { from { transform: scale(1.08) translate3d(-2%, -1.5%, 0); } to { transform: scale(1.08) translate3d(2%, 1.5%, 0); } }',
       '@keyframes agnative-hero-breathe { 0% { transform: scale(1) translate3d(0,0,0); } 50% { transform: scale(1.04) translate3d(0,0,0); } 100% { transform: scale(1) translate3d(0,0,0); } }',
       'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__bg { opacity:0; }',
+      'body.' + BODY_CLASS + ' .agnative-hero__trailer { position:absolute; top:0; left:0; right:0; bottom:0; overflow:hidden; border-radius:1.5em; opacity:0; transition:opacity .6s ease; pointer-events:none; }',
+      'body.' + BODY_CLASS + ' .agnative-hero--trailer .agnative-hero__trailer { opacity:1; }',
+      'body.' + BODY_CLASS + ' .agnative-hero__trailer iframe { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100vw; height:56.25vw; min-width:100%; min-height:100%; border:0; pointer-events:none; }',
+      'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__trailer { opacity:0; }',
       'body.' + BODY_CLASS + ' .activity--active .items-line, body.' + BODY_CLASS + ' .activity--active .scroll__content { position:relative; z-index:10; }',
       'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--visible { opacity:1; }',
       'body.' + BODY_CLASS + ' .agnative-hero::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.30) 28%, rgba(0,0,0,.05) 55%, transparent 78%); pointer-events:none; z-index:1; border-radius:1.5em; }',
@@ -3793,10 +4026,10 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       'body.' + BODY_CLASS + ' .agnative-hero__play.selector { position:absolute; inset:0; display:block; padding:0; background:transparent !important; border:0 !important; color:transparent !important; font-size:0 !important; cursor:pointer; outline:none; z-index:3; }',
       'body.' + BODY_CLASS + ' .agnative-hero__play.focus, body.' + BODY_CLASS + ' .agnative-hero__play.hover { background:transparent !important; box-shadow:none !important; transform:none !important; color:transparent !important; outline:none !important; }',
       'body.' + BODY_CLASS + ' .agnative-hero:has(.agnative-hero__play.focus), body.' + BODY_CLASS + ' .agnative-hero:has(.agnative-hero__play.hover) { transform:scale(1.012); box-shadow:0 0 0 1.5px rgba(255,255,255,.9), 0 24px 60px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.3); }',
-      'body.' + BODY_CLASS + ' .agnative-hero__indicators { position:absolute; right:2.4em; bottom:1.6em; display:flex; gap:.5em; align-items:center; z-index:3; }',
-      'body.' + BODY_CLASS + ' .agnative-hero__indicator { display:inline-block; width:1.8em; height:.28em; border-radius:999px; background:rgba(255,255,255,.35); border:0; padding:0; cursor:pointer; outline:none; transition:background .25s ease, transform .25s ease, width .25s ease, box-shadow .25s ease; box-shadow:0 1px 4px rgba(0,0,0,.5); }',
-      'body.' + BODY_CLASS + ' .agnative-hero__indicator.agnative-hero__indicator--active { background:rgba(255,255,255,.92); width:2.6em; }',
-      'body.' + BODY_CLASS + ' .agnative-hero__indicator:hover { background:#fff !important; transform:scaleY(1.6) !important; box-shadow:0 4px 14px rgba(0,0,0,.6) !important; outline:none !important; }',
+      'body.' + BODY_CLASS + ' .agnative-hero__indicators { position:absolute; left:50%; right:auto; bottom:1.4em; transform:translateX(-50%); display:inline-flex; gap:.42em; align-items:center; z-index:3; padding:.46em .62em; border-radius:999px; background:rgba(18,18,20,.42); box-shadow:0 2px 12px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08); backdrop-filter:blur(14px) saturate(140%); -webkit-backdrop-filter:blur(14px) saturate(140%); }',
+      'body.' + BODY_CLASS + ' .agnative-hero__indicator { display:inline-block; width:.5em; height:.5em; border-radius:999px; background:rgba(255,255,255,.42); border:0; padding:0; cursor:pointer; outline:none; transition:background .25s ease, width .3s cubic-bezier(.22,.61,.36,1), box-shadow .25s ease; }',
+      'body.' + BODY_CLASS + ' .agnative-hero__indicator.agnative-hero__indicator--active { background:#fff; width:1.25em; box-shadow:0 1px 4px rgba(0,0,0,.4); }',
+      'body.' + BODY_CLASS + ' .agnative-hero__indicator:hover { background:rgba(255,255,255,.85) !important; outline:none !important; }',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__title,',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__logo,',
       'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"] .agnative-hero__year,',
@@ -5048,6 +5281,68 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     });
 
     return true;
+  }
+
+  function pickYoutubeTrailer(results) {
+    if (!results || !results.length) return null;
+    // Only real trailers/teasers — never clips, featurettes, behind-the-scenes etc.
+    var yt = [];
+    for (var i = 0; i < results.length; i++) {
+      var v = results[i];
+      if (v && v.site === 'YouTube' && v.key && (v.type === 'Trailer' || v.type === 'Teaser')) yt.push(v);
+    }
+    if (!yt.length) return null;
+    function score(v) {
+      var s = 0;
+      if (v.type === 'Trailer') s += 100;        // trailer over teaser
+      if (v.official === true) s += 20;           // official over fan/promo
+      if (typeof v.size === 'number') s += Math.min(v.size, 2160) / 1000; // prefer HD
+      return s;
+    }
+    yt.sort(function (a, b) { return score(b) - score(a); });
+    return yt[0].key;
+  }
+
+  function fetchHeroTrailer(id, type, callback) {
+    if (!id) return callback(null);
+    var lang = getLogoLang();
+    var cacheKey = 'trailer/' + type + '/' + id + '/' + lang;
+
+    if (cacheKey in heroTrailerCache) return callback(heroTrailerCache[cacheKey]);
+
+    if (heroTrailerPending[cacheKey]) {
+      heroTrailerPending[cacheKey].push(callback);
+      return;
+    }
+    heroTrailerPending[cacheKey] = [callback];
+
+    function finish(key) {
+      var val = key || null;
+      heroTrailerCache[cacheKey] = val;
+      metaSet(cacheKey, val);
+      var cbs = heroTrailerPending[cacheKey] || [];
+      delete heroTrailerPending[cacheKey];
+      for (var i = 0; i < cbs.length; i++) cbs[i](val);
+    }
+
+    metaGet(cacheKey, function (persisted) {
+      if (persisted !== undefined) {
+        heroTrailerCache[cacheKey] = persisted;
+        var cbs = heroTrailerPending[cacheKey] || [];
+        delete heroTrailerPending[cacheKey];
+        for (var i = 0; i < cbs.length; i++) cbs[i](persisted);
+        return;
+      }
+
+      var base = 'https://api.themoviedb.org/3/' + type + '/' + id + '/videos?api_key=' + TMDB_KEY;
+      fetch(base + '&language=' + lang).then(function (r) { return r.json(); }).then(function (data) {
+        var key = pickYoutubeTrailer(data && data.results);
+        if (key || lang === 'en') return finish(key);
+        fetch(base + '&language=en').then(function (r) { return r.json(); }).then(function (d2) {
+          finish(pickYoutubeTrailer(d2 && d2.results));
+        }).catch(function () { finish(null); });
+      }).catch(function () { finish(null); });
+    });
   }
 
   function fetchLogo(id, type, callback) {
