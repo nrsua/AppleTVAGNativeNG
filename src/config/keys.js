@@ -53,6 +53,7 @@ export const AGNATIVE_KEYS = {
   HERO_BG_ANIM_KEY: 'appletv_agnative_hero_bg_anim',
   HERO_QUALITY_KEY: 'appletv_agnative_hero_quality',
   TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible',
+  TOPNAV_ICONS_ORDER_KEY: 'appletv_agnative_topnav_icons_order',
   TOPNAV_SIZE_KEY: 'appletv_agnative_topnav_size',
   TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size',
   SETTINGS_HIDE_KEY: 'appletv_agnative_settings_hide',

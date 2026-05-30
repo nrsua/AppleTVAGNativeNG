@@ -65,6 +65,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     HERO_BG_ANIM_KEY,
     HERO_QUALITY_KEY,
     TOPNAV_ENABLE_KEY,
+    TOPNAV_ICONS_ORDER_KEY,
     TOPNAV_SIZE_KEY,
     TOPNAV_SIZE_ATTR,
     SETTINGS_HIDE_KEY,
@@ -1497,6 +1498,27 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         },
         onChange: function () {
           syncTopnavSize();
+        }
+      });
+
+      Lampa.SettingsApi.addParam({
+        component: SETTINGS_COMPONENT,
+        param: {
+          name: TOPNAV_ICONS_ORDER_KEY,
+          type: 'select',
+          values: {
+            end: t('val_topnav_icons_end'),
+            start: t('val_topnav_icons_start'),
+            split: t('val_topnav_icons_split')
+          },
+          default: 'end'
+        },
+        field: {
+          name: t('set_topnav_icons_order_name'),
+          description: t('set_topnav_icons_order_desc')
+        },
+        onChange: function () {
+          setTimeout(function () { schedulePatch(); }, 50);
         }
       });
 
@@ -4909,6 +4931,13 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     try { return window.Lampa && Lampa.Storage.get(TOPNAV_ENABLE_KEY, 'on') !== 'off'; } catch (e) { return true; }
   }
 
+  function getTopnavIconsOrder() {
+    var v = 'end';
+    try { v = Lampa.Storage.get(TOPNAV_ICONS_ORDER_KEY, 'end'); } catch (e) { }
+    if (v !== 'start' && v !== 'split') v = 'end';
+    return v;
+  }
+
   function syncTopnavSize() {
     if (!document.body) return;
     var size = 'md';
@@ -4970,15 +4999,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       itemsWrap.appendChild(btn);
     });
 
-    var iconItems = [
-      { role: 'search', svg: iconSearch(), handler: triggerSearch },
-      { role: 'favorite', svg: iconFavorite(), handler: triggerFavorite }
-    ];
-    if (!controlPanelEnabled()) {
-      iconItems.push({ role: 'settings', svg: iconSettings(), handler: triggerSettings });
-    }
-
-    iconItems.forEach(function (def) {
+    function buildIconButton(def) {
       var btn = document.createElement('div');
       btn.className = 'agnative-topnav-shell__item agnative-topnav-shell__item--icon selector';
       btn.setAttribute('data-role', def.role);
@@ -4986,7 +5007,34 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       btn.setAttribute('tabindex', '0');
       btn.innerHTML = def.svg;
       bindAction(btn, def.handler);
-      rightWrap.appendChild(btn);
+      return btn;
+    }
+
+    var searchDef = { role: 'search', svg: iconSearch(), handler: triggerSearch };
+    var favoriteDef = { role: 'favorite', svg: iconFavorite(), handler: triggerFavorite };
+
+    var order = getTopnavIconsOrder();
+    var startDefs = [];
+    var endDefs = [];
+    if (order === 'start') {
+      startDefs = [searchDef, favoriteDef];
+    } else if (order === 'split') {
+      startDefs = [searchDef];
+      endDefs = [favoriteDef];
+    } else {
+      endDefs = [searchDef, favoriteDef];
+    }
+    // Settings icon (shown only when the clock control panel is off) always stays at the end.
+    if (!controlPanelEnabled()) {
+      endDefs.push({ role: 'settings', svg: iconSettings(), handler: triggerSettings });
+    }
+
+    var firstMenu = itemsWrap.firstChild;
+    startDefs.forEach(function (def) {
+      itemsWrap.insertBefore(buildIconButton(def), firstMenu);
+    });
+    endDefs.forEach(function (def) {
+      rightWrap.appendChild(buildIconButton(def));
     });
 
     registerTopnavController(shell);
