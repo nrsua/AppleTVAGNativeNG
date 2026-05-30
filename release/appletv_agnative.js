@@ -71,7 +71,7 @@
     SETTINGS_HIDE_COMPONENT: 'agnative_settings_hide'
   };
 
-  const PLUGIN_VERSION = '0.4.0';
+  const PLUGIN_VERSION = '0.4.1';
   const PLUGIN_AUTHORS = 'llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96';
 
   const ru = {
