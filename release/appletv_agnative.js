@@ -2163,7 +2163,7 @@
         heroTransitionTimer = setTimeout(function () {
           heroTransitionTimer = null;
           renderHeroSlide(nextItem);
-          if (!earlyTrailer) heroResetIdle(force);
+          if (!earlyTrailer && (force || heroPlayFocused())) heroResetIdle(force);
           setTimeout(function () {
             var hh = document.querySelector('.agnative-hero.agnative-hero--switching');
             if (hh) hh.classList.remove('agnative-hero--switching');
