@@ -2832,7 +2832,7 @@
             $$(playBtn).on('hover:blur.agnativeHeroState hover:out.agnativeHeroState', function () {
               hero.classList.add('agnative-hero--unfocused');
               heroClearIdle();
-              if (heroExitDirection === 'down') {
+              if (heroExitDirection === 'down' && getHeroTrailerMode() !== 'trailers') {
                 hero.classList.add('agnative-hero--hidden');
                 if (document.body) document.body.classList.add('agnative-hero-collapsed');
               }
@@ -5473,7 +5473,8 @@
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__bg { opacity:0; }',
         'body.' + BODY_CLASS + ' .agnative-hero__trailer { position:absolute; top:0; left:0; right:0; bottom:0; overflow:hidden; border-radius:1.5em; opacity:0; transition:opacity .6s ease-out; pointer-events:none; background:#000; will-change:opacity; }',
         'body.' + BODY_CLASS + ' .agnative-hero--trailer .agnative-hero__trailer { opacity:1; }',
-        'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--instant-trailer .agnative-hero__bg { opacity:0 !important; transition:opacity .6s ease-out !important; }',
+        'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--instant-trailer .agnative-hero__bg { transition:opacity .6s ease-out !important; }',
+        'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--instant-trailer.agnative-hero--trailer .agnative-hero__bg { opacity:0 !important; }',
         'body.' + BODY_CLASS + ' .agnative-hero__trailer .agnative-hero__video { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; object-position:center center; border:0; display:block; pointer-events:none; background:#000; }',
         'body.' + BODY_CLASS + ' .agnative-hero__video::-webkit-media-controls { display:none !important; -webkit-appearance:none !important; }',
         'body.' + BODY_CLASS + ' .agnative-hero__video::-webkit-media-controls-panel { display:none !important; -webkit-appearance:none !important; }',
