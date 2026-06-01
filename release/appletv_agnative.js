@@ -2146,7 +2146,7 @@
 
       var earlyTrailer = heroTrailerEnabled() && !heroVideoCooldown && (heroPlayFocused() || force) && !isUiLayerOpen();
       var lvl = resolvePerfLevel();
-      if (lvl === 'low' || lvl === 'ultra') earlyTrailer = false;
+      if (lvl === 'ultra') earlyTrailer = false;
       if (earlyTrailer) heroStartTrailer(true);
 
       var instantTransition = hero.classList.contains('agnative-hero--instant-trailer');
@@ -2362,7 +2362,7 @@
       var mode = getHeroTrailerMode();
       if (mode === 'posters') return;
       var lvl = resolvePerfLevel();
-      if (lvl === 'low' || lvl === 'ultra') return;
+      if (lvl === 'ultra') return;
       if (!force && !heroPlayFocused()) return;
       if (isUiLayerOpen()) return;
       if (heroVideoCooldown) return;
@@ -2497,25 +2497,41 @@
           fromCacheFlag = !!fromCache;
           if (fromCache) heroBlobCached[url] = true;
           if (!heroVideoEl) { abandonKey(); return; }
+          heroVideoEl.muted = true;
+          heroVideoEl.volume = 0;
+          heroVideoEl.setAttribute('muted', '');
           heroVideoEl.src = resolvedSrc;
           try { heroVideoEl.load(); } catch (e) { }
-          var p = heroVideoEl.play();
-          if (p && typeof p.catch === 'function') p.catch(function () { });
+          var attemptPlay = function () {
+            if (isStale() || !heroVideoEl) return;
+            try {
+              heroVideoEl.muted = true;
+              var pp = heroVideoEl.play();
+              if (pp && typeof pp.catch === 'function') pp.catch(function () { });
+            } catch (e) { }
+          };
+          attemptPlay();
+          setTimeout(attemptPlay, 80);
         });
       }
 
       var video = document.createElement('video');
       video.className = 'agnative-hero__video';
+      video.setAttribute('muted', '');
+      video.setAttribute('autoplay', '');
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.setAttribute('disablepictureinpicture', '');
+      video.setAttribute('disableremoteplayback', '');
+      video.setAttribute('tabindex', '-1');
+      video.setAttribute('aria-hidden', 'true');
       video.muted = true;
       video.defaultMuted = true;
       video.playsInline = true;
       video.autoplay = true;
+      video.controls = false;
       video.preload = 'auto';
-      video.setAttribute('playsinline', '');
-      video.setAttribute('webkit-playsinline', '');
-      video.setAttribute('muted', '');
-      video.setAttribute('tabindex', '-1');
-      video.setAttribute('aria-hidden', 'true');
+      video.volume = 0;
       wrap.appendChild(video);
       heroVideoEl = video;
 
@@ -5402,6 +5418,11 @@
         'body.' + BODY_CLASS + ' .agnative-hero--trailer .agnative-hero__trailer { opacity:1; }',
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--instant-trailer .agnative-hero__bg { opacity:0 !important; transition:opacity .6s ease-out !important; }',
         'body.' + BODY_CLASS + ' .agnative-hero__trailer .agnative-hero__video { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; object-position:center center; border:0; display:block; pointer-events:none; background:#000; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__video::-webkit-media-controls { display:none !important; -webkit-appearance:none !important; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__video::-webkit-media-controls-panel { display:none !important; -webkit-appearance:none !important; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__video::-webkit-media-controls-play-button { display:none !important; -webkit-appearance:none !important; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__video::-webkit-media-controls-start-playback-button { display:none !important; -webkit-appearance:none !important; opacity:0 !important; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__video::-webkit-media-controls-overlay-play-button { display:none !important; -webkit-appearance:none !important; }',
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__trailer { opacity:0; }',
         'body.' + BODY_CLASS + ' .activity--active .items-line, body.' + BODY_CLASS + ' .activity--active .scroll__content { position:relative; z-index:10; }',
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--visible { opacity:1; }',
