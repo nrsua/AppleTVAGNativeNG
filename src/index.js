@@ -113,6 +113,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload, videoLoad, vide
   var heroPrefetchQueue = [];
   var heroPrefetchActive = false;
   var heroBlobCached = {};
+  var heroRevealAfterTs = 0;
   var HERO_PROXY_BASE = 'https://kp.pris.cam/';
   var HERO_IMDB_API_BASE = 'https://api.imdbapi.dev';
   var HERO_VIDEO_BASE = 'https://imdb-video.media-imdb.com/mc';
@@ -1453,8 +1454,8 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload, videoLoad, vide
     if (isUiLayerOpen()) return;
     if (heroVideoCooldown) return;
     var delay = mode === 'trailers' ? 0 : getHeroTrailerDelayMs();
-    if (delay <= 0) { heroStartTrailer(force); return; }
-    heroIdleTimer = setTimeout(function () { heroStartTrailer(force); }, delay);
+    heroRevealAfterTs = delay > 0 ? Date.now() + delay : 0;
+    heroStartTrailer(force);
   }
 
   // Validity check after any async step: trailer still wanted, same item, hero present.
@@ -1630,6 +1631,12 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload, videoLoad, vide
     function revealAndStartDuration() {
       if (isStale()) return;
       if (!heroTrailerActive || !heroValid(reqId, force)) return;
+      var nowMs = Date.now();
+      if (heroRevealAfterTs && nowMs < heroRevealAfterTs) {
+        if (heroVideoRevealTimer) clearTimeout(heroVideoRevealTimer);
+        heroVideoRevealTimer = setTimeout(revealAndStartDuration, Math.max(50, heroRevealAfterTs - nowMs));
+        return;
+      }
       if (heroVideoRevealTimer) { clearTimeout(heroVideoRevealTimer); heroVideoRevealTimer = null; }
       if (heroVideoReadyTimer)  { clearTimeout(heroVideoReadyTimer);  heroVideoReadyTimer = null; }
       heroRevealTrailer();
