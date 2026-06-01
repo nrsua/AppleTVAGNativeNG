@@ -65,6 +65,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     HERO_BG_ANIM_KEY,
     HERO_QUALITY_KEY,
     HERO_TRAILER_KEY,
+    HERO_TRAILER_MODE_KEY,
     HERO_TRAILER_DELAY_KEY,
     TOPNAV_ENABLE_KEY,
     TOPNAV_ICONS_ORDER_KEY,
@@ -92,9 +93,15 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
   var heroTrailerCache = {};
   var heroTrailerPending = {};
   var heroYtPlayer = null;
-  var heroUnplayable = {};
+  var heroYtRevealTimer = null;
+  var heroYtReadyTimer = null;
+  var heroYtDurationTimer = null;
+  var heroYtCurrentKey = '';
   var ytApiState = 'none';
   var ytApiCallbacks = [];
+  var HERO_TRAILER_START_SEC = 30;
+  var heroTrailerAttempt = 0;
+  var heroUnplayable = {};
   var storageListenerBound = false;
   var activityListenerBound = false;
   var fullListenerBound = false;
@@ -826,12 +833,20 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     } catch (e) { return 40000; }
   }
 
-  function heroTrailerEnabled() {
+  function getHeroTrailerMode() {
     try {
-      if (!window.Lampa || !Lampa.Storage) return true;
-      var v = Lampa.Storage.get(HERO_TRAILER_KEY, 'true');
-      return !(v === false || v === 'false' || v === 'off');
-    } catch (e) { return true; }
+      if (!window.Lampa || !Lampa.Storage) return 'mixed';
+      var v = Lampa.Storage.get(HERO_TRAILER_MODE_KEY, '');
+      if (v === 'posters') return 'posters';
+      if (v === 'mixed' || v === 'video') return 'mixed';
+      var legacy = Lampa.Storage.get(HERO_TRAILER_KEY, 'true');
+      if (legacy === false || legacy === 'false' || legacy === 'off') return 'posters';
+      return 'mixed';
+    } catch (e) { return 'mixed'; }
+  }
+
+  function heroTrailerEnabled() {
+    return getHeroTrailerMode() !== 'posters';
   }
 
   function getHeroTrailerDelayMs() {
@@ -1107,11 +1122,9 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       },
       left: function () {
         // Browse hero items leftwards; at the first item hand off to the left menu.
-        stopHeroTrailer();
         if (heroItems.length > 1 && heroCurrentIndex > 0) {
           transitionHeroToIndex(heroCurrentIndex - 1);
           startHeroRotation();
-          heroResetIdle();
           return;
         }
         heroClearIdle();
@@ -1120,11 +1133,9 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       },
       right: function () {
         // Browse hero items rightwards; stop at the last item.
-        stopHeroTrailer();
         if (heroItems.length > 1 && heroCurrentIndex < heroItems.length - 1) {
           transitionHeroToIndex(heroCurrentIndex + 1);
           startHeroRotation();
-          heroResetIdle();
         }
       },
       back: function () {
@@ -1144,7 +1155,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
 
   var heroTransitionTimer = null;
 
-  function transitionHeroToIndex(idx) {
+  function transitionHeroToIndex(idx, force) {
     if (idx < 0 || idx >= heroItems.length || !heroItems[idx]) return;
     if (idx === heroCurrentIndex) return;
     var hero = document.querySelector('.agnative-hero');
@@ -1152,13 +1163,13 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     if (heroTrailerActive) stopHeroTrailer();
     if (heroTransitionTimer) { clearTimeout(heroTransitionTimer); heroTransitionTimer = null; }
     heroCurrentIndex = idx;
-    heroResetIdle();
     updateHeroIndicators();
     if (heroAnimationEnabled()) {
       hero.classList.add('agnative-hero--switching');
       heroTransitionTimer = setTimeout(function () {
         heroTransitionTimer = null;
         renderHeroSlide(heroItems[idx]);
+        heroResetIdle(force);
         setTimeout(function () {
           var hh = document.querySelector('.agnative-hero.agnative-hero--switching');
           if (hh) hh.classList.remove('agnative-hero--switching');
@@ -1166,6 +1177,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       }, 320);
     } else {
       renderHeroSlide(heroItems[idx]);
+      heroResetIdle(force);
     }
   }
 
@@ -1185,27 +1197,21 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     return !!(btn && (btn.classList.contains('focus') || btn.classList.contains('hover')));
   }
 
-  function stopHeroTrailer() {
-    var hero = document.querySelector('.agnative-hero');
-    var wasActive = heroTrailerActive;
-    heroTrailerActive = false;
+  function cleanupHeroIframeOnly() {
+    if (heroYtReadyTimer)    { clearTimeout(heroYtReadyTimer);    heroYtReadyTimer = null; }
+    if (heroYtRevealTimer)   { clearTimeout(heroYtRevealTimer);   heroYtRevealTimer = null; }
+    if (heroYtDurationTimer) { clearTimeout(heroYtDurationTimer); heroYtDurationTimer = null; }
     if (heroYtPlayer) {
       try { heroYtPlayer.destroy(); } catch (e) { }
       heroYtPlayer = null;
     }
-    if (hero) {
-      hero.classList.remove('agnative-hero--trailer');
-      var wrap = hero.querySelector('.agnative-hero__trailer');
-      if (wrap) { wrap.innerHTML = ''; wrap.remove(); }
-    }
-    // Resume the slide rotation that was paused while the trailer played.
-    if (wasActive && hero && heroItems.length > 1) startHeroRotation();
+    heroYtCurrentKey = '';
   }
 
   function ensureYoutubeApi(cb) {
     if (window.YT && window.YT.Player) { cb(); return; }
     ytApiCallbacks.push(cb);
-    if (ytApiState === 'loading') return;
+    if (ytApiState === 'loading' || ytApiState === 'ready') return;
     ytApiState = 'loading';
     var prev = window.onYouTubeIframeAPIReady;
     window.onYouTubeIframeAPIReady = function () {
@@ -1218,8 +1224,25 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     try {
       var tag = document.createElement('script');
       tag.src = 'https://www.youtube.com/iframe_api';
+      tag.async = true;
       (document.head || document.body).appendChild(tag);
     } catch (e) { ytApiState = 'none'; }
+  }
+
+  function stopHeroTrailer() {
+    var hero = document.querySelector('.agnative-hero');
+    var wasActive = heroTrailerActive;
+    heroTrailerActive = false;
+    heroTrailerAttempt++;
+
+    cleanupHeroIframeOnly();
+
+    if (hero) {
+      hero.classList.remove('agnative-hero--trailer');
+      var wrap = hero.querySelector('.agnative-hero__trailer');
+      if (wrap) { wrap.innerHTML = ''; wrap.remove(); }
+    }
+    if (wasActive && hero && heroItems.length > 1) startHeroRotation();
   }
 
   function heroClearIdle() {
@@ -1227,21 +1250,32 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     stopHeroTrailer();
   }
 
-  function heroResetIdle() {
+  function updateHeroTrailerDelayVisibility() {
+    try {
+      var rows = document.querySelectorAll('[data-agnative-hero-trailer-delay]');
+      var show = getHeroTrailerMode() === 'mixed';
+      for (var i = 0; i < rows.length; i++) {
+        rows[i].style.display = show ? '' : 'none';
+      }
+    } catch (e) { }
+  }
+
+  function heroResetIdle(force) {
     if (heroIdleTimer) { clearTimeout(heroIdleTimer); heroIdleTimer = null; }
-    if (!heroTrailerEnabled()) return;
+    if (getHeroTrailerMode() === 'posters') return;
     var lvl = resolvePerfLevel();
     if (lvl === 'low' || lvl === 'ultra') return;
-    if (!heroPlayFocused()) return;
+    if (!force && !heroPlayFocused()) return;
     if (isUiLayerOpen()) return;
-    heroIdleTimer = setTimeout(heroStartTrailer, getHeroTrailerDelayMs());
+    heroIdleTimer = setTimeout(function () { heroStartTrailer(force); }, getHeroTrailerDelayMs());
   }
 
   // Validity check after any async step: trailer still wanted, same item, hero present.
-  function heroValid(reqId) {
-    return heroTrailerActive && heroPlayFocused() &&
-      heroCurrentItem && heroCurrentItem.id === reqId &&
-      !!document.querySelector('.agnative-hero');
+  function heroValid(reqId, force) {
+    if (!heroTrailerActive) return false;
+    if (!force && !heroPlayFocused()) return false;
+    if (!heroCurrentItem || heroCurrentItem.id !== reqId) return false;
+    return !!document.querySelector('.agnative-hero');
   }
 
   function heroEnsureTrailerWrap() {
@@ -1264,8 +1298,9 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     if (h && heroTrailerActive) h.classList.add('agnative-hero--trailer');
   }
 
-  function heroStartTrailer() {
-    if (!heroTrailerEnabled() || !heroPlayFocused()) return;
+  function heroStartTrailer(force) {
+    if (!heroTrailerEnabled()) return;
+    if (!force && !heroPlayFocused()) return;
     var item = heroCurrentItem;
     if (!item || !item.id) return;
     if (!document.querySelector('.agnative-hero')) return;
@@ -1276,47 +1311,151 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     heroTrailerActive = true;
     stopHeroRotation();
 
-    fetchHeroTrailer(item.id, type, function (key) {
-      if (!heroValid(reqId)) { stopHeroTrailer(); return; }
-      if (!key || heroUnplayable[key]) { stopHeroTrailer(); return; }
+    fetchHeroTrailer(item.id, type, function (keys) {
+      if (!heroValid(reqId, force)) { stopHeroTrailer(); return; }
+      if (!keys || !keys.length) { stopHeroTrailer(); return; }
+      attemptHeroTrailerKey(reqId, keys, 0, force);
+    });
+  }
 
-      var wrap = heroEnsureTrailerWrap();
-      if (!wrap) { stopHeroTrailer(); return; }
-      var holder = document.createElement('div');
-      wrap.appendChild(holder);
+  function heroTrailerDurationElapsed(reqId, myAttempt) {
+    if (myAttempt !== heroTrailerAttempt) return;
+    if (!heroValid(reqId, true)) { stopHeroTrailer(); return; }
+    if (heroItems.length > 1) {
+      var nextIdx = (heroCurrentIndex + 1) % heroItems.length;
+      transitionHeroToIndex(nextIdx, true);
+      return;
+    }
+    try {
+      if (heroYtPlayer && heroYtPlayer.seekTo) {
+        heroYtPlayer.seekTo(HERO_TRAILER_START_SEC, true);
+        heroYtPlayer.playVideo();
+      }
+    } catch (e) { }
+    heroYtDurationTimer = setTimeout(function () {
+      heroTrailerDurationElapsed(reqId, myAttempt);
+    }, getHeroIntervalMs());
+  }
 
-      ensureYoutubeApi(function () {
-        if (!heroValid(reqId) || !holder.parentNode) { stopHeroTrailer(); return; }
-        if (!window.YT || !window.YT.Player) { stopHeroTrailer(); return; }
-        try {
-          heroYtPlayer = new window.YT.Player(holder, {
-            videoId: key,
-            host: 'https://www.youtube-nocookie.com',
-            playerVars: {
-              autoplay: 1, mute: 1, controls: 0, disablekb: 1, fs: 0,
-              modestbranding: 1, rel: 0, playsinline: 1, loop: 1, playlist: key,
-              iv_load_policy: 3, origin: location.origin
-            },
-            events: {
-              onReady: function (e) { try { e.target.mute(); e.target.playVideo(); } catch (_) { } },
-              onError: function () {
-                // Embedding disabled / unavailable — hide silently, never retry this key.
-                heroUnplayable[key] = true;
-                stopHeroTrailer();
-              },
-              onStateChange: function (e) {
-                if (e && e.data === 1) {            // playing — reveal now
-                  heroRevealTrailer();
-                } else if (e && e.data === 0) {     // ended — loop
-                  try { e.target.playVideo(); } catch (_) { }
+  function attemptHeroTrailerKey(reqId, queue, index, force) {
+    if (!heroValid(reqId, force)) { stopHeroTrailer(); return; }
+
+    while (index < queue.length && heroUnplayable[queue[index]]) index++;
+    if (index >= queue.length) { stopHeroTrailer(); return; }
+
+    cleanupHeroIframeOnly();
+
+    var key = queue[index];
+    var myAttempt = ++heroTrailerAttempt;
+
+    var wrap = heroEnsureTrailerWrap();
+    if (!wrap) { stopHeroTrailer(); return; }
+
+    var holder = document.createElement('div');
+    wrap.appendChild(holder);
+    heroYtCurrentKey = key;
+
+    function isStale() { return myAttempt !== heroTrailerAttempt; }
+
+    var revealed = false;
+
+    function abandon() {
+      if (isStale()) return;
+      heroUnplayable[key] = true;
+      attemptHeroTrailerKey(reqId, queue, index + 1, force);
+    }
+
+    function pollForActualPlayback(tick) {
+      if (isStale() || revealed) return;
+      if (tick > 60) { abandon(); return; }
+      var ok = false;
+      try {
+        if (heroYtPlayer && heroYtPlayer.getPlayerState && heroYtPlayer.getCurrentTime) {
+          var st = heroYtPlayer.getPlayerState();
+          var ct = heroYtPlayer.getCurrentTime();
+          if (st === 1 && ct > HERO_TRAILER_START_SEC + 1.5) ok = true;
+        }
+      } catch (e) { }
+      if (ok) {
+        revealed = true;
+        revealAndStartDuration();
+        return;
+      }
+      heroYtRevealTimer = setTimeout(function () { pollForActualPlayback(tick + 1); }, 200);
+    }
+
+    function revealAndStartDuration() {
+      if (isStale()) return;
+      if (!heroTrailerActive || !heroValid(reqId, force)) return;
+      if (heroYtRevealTimer) { clearTimeout(heroYtRevealTimer); heroYtRevealTimer = null; }
+      heroRevealTrailer();
+      if (heroYtDurationTimer) clearTimeout(heroYtDurationTimer);
+      heroYtDurationTimer = setTimeout(function () {
+        heroTrailerDurationElapsed(reqId, myAttempt);
+      }, getHeroIntervalMs());
+    }
+
+    ensureYoutubeApi(function () {
+      if (isStale()) return;
+      if (!heroValid(reqId, force)) { stopHeroTrailer(); return; }
+      if (!window.YT || !window.YT.Player) { abandon(); return; }
+      if (!holder.parentNode) { abandon(); return; }
+
+      heroYtReadyTimer = setTimeout(abandon, 8000);
+
+      var origin;
+      try { origin = window.location.origin; } catch (e) { origin = undefined; }
+
+      try {
+        heroYtPlayer = new window.YT.Player(holder, {
+          videoId: key,
+          host: 'https://www.youtube.com',
+          playerVars: {
+            autoplay: 1,
+            mute: 1,
+            controls: 0,
+            disablekb: 1,
+            fs: 0,
+            modestbranding: 1,
+            rel: 0,
+            playsinline: 1,
+            iv_load_policy: 3,
+            cc_load_policy: 0,
+            start: HERO_TRAILER_START_SEC,
+            origin: origin
+          },
+          events: {
+            onReady: function (e) {
+              if (isStale()) return;
+              if (heroYtReadyTimer) { clearTimeout(heroYtReadyTimer); heroYtReadyTimer = null; }
+              try {
+                e.target.mute();
+                e.target.playVideo();
+              } catch (_) { }
+              try {
+                var iframeEl = wrap.querySelector('iframe');
+                if (iframeEl) {
+                  iframeEl.setAttribute('tabindex', '-1');
+                  iframeEl.setAttribute('aria-hidden', 'true');
+                  iframeEl.setAttribute('scrolling', 'no');
                 }
+              } catch (_) { }
+              pollForActualPlayback(0);
+            },
+            onError: function () {
+              abandon();
+            },
+            onStateChange: function (e) {
+              if (isStale() || !e) return;
+              if (e.data === 0 && revealed) {
+                heroTrailerDurationElapsed(reqId, myAttempt);
               }
             }
-          });
-        } catch (e) {
-          stopHeroTrailer();
-        }
-      });
+          }
+        });
+      } catch (e) {
+        abandon();
+      }
     });
   }
 
@@ -1335,10 +1474,12 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         dot.setAttribute('data-hero-index', String(idx));
         container.appendChild(dot);
         dot.addEventListener('mouseenter', function () {
+          focusHeroPlayButton();
           transitionHeroToIndex(idx);
           startHeroRotation();
         });
         dot.addEventListener('click', function () {
+          focusHeroPlayButton();
           transitionHeroToIndex(idx);
           startHeroRotation();
         });
@@ -2332,20 +2473,44 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         }
       });
 
+      try {
+        if (window.Lampa && Lampa.Storage) {
+          var currentMode = Lampa.Storage.get(HERO_TRAILER_MODE_KEY, '');
+          if (currentMode === 'video') {
+            Lampa.Storage.set(HERO_TRAILER_MODE_KEY, 'mixed');
+          } else if (currentMode !== 'posters' && currentMode !== 'mixed') {
+            var legacy = Lampa.Storage.get(HERO_TRAILER_KEY, 'true');
+            var migrated = (legacy === false || legacy === 'false' || legacy === 'off') ? 'posters' : 'mixed';
+            Lampa.Storage.set(HERO_TRAILER_MODE_KEY, migrated);
+          }
+        }
+      } catch (e) { }
+
       Lampa.SettingsApi.addParam({
         component: HERO_SETTINGS_COMPONENT,
         param: {
-          name: HERO_TRAILER_KEY,
-          type: 'trigger',
-          default: 'true'
+          name: HERO_TRAILER_MODE_KEY,
+          type: 'select',
+          values: {
+            posters: t('val_trailer_mode_posters'),
+            mixed:   t('val_trailer_mode_mixed')
+          },
+          default: 'mixed'
         },
         field: {
-          name: t('set_hero_trailer_name'),
-          description: t('set_hero_trailer_desc')
+          name: t('set_hero_trailer_mode_name'),
+          description: t('set_hero_trailer_mode_desc')
         },
         onChange: function () {
           heroClearIdle();
-          if (heroTrailerEnabled()) heroResetIdle();
+          updateHeroTrailerDelayVisibility();
+          if (getHeroTrailerMode() === 'posters') {
+            stopHeroTrailer();
+            if (heroItems.length > 1) startHeroRotation();
+          } else {
+            if (heroItems.length > 1 && !heroRotationTimer) startHeroRotation();
+            heroResetIdle();
+          }
         }
       });
 
@@ -2368,6 +2533,12 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
         field: {
           name: t('set_hero_trailer_delay_name'),
           description: t('set_hero_trailer_delay_desc')
+        },
+        onRender: function (item) {
+          try { item.attr('data-agnative-hero-trailer-delay', '1'); } catch (e) { }
+          if (getHeroTrailerMode() !== 'mixed') {
+            try { item.hide(); } catch (e) { }
+          }
         },
         onChange: function () {
           heroResetIdle();
@@ -4007,9 +4178,9 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
       '@keyframes agnative-hero-drift { from { transform: scale(1.08) translate3d(-2%, -1.5%, 0); } to { transform: scale(1.08) translate3d(2%, 1.5%, 0); } }',
       '@keyframes agnative-hero-breathe { 0% { transform: scale(1) translate3d(0,0,0); } 50% { transform: scale(1.04) translate3d(0,0,0); } 100% { transform: scale(1) translate3d(0,0,0); } }',
       'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__bg { opacity:0; }',
-      'body.' + BODY_CLASS + ' .agnative-hero__trailer { position:absolute; top:0; left:0; right:0; bottom:0; overflow:hidden; border-radius:1.5em; opacity:0; transition:opacity .6s ease; pointer-events:none; }',
+      'body.' + BODY_CLASS + ' .agnative-hero__trailer { position:absolute; top:0; left:0; right:0; bottom:0; overflow:hidden; border-radius:1.5em; opacity:0; transition:opacity .25s ease; pointer-events:none; background:#000; will-change:opacity; }',
       'body.' + BODY_CLASS + ' .agnative-hero--trailer .agnative-hero__trailer { opacity:1; }',
-      'body.' + BODY_CLASS + ' .agnative-hero__trailer iframe { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100vw; height:56.25vw; min-width:100%; min-height:100%; border:0; pointer-events:none; }',
+      'body.' + BODY_CLASS + ' .agnative-hero__trailer iframe { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100vw; height:56.25vw; min-width:100%; min-height:100%; border:0; display:block; pointer-events:none; background:#000; }',
       'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__trailer { opacity:0; }',
       'body.' + BODY_CLASS + ' .activity--active .items-line, body.' + BODY_CLASS + ' .activity--active .scroll__content { position:relative; z-index:10; }',
       'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--visible { opacity:1; }',
@@ -5283,30 +5454,46 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     return true;
   }
 
-  function pickYoutubeTrailer(results) {
-    if (!results || !results.length) return null;
+  function pickYoutubeTrailers(results, userLang) {
+    if (!results || !results.length) return [];
     // Only real trailers/teasers — never clips, featurettes, behind-the-scenes etc.
     var yt = [];
     for (var i = 0; i < results.length; i++) {
       var v = results[i];
       if (v && v.site === 'YouTube' && v.key && (v.type === 'Trailer' || v.type === 'Teaser')) yt.push(v);
     }
-    if (!yt.length) return null;
+    if (!yt.length) return [];
     function score(v) {
       var s = 0;
       if (v.type === 'Trailer') s += 100;        // trailer over teaser
-      if (v.official === true) s += 20;           // official over fan/promo
+      if (v.official === true) s += 30;           // official over fan/promo
+      if (userLang && v.iso_639_1 === userLang) s += 60;
+      else if (v.iso_639_1 === 'en') s += 25;
       if (typeof v.size === 'number') s += Math.min(v.size, 2160) / 1000; // prefer HD
       return s;
     }
     yt.sort(function (a, b) { return score(b) - score(a); });
-    return yt[0].key;
+    var seen = {}, out = [];
+    for (var j = 0; j < yt.length; j++) {
+      var k = yt[j].key;
+      if (!seen[k]) { seen[k] = 1; out.push(k); }
+    }
+    return out;
+  }
+
+  function fetchJsonWithTimeout(url, ms) {
+    if (typeof AbortController === 'undefined') return fetch(url).then(function (r) { return r.json(); });
+    var ctrl = new AbortController();
+    var to = setTimeout(function () { try { ctrl.abort(); } catch (e) { } }, ms);
+    return fetch(url, { signal: ctrl.signal })
+      .then(function (r) { return r.json(); })
+      .finally(function () { clearTimeout(to); });
   }
 
   function fetchHeroTrailer(id, type, callback) {
-    if (!id) return callback(null);
+    if (!id) return callback([]);
     var lang = getLogoLang();
-    var cacheKey = 'trailer/' + type + '/' + id + '/' + lang;
+    var cacheKey = 'trailer/v2/' + type + '/' + id + '/' + lang;
 
     if (cacheKey in heroTrailerCache) return callback(heroTrailerCache[cacheKey]);
 
@@ -5316,8 +5503,8 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
     }
     heroTrailerPending[cacheKey] = [callback];
 
-    function finish(key) {
-      var val = key || null;
+    function finish(keys) {
+      var val = (keys && keys.length) ? keys : [];
       heroTrailerCache[cacheKey] = val;
       metaSet(cacheKey, val);
       var cbs = heroTrailerPending[cacheKey] || [];
@@ -5327,21 +5514,27 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload } from './tmdb/p
 
     metaGet(cacheKey, function (persisted) {
       if (persisted !== undefined) {
-        heroTrailerCache[cacheKey] = persisted;
+        var arr = Array.isArray(persisted) ? persisted
+                : (typeof persisted === 'string' && persisted) ? [persisted]
+                : [];
+        heroTrailerCache[cacheKey] = arr;
         var cbs = heroTrailerPending[cacheKey] || [];
         delete heroTrailerPending[cacheKey];
-        for (var i = 0; i < cbs.length; i++) cbs[i](persisted);
+        for (var i = 0; i < cbs.length; i++) cbs[i](arr);
         return;
       }
 
       var base = 'https://api.themoviedb.org/3/' + type + '/' + id + '/videos?api_key=' + TMDB_KEY;
-      fetch(base + '&language=' + lang).then(function (r) { return r.json(); }).then(function (data) {
-        var key = pickYoutubeTrailer(data && data.results);
-        if (key || lang === 'en') return finish(key);
-        fetch(base + '&language=en').then(function (r) { return r.json(); }).then(function (d2) {
-          finish(pickYoutubeTrailer(d2 && d2.results));
-        }).catch(function () { finish(null); });
-      }).catch(function () { finish(null); });
+      var includeLangs = lang === 'en' ? ['en', 'null'] : [lang, 'en', 'null'];
+      var url = base + '&language=' + encodeURIComponent(lang) + '&include_video_language=' + includeLangs.join(',');
+
+      fetchJsonWithTimeout(url, 8000).then(function (data) {
+        var keys = pickYoutubeTrailers(data && data.results, lang);
+        if (keys.length) return finish(keys);
+        fetchJsonWithTimeout(base, 8000).then(function (d2) {
+          finish(pickYoutubeTrailers(d2 && d2.results, lang));
+        }).catch(function () { finish([]); });
+      }).catch(function () { finish([]); });
     });
   }
 
