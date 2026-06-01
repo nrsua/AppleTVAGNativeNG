@@ -67,6 +67,7 @@
     HERO_TRAILER_KEY: 'appletv_agnative_hero_trailer',
     HERO_TRAILER_MODE_KEY: 'appletv_agnative_hero_trailer_mode',
     HERO_TRAILER_DELAY_KEY: 'appletv_agnative_hero_trailer_delay',
+    HERO_TRAILER_QUALITY_KEY: 'appletv_agnative_hero_trailer_quality',
     TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible',
     TOPNAV_ICONS_ORDER_KEY: 'appletv_agnative_topnav_icons_order',
     TOPNAV_SIZE_KEY: 'appletv_agnative_topnav_size',
@@ -183,8 +184,11 @@
     set_hero_trailer_mode_desc: 'Показывать ли трейлер поверх постера после простоя',
     val_trailer_mode_posters: 'Только постеры',
     val_trailer_mode_mixed: 'Постеры + трейлер после простоя',
+    val_trailer_mode_trailers: 'Только трейлеры',
     set_hero_trailer_delay_name: 'Задержка трейлера',
     set_hero_trailer_delay_desc: 'Сколько ждать бездействия перед запуском трейлера',
+    set_hero_trailer_quality_name: 'Качество трейлера',
+    set_hero_trailer_quality_desc: 'Разрешение трейлеров в баннере',
     val_sec_short: 'сек',
     hero_btn_watch: 'Смотреть',
     set_section_beta: 'Beta - функции',
@@ -312,8 +316,11 @@
     set_hero_trailer_mode_desc: 'Whether to play a trailer over the poster after idle',
     val_trailer_mode_posters: 'Posters only',
     val_trailer_mode_mixed: 'Posters + trailer after idle',
+    val_trailer_mode_trailers: 'Trailers only',
     set_hero_trailer_delay_name: 'Trailer delay',
     set_hero_trailer_delay_desc: 'How long to wait while idle before starting the trailer',
+    set_hero_trailer_quality_name: 'Trailer quality',
+    set_hero_trailer_quality_desc: 'Resolution of trailers played in the banner',
     val_sec_short: 'sec',
     hero_btn_watch: 'Watch',
     set_section_beta: 'Beta features',
@@ -441,8 +448,11 @@
     set_hero_trailer_mode_desc: 'Чи показувати трейлер поверх постера після простою',
     val_trailer_mode_posters: 'Лише постери',
     val_trailer_mode_mixed: 'Постери + трейлер після простою',
+    val_trailer_mode_trailers: 'Тільки трейлери',
     set_hero_trailer_delay_name: 'Затримка трейлера',
     set_hero_trailer_delay_desc: 'Скільки чекати бездіяльності перед запуском трейлера',
+    set_hero_trailer_quality_name: 'Якість трейлера',
+    set_hero_trailer_quality_desc: 'Роздільна здатність трейлерів у банері',
     val_sec_short: 'сек',
     hero_btn_watch: 'Дивитися',
     set_section_beta: 'Beta - функції',
@@ -570,8 +580,11 @@
     set_hero_trailer_mode_desc: 'Ці паказваць трэйлер па-над постэрам пасля прастою',
     val_trailer_mode_posters: 'Толькі постэры',
     val_trailer_mode_mixed: 'Постэры + трэйлер пасля прастою',
+    val_trailer_mode_trailers: 'Толькі трэйлеры',
     set_hero_trailer_delay_name: 'Затрымка трэйлера',
     set_hero_trailer_delay_desc: 'Колькі чакаць бяздзейнасці перад запускам трэйлера',
+    set_hero_trailer_quality_name: 'Якасць трэйлера',
+    set_hero_trailer_quality_desc: 'Раздзяляльная здольнасць трэйлераў у банеры',
     val_sec_short: 'сек',
     hero_btn_watch: 'Глядзець',
     set_section_beta: 'Beta - функцыі',
@@ -651,10 +664,12 @@
   }
 
   var DB_NAME = 'agnative-cache';
-  var DB_VERSION = 1;
+  var DB_VERSION = 2;
   var STORE_META = 'meta';
   var STORE_IMG = 'img';
+  var STORE_VIDEO = 'video';
   var FAILED_TTL = 24 * 60 * 60 * 1000;
+  var VIDEO_FAILED_TTL = 6 * 60 * 60 * 1000;
 
   var _db = null;
   var _dbQueue = [];
@@ -672,6 +687,7 @@
         var db = e.target.result;
         if (!db.objectStoreNames.contains(STORE_META)) db.createObjectStore(STORE_META, { keyPath: 'key' });
         if (!db.objectStoreNames.contains(STORE_IMG)) db.createObjectStore(STORE_IMG, { keyPath: 'key' });
+        if (!db.objectStoreNames.contains(STORE_VIDEO)) db.createObjectStore(STORE_VIDEO, { keyPath: 'key' });
       };
       req.onsuccess = function (e) {
         _db = e.target.result;
@@ -771,9 +787,12 @@
     openDB(function (db) {
       if (!db) return;
       try {
-        var tx = db.transaction([STORE_META, STORE_IMG], 'readwrite');
+        var stores = [STORE_META, STORE_IMG];
+        if (db.objectStoreNames.contains(STORE_VIDEO)) stores.push(STORE_VIDEO);
+        var tx = db.transaction(stores, 'readwrite');
         tx.objectStore(STORE_META).clear();
         tx.objectStore(STORE_IMG).clear();
+        if (db.objectStoreNames.contains(STORE_VIDEO)) tx.objectStore(STORE_VIDEO).clear();
       } catch (e) {}
     });
   }
@@ -843,6 +862,90 @@
     });
   }
 
+  var _videoTried = {};
+  var _videoUrlMap = {};
+
+  function getVideoEntry(key, callback) {
+    openDB(function (db) {
+      if (!db || !db.objectStoreNames.contains(STORE_VIDEO)) { callback(null); return; }
+      try {
+        var req = db.transaction(STORE_VIDEO, 'readonly').objectStore(STORE_VIDEO).get(key);
+        req.onsuccess = function () {
+          var entry = req.result;
+          if (!entry) { callback(null); return; }
+          if (entry.failed && Date.now() - entry.t > VIDEO_FAILED_TTL) { callback(null); return; }
+          callback(entry);
+        };
+        req.onerror = function () { callback(null); };
+      } catch (e) { callback(null); }
+    });
+  }
+
+  function attemptStoreVideo(url, key, onDone) {
+    if (_videoTried[key]) { if (onDone) onDone(false); return; }
+    _videoTried[key] = true;
+    try {
+      fetch(url, { mode: 'cors', credentials: 'omit' }).then(function (r) {
+        if (!r.ok) {
+          idbSet(STORE_VIDEO, key, null, { s: 0, failed: true });
+          if (onDone) onDone(false);
+          return;
+        }
+        r.blob().then(function (b) {
+          idbSet(STORE_VIDEO, key, b, { s: b.size });
+          if (onDone) onDone(true);
+        }).catch(function () {
+          if (onDone) onDone(false);
+        });
+      }).catch(function () {
+        idbSet(STORE_VIDEO, key, null, { s: 0, failed: true });
+        if (onDone) onDone(false);
+      });
+    } catch (e) {
+      if (onDone) onDone(false);
+    }
+  }
+
+  function videoLoad(url, callback) {
+    var key = url;
+    getVideoEntry(key, function (entry) {
+      if (entry && entry.v) {
+        try {
+          var obj = URL.createObjectURL(entry.v);
+          _videoUrlMap[key] = obj;
+          callback(obj, true);
+          return;
+        } catch (e) {}
+      }
+      callback(url, false);
+      if (entry && entry.failed) {
+        _videoTried[key] = true;
+        return;
+      }
+      attemptStoreVideo(url, key);
+    });
+  }
+
+  function videoPreload(url, onDone) {
+    var key = url;
+    getVideoEntry(key, function (entry) {
+      if (entry && entry.v) { if (onDone) onDone(true); return; }
+      if (entry && entry.failed) { if (onDone) onDone(false); return; }
+      attemptStoreVideo(url, key, onDone);
+    });
+  }
+
+  function videoMarkFailed(url) {
+    idbSet(STORE_VIDEO, url, null, { s: 0, failed: true });
+    _videoTried[url] = true;
+  }
+
+  function videoRevoke(objUrl) {
+    if (typeof objUrl === 'string' && objUrl.indexOf('blob:') === 0) {
+      try { URL.revokeObjectURL(objUrl); } catch (e) {}
+    }
+  }
+
   (function () {
     'use strict';
 
@@ -906,6 +1009,7 @@
       HERO_TRAILER_KEY,
       HERO_TRAILER_MODE_KEY,
       HERO_TRAILER_DELAY_KEY,
+      HERO_TRAILER_QUALITY_KEY,
       TOPNAV_ENABLE_KEY,
       TOPNAV_ICONS_ORDER_KEY,
       TOPNAV_SIZE_KEY,
@@ -931,16 +1035,34 @@
     var heroTrailerActive = false;
     var heroTrailerCache = {};
     var heroTrailerPending = {};
-    var heroYtPlayer = null;
-    var heroYtRevealTimer = null;
-    var heroYtReadyTimer = null;
-    var heroYtDurationTimer = null;
-    var heroYtCurrentKey = '';
-    var ytApiState = 'none';
-    var ytApiCallbacks = [];
-    var HERO_TRAILER_START_SEC = 30;
+    var heroVideoEl = null;
+    var heroVideoCurrentSrc = '';
+    var heroVideoObjUrl = '';
+    var heroVideoReadyTimer = null;
+    var heroVideoRevealTimer = null;
+    var heroVideoDurationTimer = null;
+    var HERO_TRAILER_START_SEC = 5;
+    var HERO_TRAILER_FAIL_LIMIT = 5;
     var heroTrailerAttempt = 0;
     var heroUnplayable = {};
+    var heroImdbIdCache = {};
+    var heroImdbIdPending = {};
+    var heroResolvedTrailer = {};
+    var heroVideoNetFailures = 0;
+    var heroVideoCooldown = false;
+    var heroPrefetchQueue = [];
+    var heroPrefetchActive = false;
+    var heroBlobCached = {};
+    var HERO_PROXY_BASE = 'https://kp.pris.cam/';
+    var HERO_IMDB_API_BASE = 'https://api.imdbapi.dev';
+    var HERO_VIDEO_BASE = 'https://imdb-video.media-imdb.com/mc';
+    var HERO_TRAILER_RESOLVED_LS = 'agnative_hero_trailer_resolved';
+
+    function heroProxyUrl(url) {
+      if (!url) return url;
+      if (url.indexOf(HERO_PROXY_BASE) === 0) return url;
+      return HERO_PROXY_BASE + url;
+    }
     var storageListenerBound = false;
     var activityListenerBound = false;
     var fullListenerBound = false;
@@ -1677,6 +1799,7 @@
         if (!window.Lampa || !Lampa.Storage) return 'mixed';
         var v = Lampa.Storage.get(HERO_TRAILER_MODE_KEY, '');
         if (v === 'posters') return 'posters';
+        if (v === 'trailers') return 'trailers';
         if (v === 'mixed' || v === 'video') return 'mixed';
         var legacy = Lampa.Storage.get(HERO_TRAILER_KEY, 'true');
         if (legacy === false || legacy === 'false' || legacy === 'off') return 'posters';
@@ -1686,6 +1809,15 @@
 
     function heroTrailerEnabled() {
       return getHeroTrailerMode() !== 'posters';
+    }
+
+    function getHeroTrailerQuality() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return '720p';
+        var v = Lampa.Storage.get(HERO_TRAILER_QUALITY_KEY, '720p') || '720p';
+        if (v === '1080p' || v === '720p' || v === '480p') return v;
+        return '720p';
+      } catch (e) { return '720p'; }
     }
 
     function getHeroTrailerDelayMs() {
@@ -1822,6 +1954,7 @@
       if (!hero || !item) return;
       heroCurrentItem = item;
       updateHeroIndicators();
+      applyHeroInstantClass(item);
       try {
         var id = item.id;
         var type = detectHeroItemType(item);
@@ -2002,21 +2135,36 @@
       if (heroTrailerActive) stopHeroTrailer();
       if (heroTransitionTimer) { clearTimeout(heroTransitionTimer); heroTransitionTimer = null; }
       heroCurrentIndex = idx;
+      var nextItem = heroItems[idx];
+      heroCurrentItem = nextItem;
       updateHeroIndicators();
-      if (heroAnimationEnabled()) {
+      if (heroItems.length > 1) {
+        var nextIdx = (idx + 1) % heroItems.length;
+        bumpHeroPrefetchPriority(heroItems[nextIdx]);
+      }
+      applyHeroInstantClass(nextItem);
+
+      var earlyTrailer = heroTrailerEnabled() && !heroVideoCooldown && (heroPlayFocused() || force) && !isUiLayerOpen();
+      var lvl = resolvePerfLevel();
+      if (lvl === 'low' || lvl === 'ultra') earlyTrailer = false;
+      if (earlyTrailer) heroStartTrailer(true);
+
+      var instantTransition = hero.classList.contains('agnative-hero--instant-trailer');
+
+      if (heroAnimationEnabled() && !instantTransition) {
         hero.classList.add('agnative-hero--switching');
         heroTransitionTimer = setTimeout(function () {
           heroTransitionTimer = null;
-          renderHeroSlide(heroItems[idx]);
-          heroResetIdle(force);
+          renderHeroSlide(nextItem);
+          if (!earlyTrailer) heroResetIdle(force);
           setTimeout(function () {
             var hh = document.querySelector('.agnative-hero.agnative-hero--switching');
             if (hh) hh.classList.remove('agnative-hero--switching');
           }, 2000);
         }, 320);
       } else {
-        renderHeroSlide(heroItems[idx]);
-        heroResetIdle(force);
+        renderHeroSlide(nextItem);
+        if (!earlyTrailer) heroResetIdle(force);
       }
     }
 
@@ -2036,36 +2184,146 @@
       return !!(btn && (btn.classList.contains('focus') || btn.classList.contains('hover')));
     }
 
-    function cleanupHeroIframeOnly() {
-      if (heroYtReadyTimer)    { clearTimeout(heroYtReadyTimer);    heroYtReadyTimer = null; }
-      if (heroYtRevealTimer)   { clearTimeout(heroYtRevealTimer);   heroYtRevealTimer = null; }
-      if (heroYtDurationTimer) { clearTimeout(heroYtDurationTimer); heroYtDurationTimer = null; }
-      if (heroYtPlayer) {
-        try { heroYtPlayer.destroy(); } catch (e) { }
-        heroYtPlayer = null;
+    function cleanupHeroVideoOnly() {
+      if (heroVideoReadyTimer)    { clearTimeout(heroVideoReadyTimer);    heroVideoReadyTimer = null; }
+      if (heroVideoRevealTimer)   { clearTimeout(heroVideoRevealTimer);   heroVideoRevealTimer = null; }
+      if (heroVideoDurationTimer) { clearTimeout(heroVideoDurationTimer); heroVideoDurationTimer = null; }
+      if (heroVideoEl) {
+        try {
+          heroVideoEl.pause();
+          heroVideoEl.removeAttribute('src');
+          heroVideoEl.load();
+        } catch (e) { }
+        if (heroVideoEl.parentNode) {
+          try { heroVideoEl.parentNode.removeChild(heroVideoEl); } catch (e) { }
+        }
+        heroVideoEl = null;
       }
-      heroYtCurrentKey = '';
+      if (heroVideoObjUrl) { videoRevoke(heroVideoObjUrl); heroVideoObjUrl = ''; }
+      heroVideoCurrentSrc = '';
     }
 
-    function ensureYoutubeApi(cb) {
-      if (window.YT && window.YT.Player) { cb(); return; }
-      ytApiCallbacks.push(cb);
-      if (ytApiState === 'loading' || ytApiState === 'ready') return;
-      ytApiState = 'loading';
-      var prev = window.onYouTubeIframeAPIReady;
-      window.onYouTubeIframeAPIReady = function () {
-        if (typeof prev === 'function') { try { prev(); } catch (e) { } }
-        ytApiState = 'ready';
-        var cbs = ytApiCallbacks.slice();
-        ytApiCallbacks = [];
-        for (var i = 0; i < cbs.length; i++) { try { cbs[i](); } catch (e) { } }
-      };
+    function heroVideoUrlsForKey(key, preferredQuality) {
+      var quals = ['1080p', '720p', '480p'];
+      var pref = (preferredQuality === '1080p' || preferredQuality === '720p' || preferredQuality === '480p') ? preferredQuality : '720p';
+      var ordered = [pref];
+      for (var i = 0; i < quals.length; i++) if (quals[i] !== pref) ordered.push(quals[i]);
+      return ordered.map(function (q) { return heroProxyUrl(HERO_VIDEO_BASE + '/' + key + '/' + key + '_' + q + '.mp4'); });
+    }
+
+    function heroReadResolvedTrailer(imdbId) {
+      if (!imdbId) return null;
+      if (heroResolvedTrailer[imdbId]) return heroResolvedTrailer[imdbId];
       try {
-        var tag = document.createElement('script');
-        tag.src = 'https://www.youtube.com/iframe_api';
-        tag.async = true;
-        (document.head || document.body).appendChild(tag);
-      } catch (e) { ytApiState = 'none'; }
+        var raw = localStorage.getItem(HERO_TRAILER_RESOLVED_LS);
+        if (!raw) return null;
+        var obj = JSON.parse(raw);
+        if (obj && obj[imdbId]) {
+          heroResolvedTrailer[imdbId] = obj[imdbId];
+          return obj[imdbId];
+        }
+      } catch (e) { }
+      return null;
+    }
+
+    function heroWriteResolvedTrailer(imdbId, payload) {
+      if (!imdbId) return;
+      heroResolvedTrailer[imdbId] = payload;
+      try {
+        var raw = localStorage.getItem(HERO_TRAILER_RESOLVED_LS);
+        var obj = raw ? JSON.parse(raw) : {};
+        if (!obj || typeof obj !== 'object') obj = {};
+        obj[imdbId] = payload;
+        localStorage.setItem(HERO_TRAILER_RESOLVED_LS, JSON.stringify(obj));
+      } catch (e) { }
+    }
+
+    function heroForgetResolvedTrailer(imdbId) {
+      if (!imdbId) return;
+      delete heroResolvedTrailer[imdbId];
+      try {
+        var raw = localStorage.getItem(HERO_TRAILER_RESOLVED_LS);
+        if (!raw) return;
+        var obj = JSON.parse(raw);
+        if (obj && obj[imdbId]) {
+          delete obj[imdbId];
+          localStorage.setItem(HERO_TRAILER_RESOLVED_LS, JSON.stringify(obj));
+        }
+      } catch (e) { }
+    }
+
+    function heroNoteNetFailure() {
+      heroVideoNetFailures++;
+      if (heroVideoNetFailures >= HERO_TRAILER_FAIL_LIMIT) heroVideoCooldown = true;
+    }
+
+    function heroNoteNetSuccess() {
+      heroVideoNetFailures = 0;
+    }
+
+    function heroResolveImdbIdSync(item) {
+      if (!item || !item.id) return '';
+      if (typeof item.imdb_id === 'string' && item.imdb_id.indexOf('tt') === 0) return item.imdb_id;
+      var type = detectHeroItemType(item);
+      var key = 'imdb_id/' + type + '/' + item.id;
+      var v = heroImdbIdCache[key];
+      return (typeof v === 'string' && v.indexOf('tt') === 0) ? v : '';
+    }
+
+    function heroIsTrailerInstant(item) {
+      var imdbId = heroResolveImdbIdSync(item);
+      if (!imdbId) return false;
+      var resolved = heroReadResolvedTrailer(imdbId);
+      if (!resolved || !resolved.key) return false;
+      var url = heroVideoUrlsForKey(resolved.key, getHeroTrailerQuality())[0];
+      return !!heroBlobCached[url];
+    }
+
+    function heroClearInstant() {
+      var hero = document.querySelector('.agnative-hero');
+      if (hero) hero.classList.remove('agnative-hero--instant-trailer');
+    }
+
+    function applyHeroInstantClass(item) {
+      var hero = document.querySelector('.agnative-hero');
+      if (!hero) return;
+      var instant = getHeroTrailerMode() === 'trailers' && heroIsTrailerInstant(item);
+      hero.classList.toggle('agnative-hero--instant-trailer', instant);
+    }
+
+    function resolveImdbId(tmdbId, type, callback, sourceItem) {
+      if (!tmdbId) return callback('');
+      if (sourceItem && typeof sourceItem.imdb_id === 'string' && sourceItem.imdb_id.indexOf('tt') === 0) {
+        return callback(sourceItem.imdb_id);
+      }
+      var cacheKey = 'imdb_id/' + type + '/' + tmdbId;
+      if (heroImdbIdCache[cacheKey] !== undefined) return callback(heroImdbIdCache[cacheKey]);
+      if (heroImdbIdPending[cacheKey]) { heroImdbIdPending[cacheKey].push(callback); return; }
+      heroImdbIdPending[cacheKey] = [callback];
+
+      function finish(value) {
+        heroImdbIdCache[cacheKey] = value || '';
+        metaSet(cacheKey, value || '');
+        var cbs = heroImdbIdPending[cacheKey] || [];
+        delete heroImdbIdPending[cacheKey];
+        for (var i = 0; i < cbs.length; i++) cbs[i](value || '');
+      }
+
+      metaGet(cacheKey, function (persisted) {
+        if (persisted !== undefined && persisted !== null) {
+          heroImdbIdCache[cacheKey] = persisted || '';
+          var cbs = heroImdbIdPending[cacheKey] || [];
+          delete heroImdbIdPending[cacheKey];
+          for (var i = 0; i < cbs.length; i++) cbs[i](persisted || '');
+          return;
+        }
+        var url = 'https://api.themoviedb.org/3/' + type + '/' + tmdbId + '/external_ids?api_key=' + TMDB_KEY;
+        fetchJsonWithTimeout(url, 8000).then(function (data) {
+          finish((data && data.imdb_id) || '');
+        }).catch(function () {
+          finish('');
+        });
+      });
     }
 
     function stopHeroTrailer() {
@@ -2074,7 +2332,7 @@
       heroTrailerActive = false;
       heroTrailerAttempt++;
 
-      cleanupHeroIframeOnly();
+      cleanupHeroVideoOnly();
 
       if (hero) {
         hero.classList.remove('agnative-hero--trailer');
@@ -2101,12 +2359,16 @@
 
     function heroResetIdle(force) {
       if (heroIdleTimer) { clearTimeout(heroIdleTimer); heroIdleTimer = null; }
-      if (getHeroTrailerMode() === 'posters') return;
+      var mode = getHeroTrailerMode();
+      if (mode === 'posters') return;
       var lvl = resolvePerfLevel();
       if (lvl === 'low' || lvl === 'ultra') return;
       if (!force && !heroPlayFocused()) return;
       if (isUiLayerOpen()) return;
-      heroIdleTimer = setTimeout(function () { heroStartTrailer(force); }, getHeroTrailerDelayMs());
+      if (heroVideoCooldown) return;
+      var delay = mode === 'trailers' ? 0 : getHeroTrailerDelayMs();
+      if (delay <= 0) { heroStartTrailer(force); return; }
+      heroIdleTimer = setTimeout(function () { heroStartTrailer(force); }, delay);
     }
 
     // Validity check after any async step: trailer still wanted, same item, hero present.
@@ -2139,7 +2401,9 @@
 
     function heroStartTrailer(force) {
       if (!heroTrailerEnabled()) return;
+      if (heroTrailerActive) return;
       if (!force && !heroPlayFocused()) return;
+      if (heroVideoCooldown) return;
       var item = heroCurrentItem;
       if (!item || !item.id) return;
       if (!document.querySelector('.agnative-hero')) return;
@@ -2152,9 +2416,9 @@
 
       fetchHeroTrailer(item.id, type, function (keys) {
         if (!heroValid(reqId, force)) { stopHeroTrailer(); return; }
-        if (!keys || !keys.length) { stopHeroTrailer(); return; }
+        if (!keys || !keys.length) { heroClearInstant(); stopHeroTrailer(); return; }
         attemptHeroTrailerKey(reqId, keys, 0, force);
-      });
+      }, item);
     }
 
     function heroTrailerDurationElapsed(reqId, myAttempt) {
@@ -2166,136 +2430,174 @@
         return;
       }
       try {
-        if (heroYtPlayer && heroYtPlayer.seekTo) {
-          heroYtPlayer.seekTo(HERO_TRAILER_START_SEC, true);
-          heroYtPlayer.playVideo();
+        if (heroVideoEl) {
+          heroVideoEl.currentTime = HERO_TRAILER_START_SEC;
+          var p = heroVideoEl.play();
+          if (p && typeof p.catch === 'function') p.catch(function () { });
         }
       } catch (e) { }
-      heroYtDurationTimer = setTimeout(function () {
+      heroVideoDurationTimer = setTimeout(function () {
         heroTrailerDurationElapsed(reqId, myAttempt);
       }, getHeroIntervalMs());
     }
 
     function attemptHeroTrailerKey(reqId, queue, index, force) {
       if (!heroValid(reqId, force)) { stopHeroTrailer(); return; }
+      if (heroVideoCooldown) { heroClearInstant(); stopHeroTrailer(); return; }
 
       while (index < queue.length && heroUnplayable[queue[index]]) index++;
-      if (index >= queue.length) { stopHeroTrailer(); return; }
+      if (index >= queue.length) { heroClearInstant(); stopHeroTrailer(); return; }
 
-      cleanupHeroIframeOnly();
+      cleanupHeroVideoOnly();
 
       var key = queue[index];
       var myAttempt = ++heroTrailerAttempt;
+      var quality = getHeroTrailerQuality();
+      var urls = heroVideoUrlsForKey(key, quality);
 
       var wrap = heroEnsureTrailerWrap();
       if (!wrap) { stopHeroTrailer(); return; }
 
-      var holder = document.createElement('div');
-      wrap.appendChild(holder);
-      heroYtCurrentKey = key;
-
       function isStale() { return myAttempt !== heroTrailerAttempt; }
 
       var revealed = false;
+      var urlIdx = 0;
 
-      function abandon() {
+      function abandonKey() {
         if (isStale()) return;
         heroUnplayable[key] = true;
+        var item = heroCurrentItem;
+        if (item && item.id) {
+          var type = detectHeroItemType(item);
+          resolveImdbId(item.id, type, function (imdbId) {
+            var resolved = imdbId ? heroReadResolvedTrailer(imdbId) : null;
+            if (resolved && resolved.key === key) heroForgetResolvedTrailer(imdbId);
+          });
+        }
+        cleanupHeroVideoOnly();
         attemptHeroTrailerKey(reqId, queue, index + 1, force);
       }
 
-      function pollForActualPlayback(tick) {
-        if (isStale() || revealed) return;
-        if (tick > 60) { abandon(); return; }
-        var ok = false;
-        try {
-          if (heroYtPlayer && heroYtPlayer.getPlayerState && heroYtPlayer.getCurrentTime) {
-            var st = heroYtPlayer.getPlayerState();
-            var ct = heroYtPlayer.getCurrentTime();
-            if (st === 1 && ct > HERO_TRAILER_START_SEC + 1.5) ok = true;
+      var fromCacheFlag = false;
+      function tryNextUrl() {
+        if (isStale()) return;
+        while (urlIdx < urls.length && heroUnplayable[urls[urlIdx]]) urlIdx++;
+        if (urlIdx >= urls.length) { abandonKey(); return; }
+        var url = urls[urlIdx++];
+        heroVideoCurrentSrc = url;
+        videoLoad(url, function (resolvedSrc, fromCache) {
+          if (isStale()) {
+            if (resolvedSrc !== url) videoRevoke(resolvedSrc);
+            return;
           }
-        } catch (e) { }
-        if (ok) {
-          revealed = true;
-          revealAndStartDuration();
-          return;
-        }
-        heroYtRevealTimer = setTimeout(function () { pollForActualPlayback(tick + 1); }, 200);
+          if (heroVideoObjUrl && heroVideoObjUrl !== resolvedSrc) {
+            videoRevoke(heroVideoObjUrl);
+          }
+          heroVideoObjUrl = resolvedSrc !== url ? resolvedSrc : '';
+          fromCacheFlag = !!fromCache;
+          if (fromCache) heroBlobCached[url] = true;
+          if (!heroVideoEl) { abandonKey(); return; }
+          heroVideoEl.src = resolvedSrc;
+          try { heroVideoEl.load(); } catch (e) { }
+          var p = heroVideoEl.play();
+          if (p && typeof p.catch === 'function') p.catch(function () { });
+        });
       }
+
+      var video = document.createElement('video');
+      video.className = 'agnative-hero__video';
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+      video.autoplay = true;
+      video.preload = 'auto';
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.setAttribute('muted', '');
+      video.setAttribute('tabindex', '-1');
+      video.setAttribute('aria-hidden', 'true');
+      wrap.appendChild(video);
+      heroVideoEl = video;
 
       function revealAndStartDuration() {
         if (isStale()) return;
         if (!heroTrailerActive || !heroValid(reqId, force)) return;
-        if (heroYtRevealTimer) { clearTimeout(heroYtRevealTimer); heroYtRevealTimer = null; }
+        if (heroVideoRevealTimer) { clearTimeout(heroVideoRevealTimer); heroVideoRevealTimer = null; }
+        if (heroVideoReadyTimer)  { clearTimeout(heroVideoReadyTimer);  heroVideoReadyTimer = null; }
         heroRevealTrailer();
-        if (heroYtDurationTimer) clearTimeout(heroYtDurationTimer);
-        heroYtDurationTimer = setTimeout(function () {
+        heroNoteNetSuccess();
+        var item = heroCurrentItem;
+        if (item && item.id) {
+          var type = detectHeroItemType(item);
+          resolveImdbId(item.id, type, function (imdbId) {
+            if (imdbId) heroWriteResolvedTrailer(imdbId, { key: key });
+          });
+        }
+        if (heroVideoDurationTimer) clearTimeout(heroVideoDurationTimer);
+        heroVideoDurationTimer = setTimeout(function () {
           heroTrailerDurationElapsed(reqId, myAttempt);
         }, getHeroIntervalMs());
       }
 
-      ensureYoutubeApi(function () {
+      var startSec = HERO_TRAILER_START_SEC;
+      video.addEventListener('loadedmetadata', function () {
         if (isStale()) return;
-        if (!heroValid(reqId, force)) { stopHeroTrailer(); return; }
-        if (!window.YT || !window.YT.Player) { abandon(); return; }
-        if (!holder.parentNode) { abandon(); return; }
+        var dur = isFinite(video.duration) ? video.duration : 0;
+        if (dur > 0 && dur < HERO_TRAILER_START_SEC + 4) startSec = 0;
+        try { video.currentTime = startSec; } catch (e) { }
+      });
 
-        heroYtReadyTimer = setTimeout(abandon, 8000);
-
-        var origin;
-        try { origin = window.location.origin; } catch (e) { origin = undefined; }
-
-        try {
-          heroYtPlayer = new window.YT.Player(holder, {
-            videoId: key,
-            host: 'https://www.youtube.com',
-            playerVars: {
-              autoplay: 1,
-              mute: 1,
-              controls: 0,
-              disablekb: 1,
-              fs: 0,
-              modestbranding: 1,
-              rel: 0,
-              playsinline: 1,
-              iv_load_policy: 3,
-              cc_load_policy: 0,
-              start: HERO_TRAILER_START_SEC,
-              origin: origin
-            },
-            events: {
-              onReady: function (e) {
-                if (isStale()) return;
-                if (heroYtReadyTimer) { clearTimeout(heroYtReadyTimer); heroYtReadyTimer = null; }
-                try {
-                  e.target.mute();
-                  e.target.playVideo();
-                } catch (_) { }
-                try {
-                  var iframeEl = wrap.querySelector('iframe');
-                  if (iframeEl) {
-                    iframeEl.setAttribute('tabindex', '-1');
-                    iframeEl.setAttribute('aria-hidden', 'true');
-                    iframeEl.setAttribute('scrolling', 'no');
-                  }
-                } catch (_) { }
-                pollForActualPlayback(0);
-              },
-              onError: function () {
-                abandon();
-              },
-              onStateChange: function (e) {
-                if (isStale() || !e) return;
-                if (e.data === 0 && revealed) {
-                  heroTrailerDurationElapsed(reqId, myAttempt);
-                }
-              }
-            }
-          });
-        } catch (e) {
-          abandon();
+      video.addEventListener('seeked', function () {
+        if (isStale() || revealed) return;
+        if (video.currentTime + 0.5 >= startSec) {
+          revealed = true;
+          revealAndStartDuration();
         }
       });
+
+      video.addEventListener('playing', function () {
+        if (isStale() || revealed) return;
+        if (fromCacheFlag && video.currentTime + 0.5 >= startSec) {
+          revealed = true;
+          revealAndStartDuration();
+          return;
+        }
+        if (video.currentTime + 0.5 < startSec) return;
+        revealed = true;
+        revealAndStartDuration();
+      });
+
+      video.addEventListener('timeupdate', function () {
+        if (isStale() || revealed) return;
+        if (video.currentTime + 0.3 >= startSec && video.currentTime > 0.1) {
+          revealed = true;
+          revealAndStartDuration();
+        }
+      });
+
+      video.addEventListener('ended', function () {
+        if (isStale() || !revealed) return;
+        heroTrailerDurationElapsed(reqId, myAttempt);
+      });
+
+      video.addEventListener('error', function () {
+        if (isStale()) return;
+        heroUnplayable[heroVideoCurrentSrc] = true;
+        if (urlIdx < urls.length) {
+          tryNextUrl();
+        } else {
+          heroNoteNetFailure();
+          if (heroVideoCooldown) { abandonKey(); return; }
+          abandonKey();
+        }
+      });
+
+      heroVideoReadyTimer = setTimeout(function () {
+        if (isStale() || revealed) return;
+        abandonKey();
+      }, 10000);
+
+      tryNextUrl();
     }
 
     function buildHeroIndicators(container) {
@@ -2460,7 +2762,7 @@
               hero.classList.remove('agnative-hero--hidden');
               if (document.body) document.body.classList.remove('agnative-hero-collapsed');
               heroExitDirection = null;
-              heroResetIdle();
+              heroResetIdle(true);
             });
             $$(playBtn).on('hover:blur.agnativeHeroState hover:out.agnativeHeroState', function () {
               hero.classList.add('agnative-hero--unfocused');
@@ -2480,7 +2782,67 @@
         startHeroRotation();
         ensureHeroController();
         if (!isUiLayerOpen()) setTimeout(focusHeroPlayButton, 100);
+        if (heroTrailerEnabled() && !heroVideoCooldown) {
+          scheduleHeroPrefetch(heroItems.slice());
+        }
       } catch (e) { }
+    }
+
+    function scheduleHeroPrefetch(items) {
+      if (!items || !items.length) return;
+      for (var i = 0; i < items.length; i++) heroPrefetchQueue.push(items[i]);
+      if (heroPrefetchActive) return;
+      heroPrefetchActive = true;
+      setTimeout(runHeroPrefetchStep, 600);
+    }
+
+    function bumpHeroPrefetchPriority(item) {
+      if (!item) return;
+      for (var i = 0; i < heroPrefetchQueue.length; i++) {
+        if (heroPrefetchQueue[i] === item) heroPrefetchQueue.splice(i--, 1);
+      }
+      heroPrefetchQueue.unshift(item);
+      if (!heroPrefetchActive && heroTrailerEnabled() && !heroVideoCooldown) {
+        heroPrefetchActive = true;
+        setTimeout(runHeroPrefetchStep, 0);
+      }
+    }
+
+    function runHeroPrefetchStep() {
+      if (heroVideoCooldown) { heroPrefetchQueue = []; heroPrefetchActive = false; return; }
+      if (!heroTrailerEnabled()) { heroPrefetchQueue = []; heroPrefetchActive = false; return; }
+      var item = heroPrefetchQueue.shift();
+      if (!item) { heroPrefetchActive = false; return; }
+      if (!item.id) { setTimeout(runHeroPrefetchStep, 50); return; }
+      var type = detectHeroItemType(item);
+      resolveImdbId(item.id, type, function (imdbId) {
+        if (!imdbId) { setTimeout(runHeroPrefetchStep, 250); return; }
+        var resolved = heroReadResolvedTrailer(imdbId);
+        if (resolved && resolved.key) {
+          var url = heroVideoUrlsForKey(resolved.key, getHeroTrailerQuality())[0];
+          videoPreload(url, function (ok) {
+            if (ok) heroBlobCached[url] = true;
+            setTimeout(runHeroPrefetchStep, 250);
+          });
+          return;
+        }
+        fetchImdbVideos(imdbId, function (keys) {
+          if (!keys || !keys.length) { setTimeout(runHeroPrefetchStep, 250); return; }
+          var firstKey = keys[0];
+          var prefetchUrl = heroVideoUrlsForKey(firstKey, getHeroTrailerQuality())[0];
+          videoPreload(prefetchUrl, function (ok) {
+            if (ok) {
+              heroBlobCached[prefetchUrl] = true;
+              heroWriteResolvedTrailer(imdbId, { key: firstKey });
+              heroNoteNetSuccess();
+            } else {
+              heroNoteNetFailure();
+            }
+            if (heroVideoCooldown) { heroPrefetchQueue = []; heroPrefetchActive = false; return; }
+            setTimeout(runHeroPrefetchStep, 400);
+          });
+        });
+      }, item);
     }
 
     function isUiLayerOpen() {
@@ -3317,7 +3679,7 @@
             var currentMode = Lampa.Storage.get(HERO_TRAILER_MODE_KEY, '');
             if (currentMode === 'video') {
               Lampa.Storage.set(HERO_TRAILER_MODE_KEY, 'mixed');
-            } else if (currentMode !== 'posters' && currentMode !== 'mixed') {
+            } else if (currentMode !== 'posters' && currentMode !== 'mixed' && currentMode !== 'trailers') {
               var legacy = Lampa.Storage.get(HERO_TRAILER_KEY, 'true');
               var migrated = (legacy === false || legacy === 'false' || legacy === 'off') ? 'posters' : 'mixed';
               Lampa.Storage.set(HERO_TRAILER_MODE_KEY, migrated);
@@ -3331,8 +3693,9 @@
             name: HERO_TRAILER_MODE_KEY,
             type: 'select',
             values: {
-              posters: t('val_trailer_mode_posters'),
-              mixed:   t('val_trailer_mode_mixed')
+              posters:  t('val_trailer_mode_posters'),
+              mixed:    t('val_trailer_mode_mixed'),
+              trailers: t('val_trailer_mode_trailers')
             },
             default: 'mixed'
           },
@@ -3341,15 +3704,33 @@
             description: t('set_hero_trailer_mode_desc')
           },
           onChange: function () {
-            heroClearIdle();
             updateHeroTrailerDelayVisibility();
-            if (getHeroTrailerMode() === 'posters') {
-              stopHeroTrailer();
-              if (heroItems.length > 1) startHeroRotation();
-            } else {
-              if (heroItems.length > 1 && !heroRotationTimer) startHeroRotation();
-              heroResetIdle();
-            }
+            showReloadConfirm(function () {
+              try { Lampa.Controller.toggle('settings_component'); } catch (e) { }
+            });
+          }
+        });
+
+        Lampa.SettingsApi.addParam({
+          component: HERO_SETTINGS_COMPONENT,
+          param: {
+            name: HERO_TRAILER_QUALITY_KEY,
+            type: 'select',
+            values: {
+              '480p':  '480p',
+              '720p':  '720p',
+              '1080p': '1080p'
+            },
+            default: '720p'
+          },
+          field: {
+            name: t('set_hero_trailer_quality_name'),
+            description: t('set_hero_trailer_quality_desc')
+          },
+          onChange: function () {
+            showReloadConfirm(function () {
+              try { Lampa.Controller.toggle('settings_component'); } catch (e) { }
+            });
           }
         });
 
@@ -5017,9 +5398,10 @@
         '@keyframes agnative-hero-drift { from { transform: scale(1.08) translate3d(-2%, -1.5%, 0); } to { transform: scale(1.08) translate3d(2%, 1.5%, 0); } }',
         '@keyframes agnative-hero-breathe { 0% { transform: scale(1) translate3d(0,0,0); } 50% { transform: scale(1.04) translate3d(0,0,0); } 100% { transform: scale(1) translate3d(0,0,0); } }',
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__bg { opacity:0; }',
-        'body.' + BODY_CLASS + ' .agnative-hero__trailer { position:absolute; top:0; left:0; right:0; bottom:0; overflow:hidden; border-radius:1.5em; opacity:0; transition:opacity .25s ease; pointer-events:none; background:#000; will-change:opacity; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__trailer { position:absolute; top:0; left:0; right:0; bottom:0; overflow:hidden; border-radius:1.5em; opacity:0; transition:opacity .6s ease-out; pointer-events:none; background:#000; will-change:opacity; }',
         'body.' + BODY_CLASS + ' .agnative-hero--trailer .agnative-hero__trailer { opacity:1; }',
-        'body.' + BODY_CLASS + ' .agnative-hero__trailer iframe { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:100vw; height:56.25vw; min-width:100%; min-height:100%; border:0; display:block; pointer-events:none; background:#000; }',
+        'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--instant-trailer .agnative-hero__bg { opacity:0 !important; transition:opacity .6s ease-out !important; }',
+        'body.' + BODY_CLASS + ' .agnative-hero__trailer .agnative-hero__video { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; object-position:center center; border:0; display:block; pointer-events:none; background:#000; }',
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--hidden .agnative-hero__trailer { opacity:0; }',
         'body.' + BODY_CLASS + ' .activity--active .items-line, body.' + BODY_CLASS + ' .activity--active .scroll__content { position:relative; z-index:10; }',
         'body.' + BODY_CLASS + ' .agnative-hero.agnative-hero--visible { opacity:1; }',
@@ -6293,30 +6675,25 @@
       return true;
     }
 
-    function pickYoutubeTrailers(results, userLang) {
-      if (!results || !results.length) return [];
-      // Only real trailers/teasers — never clips, featurettes, behind-the-scenes etc.
-      var yt = [];
-      for (var i = 0; i < results.length; i++) {
-        var v = results[i];
-        if (v && v.site === 'YouTube' && v.key && (v.type === 'Trailer' || v.type === 'Teaser')) yt.push(v);
+    function pickImdbTrailerKeys(videos) {
+      if (!videos || !videos.length) return [];
+      var trailers = [];
+      var promos = [];
+      for (var i = 0; i < videos.length; i++) {
+        var v = videos[i];
+        if (!v || !v.id) continue;
+        var t = (v.type || '').toLowerCase();
+        if (t === 'trailer') trailers.push(v.id);
+        else if (t === 'promotional' || t === 'promo') promos.push(v.id);
       }
-      if (!yt.length) return [];
-      function score(v) {
-        var s = 0;
-        if (v.type === 'Trailer') s += 100;        // trailer over teaser
-        if (v.official === true) s += 30;           // official over fan/promo
-        if (userLang && v.iso_639_1 === userLang) s += 60;
-        else if (v.iso_639_1 === 'en') s += 25;
-        if (typeof v.size === 'number') s += Math.min(v.size, 2160) / 1000; // prefer HD
-        return s;
+      var out = [];
+      var seen = {};
+      function add(arr) {
+        for (var j = 0; j < arr.length; j++) {
+          if (!seen[arr[j]]) { seen[arr[j]] = 1; out.push(arr[j]); }
+        }
       }
-      yt.sort(function (a, b) { return score(b) - score(a); });
-      var seen = {}, out = [];
-      for (var j = 0; j < yt.length; j++) {
-        var k = yt[j].key;
-        if (!seen[k]) { seen[k] = 1; out.push(k); }
-      }
+      add(trailers); add(promos);
       return out;
     }
 
@@ -6329,17 +6706,11 @@
         .finally(function () { clearTimeout(to); });
     }
 
-    function fetchHeroTrailer(id, type, callback) {
-      if (!id) return callback([]);
-      var lang = getLogoLang();
-      var cacheKey = 'trailer/v2/' + type + '/' + id + '/' + lang;
-
+    function fetchImdbVideos(imdbId, callback) {
+      if (!imdbId) return callback([]);
+      var cacheKey = 'imdb_videos/' + imdbId;
       if (cacheKey in heroTrailerCache) return callback(heroTrailerCache[cacheKey]);
-
-      if (heroTrailerPending[cacheKey]) {
-        heroTrailerPending[cacheKey].push(callback);
-        return;
-      }
+      if (heroTrailerPending[cacheKey]) { heroTrailerPending[cacheKey].push(callback); return; }
       heroTrailerPending[cacheKey] = [callback];
 
       function finish(keys) {
@@ -6353,28 +6724,44 @@
 
       metaGet(cacheKey, function (persisted) {
         if (persisted !== undefined) {
-          var arr = Array.isArray(persisted) ? persisted
-                  : (typeof persisted === 'string' && persisted) ? [persisted]
-                  : [];
+          var arr = Array.isArray(persisted) ? persisted : [];
           heroTrailerCache[cacheKey] = arr;
           var cbs = heroTrailerPending[cacheKey] || [];
           delete heroTrailerPending[cacheKey];
           for (var i = 0; i < cbs.length; i++) cbs[i](arr);
           return;
         }
-
-        var base = 'https://api.themoviedb.org/3/' + type + '/' + id + '/videos?api_key=' + TMDB_KEY;
-        var includeLangs = lang === 'en' ? ['en', 'null'] : [lang, 'en', 'null'];
-        var url = base + '&language=' + encodeURIComponent(lang) + '&include_video_language=' + includeLangs.join(',');
-
-        fetchJsonWithTimeout(url, 8000).then(function (data) {
-          var keys = pickYoutubeTrailers(data && data.results, lang);
-          if (keys.length) return finish(keys);
-          fetchJsonWithTimeout(base, 8000).then(function (d2) {
-            finish(pickYoutubeTrailers(d2 && d2.results, lang));
+        var url = HERO_IMDB_API_BASE + '/titles/' + encodeURIComponent(imdbId) + '/videos?pageSize=50&types=trailer&types=promotional';
+        fetchJsonWithTimeout(url, 9000).then(function (data) {
+          if (data && data.error) { finish([]); return; }
+          finish(pickImdbTrailerKeys(data && data.videos));
+        }).catch(function () {
+          var fallback = HERO_IMDB_API_BASE + '/titles/' + encodeURIComponent(imdbId) + '/videos?pageSize=50';
+          fetchJsonWithTimeout(fallback, 9000).then(function (d2) {
+            finish(pickImdbTrailerKeys(d2 && d2.videos));
           }).catch(function () { finish([]); });
-        }).catch(function () { finish([]); });
+        });
       });
+    }
+
+    function fetchHeroTrailer(tmdbId, type, callback, sourceItem) {
+      if (!tmdbId) return callback([]);
+      if (heroVideoCooldown) return callback([]);
+
+      resolveImdbId(tmdbId, type, function (imdbId) {
+        if (!imdbId) return callback([]);
+
+        var resolved = heroReadResolvedTrailer(imdbId);
+        if (resolved && resolved.key) {
+          fetchImdbVideos(imdbId, function (all) {
+            var queue = [resolved.key];
+            for (var i = 0; i < all.length; i++) if (all[i] !== resolved.key) queue.push(all[i]);
+            callback(queue);
+          });
+          return;
+        }
+        fetchImdbVideos(imdbId, callback);
+      }, sourceItem);
     }
 
     function fetchLogo(id, type, callback) {
