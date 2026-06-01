@@ -885,20 +885,25 @@
     if (_videoTried[key]) { if (onDone) onDone(false); return; }
     _videoTried[key] = true;
     try {
+      if (typeof fetch !== 'function') { if (onDone) onDone(false); return; }
       fetch(url, { mode: 'cors', credentials: 'omit' }).then(function (r) {
-        if (!r.ok) {
-          idbSet(STORE_VIDEO, key, null, { s: 0, failed: true });
+        try {
+          if (!r.ok) {
+            idbSet(STORE_VIDEO, key, null, { s: 0, failed: true });
+            if (onDone) onDone(false);
+            return;
+          }
+          r.blob().then(function (b) {
+            try { idbSet(STORE_VIDEO, key, b, { s: b.size }); } catch (e) {}
+            if (onDone) onDone(true);
+          }, function () {
+            if (onDone) onDone(false);
+          });
+        } catch (e) {
           if (onDone) onDone(false);
-          return;
         }
-        r.blob().then(function (b) {
-          idbSet(STORE_VIDEO, key, b, { s: b.size });
-          if (onDone) onDone(true);
-        }).catch(function () {
-          if (onDone) onDone(false);
-        });
-      }).catch(function () {
-        idbSet(STORE_VIDEO, key, null, { s: 0, failed: true });
+      }, function () {
+        try { idbSet(STORE_VIDEO, key, null, { s: 0, failed: true }); } catch (e) {}
         if (onDone) onDone(false);
       });
     } catch (e) {
@@ -2320,17 +2325,19 @@
       if (sourceItem && typeof sourceItem.imdb_id === 'string' && sourceItem.imdb_id.indexOf('tt') === 0) {
         return callback(sourceItem.imdb_id);
       }
-      var cacheKey = 'imdb_id/' + type + '/' + tmdbId;
+      var cacheKey = 'imdb_id_v2/' + type + '/' + tmdbId;
       if (heroImdbIdCache[cacheKey] !== undefined) return callback(heroImdbIdCache[cacheKey]);
       if (heroImdbIdPending[cacheKey]) { heroImdbIdPending[cacheKey].push(callback); return; }
       heroImdbIdPending[cacheKey] = [callback];
 
-      function finish(value) {
+      function finish(value, persist) {
         heroImdbIdCache[cacheKey] = value || '';
-        metaSet(cacheKey, value || '');
+        if (persist) { try { metaSet(cacheKey, value || ''); } catch (e) {} }
         var cbs = heroImdbIdPending[cacheKey] || [];
         delete heroImdbIdPending[cacheKey];
-        for (var i = 0; i < cbs.length; i++) cbs[i](value || '');
+        for (var i = 0; i < cbs.length; i++) {
+          try { cbs[i](value || ''); } catch (e) {}
+        }
       }
 
       metaGet(cacheKey, function (persisted) {
@@ -2338,14 +2345,16 @@
           heroImdbIdCache[cacheKey] = persisted || '';
           var cbs = heroImdbIdPending[cacheKey] || [];
           delete heroImdbIdPending[cacheKey];
-          for (var i = 0; i < cbs.length; i++) cbs[i](persisted || '');
+          for (var i = 0; i < cbs.length; i++) {
+            try { cbs[i](persisted || ''); } catch (e) {}
+          }
           return;
         }
         var url = 'https://api.themoviedb.org/3/' + type + '/' + tmdbId + '/external_ids?api_key=' + TMDB_KEY;
         fetchJsonWithTimeout(url, 8000).then(function (data) {
-          finish((data && data.imdb_id) || '');
-        }).catch(function () {
-          finish('');
+          finish((data && data.imdb_id) || '', !!(data && data.imdb_id));
+        }, function () {
+          finish('', false);
         });
       });
     }
@@ -2439,7 +2448,10 @@
       stopHeroRotation();
 
       fetchHeroTrailer(item.id, type, function (keys) {
-        if (!heroValid(reqId, force)) { stopHeroTrailer(); return; }
+        if (!heroCurrentItem || heroCurrentItem.id !== reqId) return;
+        if (!heroTrailerActive) return;
+        if (!force && !heroPlayFocused()) { stopHeroTrailer(); return; }
+        if (!document.querySelector('.agnative-hero')) return;
         if (!keys || !keys.length) { heroClearInstant(); stopHeroTrailer(); return; }
         attemptHeroTrailerKey(reqId, keys, 0, force);
       }, item);
@@ -2466,7 +2478,10 @@
     }
 
     function attemptHeroTrailerKey(reqId, queue, index, force) {
-      if (!heroValid(reqId, force)) { stopHeroTrailer(); return; }
+      if (!heroCurrentItem || heroCurrentItem.id !== reqId) return;
+      if (!heroTrailerActive) return;
+      if (!force && !heroPlayFocused()) { stopHeroTrailer(); return; }
+      if (!document.querySelector('.agnative-hero')) return;
       if (heroVideoCooldown) { heroClearInstant(); stopHeroTrailer(); return; }
 
       while (index < queue.length && heroUnplayable[queue[index]]) index++;
@@ -2864,26 +2879,40 @@
       var item = heroPrefetchQueue.shift();
       if (!item) { heroPrefetchActive = false; return; }
       if (!item.id) { setTimeout(runHeroPrefetchStep, 50); return; }
+
+      var stepDone = false;
+      var stepWatchdog = setTimeout(function () {
+        if (stepDone) return;
+        stepDone = true;
+        setTimeout(runHeroPrefetchStep, 100);
+      }, 20000);
+      function finishStep(delay) {
+        if (stepDone) return;
+        stepDone = true;
+        clearTimeout(stepWatchdog);
+        setTimeout(runHeroPrefetchStep, delay || 250);
+      }
+
       var type = detectHeroItemType(item);
       resolveImdbId(item.id, type, function (imdbId) {
-        if (!imdbId) { setTimeout(runHeroPrefetchStep, 250); return; }
+        if (!imdbId) { finishStep(250); return; }
         var resolved = heroReadResolvedTrailer(imdbId);
         if (resolved && resolved.key) {
           var url = heroVideoUrlsForKey(resolved.key, getHeroTrailerQuality())[0];
           videoPreload(url, function (ok) {
             if (ok) heroBlobCached[url] = true;
-            setTimeout(runHeroPrefetchStep, 250);
+            finishStep(250);
           });
           return;
         }
         fetchImdbVideos(imdbId, function (keys) {
-          if (!keys || !keys.length) { setTimeout(runHeroPrefetchStep, 250); return; }
+          if (!keys || !keys.length) { finishStep(250); return; }
           var firstKey = keys[0];
           var prefetchUrl = heroVideoUrlsForKey(firstKey, getHeroTrailerQuality())[0];
           heroWriteResolvedTrailer(imdbId, { key: firstKey });
           videoPreload(prefetchUrl, function (ok) {
             if (ok) heroBlobCached[prefetchUrl] = true;
-            setTimeout(runHeroPrefetchStep, 400);
+            finishStep(400);
           });
         });
       }, item);
@@ -6747,28 +6776,38 @@
     }
 
     function fetchJsonWithTimeout(url, ms) {
-      if (typeof AbortController === 'undefined') return fetch(url).then(function (r) { return r.json(); });
-      var ctrl = new AbortController();
-      var to = setTimeout(function () { try { ctrl.abort(); } catch (e) { } }, ms);
-      return fetch(url, { signal: ctrl.signal })
-        .then(function (r) { return r.json(); })
-        .finally(function () { clearTimeout(to); });
+      try {
+        if (typeof fetch !== 'function') return Promise.reject(new Error('no fetch'));
+        if (typeof AbortController === 'undefined') {
+          return fetch(url).then(function (r) { return r.json(); });
+        }
+        var ctrl = new AbortController();
+        var to = setTimeout(function () { try { ctrl.abort(); } catch (e) { } }, ms);
+        function done() { clearTimeout(to); }
+        return fetch(url, { signal: ctrl.signal })
+          .then(function (r) { return r.json(); })
+          .then(function (data) { done(); return data; }, function (err) { done(); throw err; });
+      } catch (e) {
+        return Promise.reject(e);
+      }
     }
 
     function fetchImdbVideos(imdbId, callback) {
       if (!imdbId) return callback([]);
-      var cacheKey = 'imdb_videos/' + imdbId;
+      var cacheKey = 'imdb_videos_v2/' + imdbId;
       if (cacheKey in heroTrailerCache) return callback(heroTrailerCache[cacheKey]);
       if (heroTrailerPending[cacheKey]) { heroTrailerPending[cacheKey].push(callback); return; }
       heroTrailerPending[cacheKey] = [callback];
 
-      function finish(keys) {
+      function finish(keys, persist) {
         var val = (keys && keys.length) ? keys : [];
         heroTrailerCache[cacheKey] = val;
-        metaSet(cacheKey, val);
+        if (persist) { try { metaSet(cacheKey, val); } catch (e) {} }
         var cbs = heroTrailerPending[cacheKey] || [];
         delete heroTrailerPending[cacheKey];
-        for (var i = 0; i < cbs.length; i++) cbs[i](val);
+        for (var i = 0; i < cbs.length; i++) {
+          try { cbs[i](val); } catch (e) {}
+        }
       }
 
       metaGet(cacheKey, function (persisted) {
@@ -6777,18 +6816,20 @@
           heroTrailerCache[cacheKey] = arr;
           var cbs = heroTrailerPending[cacheKey] || [];
           delete heroTrailerPending[cacheKey];
-          for (var i = 0; i < cbs.length; i++) cbs[i](arr);
+          for (var i = 0; i < cbs.length; i++) {
+            try { cbs[i](arr); } catch (e) {}
+          }
           return;
         }
         var url = HERO_IMDB_API_BASE + '/titles/' + encodeURIComponent(imdbId) + '/videos?pageSize=50&types=trailer&types=promotional';
         fetchJsonWithTimeout(url, 9000).then(function (data) {
-          if (data && data.error) { finish([]); return; }
-          finish(pickImdbTrailerKeys(data && data.videos));
-        }).catch(function () {
+          if (data && data.error) { finish([], false); return; }
+          finish(pickImdbTrailerKeys(data && data.videos), true);
+        }, function () {
           var fallback = HERO_IMDB_API_BASE + '/titles/' + encodeURIComponent(imdbId) + '/videos?pageSize=50';
           fetchJsonWithTimeout(fallback, 9000).then(function (d2) {
-            finish(pickImdbTrailerKeys(d2 && d2.videos));
-          }).catch(function () { finish([]); });
+            finish(pickImdbTrailerKeys(d2 && d2.videos), true);
+          }, function () { finish([], false); });
         });
       });
     }

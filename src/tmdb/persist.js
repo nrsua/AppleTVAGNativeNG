@@ -220,20 +220,25 @@ function attemptStoreVideo(url, key, onDone) {
   if (_videoTried[key]) { if (onDone) onDone(false); return; }
   _videoTried[key] = true;
   try {
+    if (typeof fetch !== 'function') { if (onDone) onDone(false); return; }
     fetch(url, { mode: 'cors', credentials: 'omit' }).then(function (r) {
-      if (!r.ok) {
-        idbSet(STORE_VIDEO, key, null, { s: 0, failed: true });
+      try {
+        if (!r.ok) {
+          idbSet(STORE_VIDEO, key, null, { s: 0, failed: true });
+          if (onDone) onDone(false);
+          return;
+        }
+        r.blob().then(function (b) {
+          try { idbSet(STORE_VIDEO, key, b, { s: b.size }); } catch (e) {}
+          if (onDone) onDone(true);
+        }, function () {
+          if (onDone) onDone(false);
+        });
+      } catch (e) {
         if (onDone) onDone(false);
-        return;
       }
-      r.blob().then(function (b) {
-        idbSet(STORE_VIDEO, key, b, { s: b.size });
-        if (onDone) onDone(true);
-      }).catch(function () {
-        if (onDone) onDone(false);
-      });
-    }).catch(function () {
-      idbSet(STORE_VIDEO, key, null, { s: 0, failed: true });
+    }, function () {
+      try { idbSet(STORE_VIDEO, key, null, { s: 0, failed: true }); } catch (e) {}
       if (onDone) onDone(false);
     });
   } catch (e) {
