@@ -1042,7 +1042,9 @@
     var heroVideoRevealTimer = null;
     var heroVideoDurationTimer = null;
     var HERO_TRAILER_START_SEC = 5;
-    var HERO_TRAILER_FAIL_LIMIT = 5;
+    var HERO_TRAILER_FAIL_LIMIT = 10;
+    var HERO_COOLDOWN_RESET_MS = 5 * 60 * 1000;
+    var heroCooldownTimer = null;
     var heroTrailerAttempt = 0;
     var heroUnplayable = {};
     var heroImdbIdCache = {};
@@ -2181,7 +2183,17 @@
 
     function heroPlayFocused() {
       var btn = document.querySelector('.agnative-hero__play');
-      return !!(btn && (btn.classList.contains('focus') || btn.classList.contains('hover')));
+      if (btn && (btn.classList.contains('focus') || btn.classList.contains('hover'))) return true;
+      var hero = document.querySelector('.agnative-hero');
+      if (hero && !hero.classList.contains('agnative-hero--unfocused') && !hero.classList.contains('agnative-hero--hidden')) {
+        try {
+          if (window.Lampa && Lampa.Controller && Lampa.Controller.enabled) {
+            var en = Lampa.Controller.enabled();
+            if (en && en.name === 'agnative_hero') return true;
+          }
+        } catch (e) { }
+      }
+      return false;
     }
 
     function cleanupHeroVideoOnly() {
@@ -2254,11 +2266,23 @@
 
     function heroNoteNetFailure() {
       heroVideoNetFailures++;
-      if (heroVideoNetFailures >= HERO_TRAILER_FAIL_LIMIT) heroVideoCooldown = true;
+      if (heroVideoNetFailures >= HERO_TRAILER_FAIL_LIMIT) {
+        heroVideoCooldown = true;
+        if (heroCooldownTimer) clearTimeout(heroCooldownTimer);
+        heroCooldownTimer = setTimeout(function () {
+          heroVideoCooldown = false;
+          heroVideoNetFailures = 0;
+          heroCooldownTimer = null;
+        }, HERO_COOLDOWN_RESET_MS);
+      }
     }
 
     function heroNoteNetSuccess() {
       heroVideoNetFailures = 0;
+      if (heroVideoCooldown) {
+        heroVideoCooldown = false;
+        if (heroCooldownTimer) { clearTimeout(heroCooldownTimer); heroCooldownTimer = null; }
+      }
     }
 
     function heroResolveImdbIdSync(item) {
@@ -2556,11 +2580,21 @@
       }
 
       var startSec = HERO_TRAILER_START_SEC;
+      var seekFallbackTimer = null;
       video.addEventListener('loadedmetadata', function () {
         if (isStale()) return;
         var dur = isFinite(video.duration) ? video.duration : 0;
         if (dur > 0 && dur < HERO_TRAILER_START_SEC + 4) startSec = 0;
         try { video.currentTime = startSec; } catch (e) { }
+        if (startSec > 0) {
+          if (seekFallbackTimer) clearTimeout(seekFallbackTimer);
+          seekFallbackTimer = setTimeout(function () {
+            if (isStale() || revealed) return;
+            startSec = 0;
+            revealed = true;
+            revealAndStartDuration();
+          }, 3500);
+        }
       });
 
       video.addEventListener('seeked', function () {
@@ -2846,15 +2880,9 @@
           if (!keys || !keys.length) { setTimeout(runHeroPrefetchStep, 250); return; }
           var firstKey = keys[0];
           var prefetchUrl = heroVideoUrlsForKey(firstKey, getHeroTrailerQuality())[0];
+          heroWriteResolvedTrailer(imdbId, { key: firstKey });
           videoPreload(prefetchUrl, function (ok) {
-            if (ok) {
-              heroBlobCached[prefetchUrl] = true;
-              heroWriteResolvedTrailer(imdbId, { key: firstKey });
-              heroNoteNetSuccess();
-            } else {
-              heroNoteNetFailure();
-            }
-            if (heroVideoCooldown) { heroPrefetchQueue = []; heroPrefetchActive = false; return; }
+            if (ok) heroBlobCached[prefetchUrl] = true;
             setTimeout(runHeroPrefetchStep, 400);
           });
         });
