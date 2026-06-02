@@ -1,8 +1,10 @@
 var DB_NAME = 'agnative-cache';
-var DB_VERSION = 1;
+var DB_VERSION = 2;
 var STORE_META = 'meta';
 var STORE_IMG = 'img';
+var STORE_VIDEO = 'video';
 var FAILED_TTL = 24 * 60 * 60 * 1000;
+var VIDEO_FAILED_TTL = 6 * 60 * 60 * 1000;
 
 var _db = null;
 var _dbQueue = [];
@@ -20,6 +22,7 @@ function openDB(callback) {
       var db = e.target.result;
       if (!db.objectStoreNames.contains(STORE_META)) db.createObjectStore(STORE_META, { keyPath: 'key' });
       if (!db.objectStoreNames.contains(STORE_IMG)) db.createObjectStore(STORE_IMG, { keyPath: 'key' });
+      if (!db.objectStoreNames.contains(STORE_VIDEO)) db.createObjectStore(STORE_VIDEO, { keyPath: 'key' });
     };
     req.onsuccess = function (e) {
       _db = e.target.result;
@@ -119,9 +122,12 @@ export function clearAll() {
   openDB(function (db) {
     if (!db) return;
     try {
-      var tx = db.transaction([STORE_META, STORE_IMG], 'readwrite');
+      var stores = [STORE_META, STORE_IMG];
+      if (db.objectStoreNames.contains(STORE_VIDEO)) stores.push(STORE_VIDEO);
+      var tx = db.transaction(stores, 'readwrite');
       tx.objectStore(STORE_META).clear();
       tx.objectStore(STORE_IMG).clear();
+      if (db.objectStoreNames.contains(STORE_VIDEO)) tx.objectStore(STORE_VIDEO).clear();
     } catch (e) {}
   });
 }
@@ -189,4 +195,93 @@ export function imgPreload(url) {
     if (entry && (entry.v || entry.failed)) return;
     attemptStore(url, key);
   });
+}
+
+var _videoTried = {};
+var _videoUrlMap = {};
+
+function getVideoEntry(key, callback) {
+  openDB(function (db) {
+    if (!db || !db.objectStoreNames.contains(STORE_VIDEO)) { callback(null); return; }
+    try {
+      var req = db.transaction(STORE_VIDEO, 'readonly').objectStore(STORE_VIDEO).get(key);
+      req.onsuccess = function () {
+        var entry = req.result;
+        if (!entry) { callback(null); return; }
+        if (entry.failed && Date.now() - entry.t > VIDEO_FAILED_TTL) { callback(null); return; }
+        callback(entry);
+      };
+      req.onerror = function () { callback(null); };
+    } catch (e) { callback(null); }
+  });
+}
+
+function attemptStoreVideo(url, key, onDone) {
+  if (_videoTried[key]) { if (onDone) onDone(false); return; }
+  _videoTried[key] = true;
+  try {
+    if (typeof fetch !== 'function') { if (onDone) onDone(false); return; }
+    fetch(url, { mode: 'cors', credentials: 'omit' }).then(function (r) {
+      try {
+        if (!r.ok) {
+          idbSet(STORE_VIDEO, key, null, { s: 0, failed: true });
+          if (onDone) onDone(false);
+          return;
+        }
+        r.blob().then(function (b) {
+          try { idbSet(STORE_VIDEO, key, b, { s: b.size }); } catch (e) {}
+          if (onDone) onDone(true);
+        }, function () {
+          if (onDone) onDone(false);
+        });
+      } catch (e) {
+        if (onDone) onDone(false);
+      }
+    }, function () {
+      try { idbSet(STORE_VIDEO, key, null, { s: 0, failed: true }); } catch (e) {}
+      if (onDone) onDone(false);
+    });
+  } catch (e) {
+    if (onDone) onDone(false);
+  }
+}
+
+export function videoLoad(url, callback) {
+  var key = url;
+  getVideoEntry(key, function (entry) {
+    if (entry && entry.v) {
+      try {
+        var obj = URL.createObjectURL(entry.v);
+        _videoUrlMap[key] = obj;
+        callback(obj, true);
+        return;
+      } catch (e) {}
+    }
+    callback(url, false);
+    if (entry && entry.failed) {
+      _videoTried[key] = true;
+      return;
+    }
+    attemptStoreVideo(url, key);
+  });
+}
+
+export function videoPreload(url, onDone) {
+  var key = url;
+  getVideoEntry(key, function (entry) {
+    if (entry && entry.v) { if (onDone) onDone(true); return; }
+    if (entry && entry.failed) { if (onDone) onDone(false); return; }
+    attemptStoreVideo(url, key, onDone);
+  });
+}
+
+export function videoMarkFailed(url) {
+  idbSet(STORE_VIDEO, url, null, { s: 0, failed: true });
+  _videoTried[url] = true;
+}
+
+export function videoRevoke(objUrl) {
+  if (typeof objUrl === 'string' && objUrl.indexOf('blob:') === 0) {
+    try { URL.revokeObjectURL(objUrl); } catch (e) {}
+  }
 }
