@@ -7100,8 +7100,26 @@
         } else if (!imgEl.hasAttribute('data-nfx-original-bg')) {
           imgEl.setAttribute('data-nfx-original-bg', imgEl.style.backgroundImage || '');
         }
-        if (data.backdrop_path) {
-          setImgUrl(Lampa.TMDB.image('t/p/' + getBackdropQuality() + data.backdrop_path));
+        if (useHorizontal) {
+          if (data.backdrop_path) {
+            setImgUrl(Lampa.TMDB.image('t/p/' + getBackdropQuality() + data.backdrop_path));
+          }
+        } else {
+          var bTmdbType = data.name ? 'tv' : 'movie';
+          if (data.poster_path) {
+            setImgUrl(Lampa.TMDB.image('t/p/' + getPosterQuality() + data.poster_path));
+          }
+          if (data.id) {
+            fetchCleanPoster(data.id, bTmdbType, function (cleanPath) {
+              if (cleanPath) {
+                setImgUrl(Lampa.TMDB.image('t/p/' + getPosterQuality() + cleanPath));
+              } else if (data.backdrop_path) {
+                setImgUrl(Lampa.TMDB.image('t/p/' + getBackdropQuality() + data.backdrop_path));
+              }
+            });
+          } else if (data.backdrop_path) {
+            setImgUrl(Lampa.TMDB.image('t/p/' + getBackdropQuality() + data.backdrop_path));
+          }
         }
       }
 
