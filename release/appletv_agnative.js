@@ -19,6 +19,7 @@
     GLARE_KEY: 'appletv_agnative_topnav_glare_enabled',
     CARD_ANIM_KEY: 'appletv_agnative_card_anim',
     CARD_ANIM_ATTR: 'data-agnative-card-anim',
+    CARD_ANIM_ORBIT_KEY: 'appletv_agnative_card_anim_orbit',
     TOPNAV_ITEMS_KEY: 'appletv_agnative_topnav_items',
     LOGO_LANG_KEY: 'appletv_agnative_logo_lang',
     FONT_SIZE_KEY: 'appletv_agnative_font_size',
@@ -92,6 +93,8 @@
     val_card_anim_off: 'Выключено',
     val_card_anim_veoveo: 'Наклон veoveo.ru (arabian_q)',
     val_card_anim_appletv: 'DepthTV (based on marcreichel)',
+    set_card_anim_orbit_name: 'Авто-анимация на ТВ',
+    set_card_anim_orbit_desc: 'На сфокусированной карточке имитировать круговое движение',
     set_topnav_name: 'Пункты Topnav', set_topnav_desc: 'Меню вверху страницы',
     set_topnav_title: 'Пункты верхнего меню',
     set_topnav_item_desc: 'Пункт menu_list: ',
@@ -221,6 +224,8 @@
     val_card_anim_off: 'Off',
     val_card_anim_veoveo: 'veoveo.ru tilt (arabian_q)',
     val_card_anim_appletv: 'DepthTV (based on marcreichel)',
+    set_card_anim_orbit_name: 'Auto animation on TV',
+    set_card_anim_orbit_desc: 'Simulate a circular motion on the focused card',
     set_topnav_name: 'Topnav items', set_topnav_desc: 'Top page menu',
     set_topnav_title: 'Top navigation items',
     set_topnav_item_desc: 'menu_list item: ',
@@ -350,6 +355,8 @@
     val_card_anim_off: 'Вимкнено',
     val_card_anim_veoveo: 'Нахил veoveo.ru (arabian_q)',
     val_card_anim_appletv: 'DepthTV (based on marcreichel)',
+    set_card_anim_orbit_name: 'Авто-анімація на ТВ',
+    set_card_anim_orbit_desc: 'На сфокусованій картці імітувати круговий рух',
     set_topnav_name: 'Пункти Topnav', set_topnav_desc: 'Меню вгорі сторінки',
     set_topnav_title: 'Пункти верхнього меню',
     set_topnav_item_desc: 'Пункт menu_list: ',
@@ -479,6 +486,8 @@
     val_card_anim_off: 'Выключана',
     val_card_anim_veoveo: 'Нахіл veoveo.ru (arabian_q)',
     val_card_anim_appletv: 'DepthTV (based on marcreichel)',
+    set_card_anim_orbit_name: 'Аўта-анімацыя на ТВ',
+    set_card_anim_orbit_desc: 'На сфакусаванай картцы імітаваць кругавы рух',
     set_topnav_name: 'Пункты Topnav', set_topnav_desc: 'Меню ўверсе старонкі',
     set_topnav_title: 'Пункты верхняга меню',
     set_topnav_item_desc: 'Пункт menu_list: ',
@@ -954,6 +963,7 @@
       GLARE_KEY,
       CARD_ANIM_KEY,
       CARD_ANIM_ATTR,
+      CARD_ANIM_ORBIT_KEY,
       TOPNAV_ITEMS_KEY,
       LOGO_LANG_KEY,
       FONT_SIZE_KEY,
@@ -1310,6 +1320,14 @@
       return getCardAnim() === 'veoveo';
     }
 
+    function cardAnimOrbitEnabled() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return false;
+        var v = Lampa.Storage.get(CARD_ANIM_ORBIT_KEY, 'false');
+        return v === true || v === 'true' || v === 'on';
+      } catch (e) { return false; }
+    }
+
     function sceneActive() {
       return true;
     }
@@ -1652,6 +1670,7 @@
         Lampa.Storage.set(ENABLE_KEY, 'on');
         Lampa.Storage.set(GLARE_KEY, 'on');
         Lampa.Storage.set(CARD_ANIM_KEY, 'veoveo');
+        Lampa.Storage.set(CARD_ANIM_ORBIT_KEY, 'false');
         Lampa.Storage.set(UI_LANG_KEY, 'auto');
         Lampa.Storage.set(LOGO_LANG_KEY, 'auto');
         Lampa.Storage.set(FONT_SIZE_KEY, 'md');
@@ -3331,6 +3350,20 @@
           }
         });
 
+        Lampa.SettingsApi.addParam({
+          component: SETTINGS_COMPONENT,
+          param: {
+            name: CARD_ANIM_ORBIT_KEY,
+            type: 'trigger',
+            default: 'false'
+          },
+          field: {
+            name: t('set_card_anim_orbit_name'),
+            description: t('set_card_anim_orbit_desc')
+          },
+          onChange: function () { }
+        });
+
         // ═══════════════════════════════════════════════════════════
         // 5. Логотипы и постеры
         // ═══════════════════════════════════════════════════════════
@@ -4455,6 +4488,7 @@
         '}',
 
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .settings-param[data-name="' + CARD_ANIM_KEY + '"] { display: none !important; }',
+        'body.' + BODY_CLASS + ':not([' + CARD_ANIM_ATTR + '="appletv"]) .settings-param[data-name="' + CARD_ANIM_ORBIT_KEY + '"] { display: none !important; }',
         'body.' + BODY_CLASS + '[' + RATING_ATTR + '="off"] .settings-param[data-name="' + RATING_STYLE_KEY + '"] { display: none !important; }',
         'body.' + BODY_CLASS + '[' + CARD_IMAGE_MODE_ATTR + '="poster"] .settings-param[data-name="' + LOGO_SIZE_KEY + '"] { display: none !important; }',
         'body.' + BODY_CLASS + ' .wrap__content.layer--height.layer--width::after,',
@@ -7446,7 +7480,16 @@
       if (window.Lampa && Lampa.Storage && Lampa.Storage.listener && Lampa.Storage.listener.follow) {
         try {
           Lampa.Storage.listener.follow('change', function (e) {
-            if (e && (e.name === CARD_ANIM_KEY || e.name === GLARE_KEY)) cardAnimMode = getCardAnim();
+            if (!e) return;
+            if (e.name === CARD_ANIM_KEY || e.name === GLARE_KEY) cardAnimMode = getCardAnim();
+            if (e.name === CARD_ANIM_KEY || e.name === CARD_ANIM_ORBIT_KEY) {
+              if (orbitActive()) {
+                var focused = document.querySelector('.card.focus, .card-episode.focus, .full-start-new__poster.focus');
+                if (focused) startOrbit(focused);
+              } else {
+                stopOrbit();
+              }
+            }
           });
         } catch (err) { }
       }
@@ -7524,6 +7567,94 @@
         s.removeProperty('--atv-ly');
         if (activeCard === card) { activeCard = null; activeRect = null; }
       });
+
+      var orbitCard = null;
+      var orbitStart = 0;
+      var orbitRaf = null;
+      var ORBIT_PERIOD = 4200;
+      var ORBIT_RADIUS = 0.9;
+
+      function orbitActive() {
+        return cardAnimMode === 'appletv' && cardAnimOrbitEnabled() && resolvePerfLevel() !== 'ultra';
+      }
+
+      function clearOrbitVars(card) {
+        if (!card) return;
+        var s = card.style;
+        s.removeProperty('--atv-rx');
+        s.removeProperty('--atv-ry');
+        s.removeProperty('--atv-lx');
+        s.removeProperty('--atv-ly');
+      }
+
+      function stopOrbit() {
+        if (orbitRaf) { cancelAnimationFrame(orbitRaf); orbitRaf = null; }
+        if (orbitCard) { clearOrbitVars(orbitCard); orbitCard = null; }
+      }
+
+      function inMouseMode() {
+        return document.body.classList.contains('agnative-mouse-mode');
+      }
+
+      function stepOrbit(now) {
+        orbitRaf = null;
+        if (!orbitCard || !orbitActive() || inMouseMode()) { stopOrbit(); return; }
+        var t = (now - orbitStart) / ORBIT_PERIOD;
+        var ang = t * Math.PI * 2;
+        var xPct = Math.cos(ang) * ORBIT_RADIUS;
+        var yPct = Math.sin(ang) * ORBIT_RADIUS;
+        var s = orbitCard.style;
+        s.setProperty('--atv-rx', (yPct * -4) + 'deg');
+        s.setProperty('--atv-ry', (xPct * 4) + 'deg');
+        s.setProperty('--atv-lx', (xPct * 0.3) + 'em');
+        s.setProperty('--atv-ly', (yPct * 0.3) + 'em');
+        orbitRaf = requestAnimationFrame(stepOrbit);
+      }
+
+      function startOrbit(card) {
+        if (!card || !orbitActive() || inMouseMode()) return;
+        if (orbitCard === card && orbitRaf) return;
+        if (orbitCard && orbitCard !== card) clearOrbitVars(orbitCard);
+        orbitCard = card;
+        orbitStart = performance.now();
+        if (!orbitRaf) orbitRaf = requestAnimationFrame(stepOrbit);
+      }
+
+      function findFocusedCard() {
+        return document.querySelector('.card.focus, .card-episode.focus, .full-start-new__poster.focus');
+      }
+
+      window.addEventListener('keydown', function (e) {
+        var k = e.keyCode;
+        if (k !== 13 && k !== 32 && !(k >= 37 && k <= 40)) return;
+        if (!orbitActive()) return;
+        var tries = 0;
+        function tryStart() {
+          tries++;
+          if (!orbitActive() || inMouseMode()) return;
+          if (orbitRaf) return;
+          var focused = findFocusedCard();
+          if (focused) startOrbit(focused);
+          else if (tries < 8) setTimeout(tryStart, 40);
+        }
+        setTimeout(tryStart, 0);
+      }, { capture: true });
+
+      if (window.MutationObserver) {
+        var orbitObs = new MutationObserver(function (muts) {
+          if (!orbitActive() || inMouseMode()) { if (orbitCard) stopOrbit(); return; }
+          for (var i = 0; i < muts.length; i++) {
+            var target = muts[i].target;
+            if (!target || !target.classList || target.nodeType !== 1) continue;
+            if (!target.matches || !target.matches(GLARE_SEL)) continue;
+            if (target.classList.contains('focus')) startOrbit(target);
+            else if (orbitCard === target) stopOrbit();
+          }
+        });
+        try {
+          orbitObs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
+        } catch (e) { }
+      }
     }
 
     function safePatch() {

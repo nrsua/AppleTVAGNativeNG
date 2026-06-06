@@ -11,6 +11,8 @@ export const en = {
   val_card_anim_off: 'Off',
   val_card_anim_veoveo: 'veoveo.ru tilt (arabian_q)',
   val_card_anim_appletv: 'DepthTV (based on marcreichel)',
+  set_card_anim_orbit_name: 'Auto animation on TV',
+  set_card_anim_orbit_desc: 'Simulate a circular motion on the focused card',
   set_topnav_name: 'Topnav items', set_topnav_desc: 'Top page menu',
   set_topnav_title: 'Top navigation items',
   set_topnav_item_desc: 'menu_list item: ',

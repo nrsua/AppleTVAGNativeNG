@@ -7,6 +7,7 @@ export const AGNATIVE_KEYS = {
   GLARE_KEY: 'appletv_agnative_topnav_glare_enabled',
   CARD_ANIM_KEY: 'appletv_agnative_card_anim',
   CARD_ANIM_ATTR: 'data-agnative-card-anim',
+  CARD_ANIM_ORBIT_KEY: 'appletv_agnative_card_anim_orbit',
   TOPNAV_ITEMS_KEY: 'appletv_agnative_topnav_items',
   LOGO_LANG_KEY: 'appletv_agnative_logo_lang',
   FONT_SIZE_KEY: 'appletv_agnative_font_size',

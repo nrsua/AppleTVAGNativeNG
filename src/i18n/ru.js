@@ -11,6 +11,8 @@ export const ru = {
   val_card_anim_off: 'Выключено',
   val_card_anim_veoveo: 'Наклон veoveo.ru (arabian_q)',
   val_card_anim_appletv: 'DepthTV (based on marcreichel)',
+  set_card_anim_orbit_name: 'Авто-анимация на ТВ',
+  set_card_anim_orbit_desc: 'На сфокусированной карточке имитировать круговое движение',
   set_topnav_name: 'Пункты Topnav', set_topnav_desc: 'Меню вверху страницы',
   set_topnav_title: 'Пункты верхнего меню',
   set_topnav_item_desc: 'Пункт menu_list: ',
