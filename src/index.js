@@ -205,11 +205,12 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload, videoLoad, vide
     } catch (e) { return 'ru'; }
   }
 
-  function getLogoTitleFallback() {
+  function logoTitleEnabled() {
     try {
-      if (!window.Lampa || !Lampa.Storage) return 'off';
-      return Lampa.Storage.get(LOGO_TITLE_KEY, 'off') || 'off';
-    } catch (e) { return 'off'; }
+      if (!window.Lampa || !Lampa.Storage) return false;
+      var v = Lampa.Storage.get(LOGO_TITLE_KEY, 'false');
+      return v === true || v === 'true' || v === 'on';
+    } catch (e) { return false; }
   }
 
   function getFontSize() {
@@ -731,7 +732,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload, videoLoad, vide
       Lampa.Storage.set(POSTER_QUALITY_KEY, 'w500');
       Lampa.Storage.set(OVERLAY_ALIGN_KEY, 'start');
       Lampa.Storage.set(CARD_IMAGE_MODE_KEY, 'backdrop');
-      Lampa.Storage.set(LOGO_TITLE_KEY, 'off');
+      Lampa.Storage.set(LOGO_TITLE_KEY, 'false');
       Lampa.Storage.set(HERO_ALIGN_KEY, 'top');
       Lampa.Storage.set(HERO_INDICATORS_KEY, 'false');
       Lampa.Storage.set(HERO_ANIMATION_KEY, 'true');
@@ -2430,17 +2431,23 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload, videoLoad, vide
         }
       });
 
+      try {
+        if (window.Lampa && Lampa.Storage) {
+          var legacyLogoTitle = Lampa.Storage.get(LOGO_TITLE_KEY, 'false');
+          if (legacyLogoTitle === 'below' || legacyLogoTitle === 'above' || legacyLogoTitle === 'on') {
+            Lampa.Storage.set(LOGO_TITLE_KEY, 'true');
+          } else if (legacyLogoTitle === 'off') {
+            Lampa.Storage.set(LOGO_TITLE_KEY, 'false');
+          }
+        }
+      } catch (e) { }
+
       Lampa.SettingsApi.addParam({
         component: SETTINGS_COMPONENT,
         param: {
           name: LOGO_TITLE_KEY,
-          type: 'select',
-          values: {
-            off: t('val_logo_title_off'),
-            below: t('val_logo_title_below'),
-            above: t('val_logo_title_above')
-          },
-          default: 'off'
+          type: 'trigger',
+          default: 'false'
         },
         field: {
           name: t('set_logo_title_name'),
@@ -3838,7 +3845,7 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload, videoLoad, vide
       'body.' + BODY_CLASS + ' .card.focus .nfx-card-overlay { transform: translateZ(18px) translateY(-.02em); }',
       'body.' + BODY_CLASS + ' .nfx-card-overlay__logo, body.' + BODY_CLASS + ' img.nfx-card-overlay__logo { display:block !important; opacity:1 !important; visibility:visible !important; max-height:2.55em !important; max-width:82% !important; margin-bottom:.28em !important; border-radius:0 !important; clip-path:none !important; -webkit-clip-path:none !important; mask-image:none !important; -webkit-mask-image:none !important; overflow:visible !important; }',
       'body.' + BODY_CLASS + ' .nfx-card-overlay__title { color:#fff; font-size:1.02em !important; line-height:1.14 !important; font-weight:800 !important; text-shadow:0 1px 2px rgba(0,0,0,.95), 0 2px 8px rgba(0,0,0,.85), 0 4px 16px rgba(0,0,0,.7) !important; white-space:normal !important; display:-webkit-box !important; -webkit-line-clamp:2 !important; -webkit-box-orient:vertical !important; overflow:hidden !important; }',
-      'body.' + BODY_CLASS + ' .nfx-card-overlay__local-title { color:#fff; font-size:.82em !important; line-height:1.18 !important; font-weight:700 !important; text-shadow:0 1px 2px rgba(0,0,0,.95), 0 2px 8px rgba(0,0,0,.85), 0 4px 14px rgba(0,0,0,.7) !important; white-space:normal !important; display:-webkit-box !important; -webkit-line-clamp:2 !important; -webkit-box-orient:vertical !important; overflow:hidden !important; opacity:.95; margin-bottom:.18em !important; }',
+      'body.' + BODY_CLASS + ' .nfx-card-overlay__local-title { color:rgba(255,255,255,.92) !important; opacity:.85 !important; font-size:.78em !important; line-height:1.2 !important; font-weight:600 !important; letter-spacing:.01em !important; text-shadow:0 1px 2px rgba(0,0,0,.95), 0 2px 6px rgba(0,0,0,.85), 0 3px 12px rgba(0,0,0,.7) !important; white-space:normal !important; display:-webkit-box !important; -webkit-line-clamp:2 !important; -webkit-box-orient:vertical !important; overflow:hidden !important; margin-bottom:.22em !important; }',
       'body.' + BODY_CLASS + ' .nfx-card-overlay__meta { color:rgba(255,255,255,.92); font-size:.74em !important; margin-top:.2em !important; line-height:1.28 !important; white-space:normal !important; max-width:100% !important; text-shadow:0 1px 2px rgba(0,0,0,.95), 0 2px 6px rgba(0,0,0,.85), 0 3px 12px rgba(0,0,0,.7) !important; }',
       'body.' + BODY_CLASS + ' .nfx-card-logo { position:absolute; top:.7em; left:.82em; z-index:4; display:inline-flex !important; opacity:1 !important; visibility:visible !important; align-items:center; justify-content:center; padding:.38em .88em; border-radius:.92em; background:rgba(12,14,20,.62); border:1px solid rgba(255,255,255,.12); color:rgba(255,255,255,.96); font-size:.74em; font-weight:800; letter-spacing:.05em; backdrop-filter: blur(10px) saturate(140%); -webkit-backdrop-filter: blur(10px) saturate(140%); pointer-events:none; }',
       'body.' + BODY_CLASS + ' { --agnative-scale: 1; --agnative-category-scale: 1; }',
@@ -6209,10 +6216,14 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload, videoLoad, vide
 
       function buildPosterOverlay() {
         if (!pView || pView.querySelector('.nfx-card-overlay')) return;
-        if (pMetaHtml) {
+        var pLocalLang = getLogoLang();
+        var pTitleText = data.title || data.name || '';
+        var pPosterNonLocal = pTitleText && pLocalLang !== 'en' && data.original_language && data.original_language !== pLocalLang;
+        var pTitleHtml = (logoTitleEnabled() && pPosterNonLocal) ? '<div class="nfx-card-overlay__local-title">' + escapeHtml(pTitleText) + '</div>' : '';
+        if (pTitleHtml || pMetaHtml) {
           var pOverlay = document.createElement('div');
           pOverlay.className = 'nfx-card-overlay';
-          pOverlay.innerHTML = pMetaHtml;
+          pOverlay.innerHTML = pTitleHtml + pMetaHtml;
           pView.appendChild(pOverlay);
         }
         if (badgeEnabled() && (data.title || data.name)) {
@@ -6294,18 +6305,13 @@ import { metaGet, metaSet, prune, clearAll, imgLoad, imgPreload, videoLoad, vide
           });
           titleDiv.replaceWith(img);
 
-          var fallback = getLogoTitleFallback();
           var logoLang = getLogoLang();
           var isNonLocalLogo = logoLang !== 'en' && logo.iso_639_1 && logo.iso_639_1 !== logoLang;
-          if (fallback !== 'off' && isNonLocalLogo && title) {
+          if (logoTitleEnabled() && isNonLocalLogo && title) {
             var localTitle = document.createElement('div');
             localTitle.className = 'nfx-card-overlay__local-title';
             localTitle.textContent = title;
-            if (fallback === 'above') {
-              overlay.insertBefore(localTitle, img);
-            } else if (fallback === 'below') {
-              img.parentNode.insertBefore(localTitle, img.nextSibling);
-            }
+            img.parentNode.insertBefore(localTitle, img.nextSibling);
           }
         }
       });
