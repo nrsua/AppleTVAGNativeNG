@@ -1120,6 +1120,7 @@
       SETTINGS_HIDE_COMPONENT
     } = AGNATIVE_KEYS;
 
+    var CARD_ANIM_DEFAULT = 'appletv';
     var scheduled = false;
     var clockTimer = null;
     var logoCache = {};
@@ -1451,13 +1452,14 @@
 
     function getCardAnim() {
       try {
-        if (!window.Lampa || !Lampa.Storage) return 'veoveo';
+        if (!window.Lampa || !Lampa.Storage) return CARD_ANIM_DEFAULT;
         var raw = Lampa.Storage.get(CARD_ANIM_KEY, null);
         if (raw === 'off' || raw === 'veoveo' || raw === 'appletv') return raw;
-        var legacy = Lampa.Storage.get(GLARE_KEY, 'on');
+        var legacy = Lampa.Storage.get(GLARE_KEY, null);
         if (legacy === 'off') return 'off';
-        return 'veoveo';
-      } catch (e) { return 'veoveo'; }
+        if (legacy === 'on' || legacy === true) return 'veoveo';
+        return CARD_ANIM_DEFAULT;
+      } catch (e) { return CARD_ANIM_DEFAULT; }
     }
 
     function glareEnabled() {
@@ -1846,7 +1848,7 @@
         if (!window.Lampa || !Lampa.Storage) return;
         Lampa.Storage.set(ENABLE_KEY, 'on');
         Lampa.Storage.set(GLARE_KEY, 'on');
-        Lampa.Storage.set(CARD_ANIM_KEY, 'veoveo');
+        Lampa.Storage.set(CARD_ANIM_KEY, CARD_ANIM_DEFAULT);
         Lampa.Storage.set(CARD_ANIM_ORBIT_KEY, 'false');
         Lampa.Storage.set(UI_LANG_KEY, 'auto');
         Lampa.Storage.set(LOGO_LANG_KEY, 'auto');
@@ -3495,7 +3497,7 @@
               veoveo: t('val_card_anim_veoveo'),
               appletv: t('val_card_anim_appletv')
             },
-            default: 'veoveo'
+            default: CARD_ANIM_DEFAULT
           },
           field: {
             name: t('set_card_anim_name'),

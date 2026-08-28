@@ -20,7 +20,7 @@ export const AGNATIVE_KEYS = {
   CARD_SIZE_KEY: 'appletv_agnative_card_size',
   CLOCK_SECONDS_KEY: 'appletv_agnative_clock_seconds',
   CONTROL_PANEL_KEY: 'appletv_agnative_control_panel',
-  NOTICE_BUTTON_KEY: 'appletv_agnative_notice_button',
+NOTICE_BUTTON_KEY: 'appletv_agnative_notice_button',
   PERF_MODE_KEY: 'appletv_agnative_perf_mode',
   AUSTRO_ATTR: 'data-agnative-austro',
   SETTINGS_COMPONENT: 'agnative',
