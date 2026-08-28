@@ -15,6 +15,8 @@ export const AGNATIVE_DEFAULTS = {
   cacheSize: '100',
   clockSeconds: 'off',
   controlPanel: 'off',
+  noticeButton: 'on',
   perfMode: 'auto',
+  heroSource: 'main',
   cardImageMode: 'backdrop'
 };

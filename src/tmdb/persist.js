@@ -9,8 +9,27 @@ var VIDEO_FAILED_TTL = 6 * 60 * 60 * 1000;
 var _db = null;
 var _dbQueue = [];
 var _dbOpening = false;
+var _enabled = true;
+var _imageCache = true;
+
+// Whole persistent layer (metadata + image blobs).
+export function setPersistEnabled(flag) {
+  _enabled = flag !== false;
+}
+
+// Image blobs only. "austro" keeps the tiny metadata records — they save one TMDB request
+// per title forever — but turns the blob store off, because that is what makes every image
+// download happen twice (once by <img>, once by fetch() just to cache it).
+export function setImageCacheEnabled(flag) {
+  _imageCache = flag !== false;
+}
+
+export function persistEnabled() {
+  return _enabled;
+}
 
 function openDB(callback) {
+  if (!_enabled) { callback(null); return; }
   if (_db) { callback(_db); return; }
   _dbQueue.push(callback);
   if (_dbOpening) return;
@@ -161,6 +180,7 @@ function getImgEntry(key, callback) {
 }
 
 function attemptStore(url, key) {
+  if (!_enabled || !_imageCache) return;
   if (_fetchTried[key]) return;
   _fetchTried[key] = true;
   fetch(url).then(function (r) {
@@ -172,6 +192,7 @@ function attemptStore(url, key) {
 }
 
 export function imgLoad(url, callback) {
+  if (!_imageCache) { callback(url); return; }
   var key = imgKey(url);
   getImgEntry(key, function (entry) {
     if (entry && entry.v) {
@@ -190,6 +211,7 @@ export function imgLoad(url, callback) {
 }
 
 export function imgPreload(url) {
+  if (!_imageCache) return;
   var key = imgKey(url);
   getImgEntry(key, function (entry) {
     if (entry && (entry.v || entry.failed)) return;
@@ -217,6 +239,7 @@ function getVideoEntry(key, callback) {
 }
 
 function attemptStoreVideo(url, key, onDone) {
+  if (!_enabled) { if (onDone) onDone(false); return; }
   if (_videoTried[key]) { if (onDone) onDone(false); return; }
   _videoTried[key] = true;
   try {
