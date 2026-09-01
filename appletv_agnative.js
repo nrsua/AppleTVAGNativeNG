@@ -82,7 +82,7 @@
     SETTINGS_HIDE_COMPONENT: 'agnative_settings_hide'
   };
 
-  const PLUGIN_VERSION = '0.5.2';
+  const PLUGIN_VERSION = '0.5.3';
   const PLUGIN_AUTHORS = 'llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96';
 
   const ru = {
@@ -1155,9 +1155,6 @@
     var heroSourcePool = [];
     var heroSourcePending = false;
     var heroSourceFailed = false;
-    // Where the banner takes its titles from. The default reads the main page, which is why
-    // the same five items can sit there for weeks; the rest are TMDB lists that actually roll
-    // over, each with its own sane cache lifetime.
     var HERO_SOURCES = {
       trending_day:  { path: 'trending/all/day',  ttl: 6 * 60 * 60 * 1000 },
       trending_week: { path: 'trending/all/week', ttl: 24 * 60 * 60 * 1000 },
@@ -1170,17 +1167,9 @@
     var heroPrefetchActive = false;
     var heroBlobCached = {};
     var heroRevealAfterTs = 0;
-    // Trailers are plain files addressed by TMDB id and language, e.g.
-    //   https://trailer.luno.watch/trailers/v1/movie/969681.ru.mp4
-    // A <video> element loads cross-origin media without CORS, so nothing here needs a proxy.
     var HERO_TRAILER_BASE = 'https://trailer.luno.watch/trailers/v1';
-    // Only a couple of dubs exist per title and there is no index to query, so the candidates
-    // are simply tried in order — the player falls through to the next one on `error`.
-    // Playback is muted, so any available language is as good as the local one.
     var HERO_TRAILER_LANGS = ['ru', 'en', 'de', 'fr', 'es'];
 
-
-    // `key` is "<type>/<tmdbId>"; expand it into one candidate url per language.
     function heroPlaybackUrls(key) {
       if (!key) return [];
       var lang = '';
@@ -1249,8 +1238,6 @@
       try {
         if (!window.Lampa) return 'ru';
         var l = '';
-        // Lampa.Lang.selected() is a predicate (selected(codes) -> boolean), not a getter,
-        // so the language code can only come from Storage.
         if (Lampa.Storage && Lampa.Storage.get) l = Lampa.Storage.get('language', '') || '';
         l = (typeof l === 'string' ? l : '').toLowerCase();
         if (l.indexOf('uk') === 0 || l === 'ua') return 'uk';
@@ -1336,8 +1323,6 @@
 
     function getCardImageMode() {
       try {
-        // Backdrops are only meaningful next to a movie logo, and logos need a request per
-        // card — so austro is poster-only and the option is hidden in settings.
         if (austroMode()) return 'poster';
         if (!window.Lampa || !Lampa.Storage) return 'backdrop';
         var v = Lampa.Storage.get(CARD_IMAGE_MODE_KEY, 'backdrop') || 'backdrop';
@@ -1408,8 +1393,6 @@
       return detectedPerfLevel;
     }
 
-    // "austro" is opt-in only — auto-detection never picks it, because it visibly trades
-    // design fidelity (no TMDB backdrops/logos) for zero DOM churn and zero network.
     function resolvePerfLevel() {
       var mode = getPerfMode();
       if (mode === 'auto') return detectPerfLevel();
@@ -1420,8 +1403,6 @@
       return resolvePerfLevel() === 'austro';
     }
 
-    // Austro reuses the whole "ultra" CSS branch, so it counts as ultra everywhere
-    // effects are gated.
     function ultraLike() {
       var level = resolvePerfLevel();
       return level === 'ultra' || level === 'austro';
@@ -1622,7 +1603,6 @@
       }, 0);
     }
 
-    // Standard Lampa top-level settings sections (data-component values in settings/main template).
     function getSettingsSectionDefs() {
       return [
         { id: 'account',          label: langText('settings_cub_sync', 'Sync') },
@@ -1688,9 +1668,6 @@
       var defs = [];
       var seen = {};
 
-      // Several fallback entries are aliases of the same menu action
-      // (release/releases -> relise, collection/collections -> catalog, bookmarks -> favorite),
-      // so dedupe on the normalized action to avoid duplicate rows in Topnav settings.
       function take(action, label) {
         if (!action) return;
         var key = normalizeTopnavAction(action) || action;
@@ -1723,9 +1700,6 @@
         if (!window.Lampa || !Lampa.Storage) return ['main', 'movie', 'tv', 'cartoon'];
         var defaults = ['main', 'movie', 'tv', 'cartoon'];
         var raw = Lampa.Storage.get(TOPNAV_ITEMS_KEY, null);
-        // Storage.get() returns '' for an unset key (value || empty || ''), never null, so an
-        // empty value has to be treated as "never configured" or the top bar stays blank
-        // until the user resets the settings.
         if (raw === null || raw === '' || typeof raw === 'undefined') return defaults;
         if (typeof raw === 'string') {
           try {
@@ -1780,16 +1754,12 @@
       document.body.setAttribute(RATING_ATTR, ratingEnabled() ? 'on' : 'off');
       document.body.setAttribute(RATING_STYLE_ATTR, getRatingStyle());
       document.body.setAttribute(CARD_IMAGE_MODE_ATTR, getCardImageMode());
-      // Austro renders the card caption straight from Lampa's .card__title, so the
-      // "local language title" switch has to gate it the same way it gates the JS overlay.
       document.body.setAttribute(LOGO_TITLE_ATTR, logoTitleEnabled() ? 'on' : 'off');
     }
 
     function syncPerfMode() {
       if (!document.body) return;
       var level = resolvePerfLevel();
-      // Austro maps onto the existing "ultra" CSS branch (opaque backgrounds, no blur,
-      // no transitions) and adds its own attribute for the card rules on top.
       document.body.setAttribute(PERF_ATTR, level === 'austro' ? 'ultra' : level);
       if (level === 'austro') document.body.setAttribute(AUSTRO_ATTR, 'on');
       else document.body.removeAttribute(AUSTRO_ATTR);
@@ -1927,7 +1897,6 @@
         current = current.filter(function (item) { return item !== action; });
       }
 
-      // Preserve user-defined order, no auto-sorting
       setStoredTopnavActions(current);
     }
 
@@ -1950,7 +1919,6 @@
       var map = {};
       getAvailableTopnavItems().forEach(function (item) {
         map[item.action] = item;
-        // Keep legacy stored aliases (e.g. "release") resolvable after dedupe.
         var norm = normalizeTopnavAction(item.action);
         if (norm && !map[norm]) map[norm] = item;
       });
@@ -1985,8 +1953,6 @@
       return detectLampaLang();
     }
 
-    // A random window over the fetched list, so two launches on the same day do not show the
-    // same five titles in the same order.
     function pickHeroSample(items) {
       var pool = items.slice(0);
       var out = [];
@@ -2114,7 +2080,6 @@
     function getHeroBgAnim() {
       try {
         if (!window.Lampa || !Lampa.Storage) return 'off';
-        // backward compat: old pan toggle on → treat as pan-down if new key not set
         var legacy = Lampa.Storage.get(HERO_PAN_KEY, 'false');
         var v = Lampa.Storage.get(HERO_BG_ANIM_KEY, '');
         if (!v && (legacy === true || legacy === 'true' || legacy === 'on')) return 'pan-down';
@@ -2212,8 +2177,6 @@
     }
 
     function applyHeroAccent(rgb) {
-      // Reverted: accent gradient on body was creating a dark band at top of screen.
-      // Keeping function as no-op to preserve API for other callers.
       return;
     }
 
@@ -2372,7 +2335,6 @@
           try { Lampa.Controller.toggle('content'); } catch (e) { }
         },
         left: function () {
-          // Browse hero items leftwards; at the first item hand off to the left menu.
           if (heroItems.length > 1 && heroCurrentIndex > 0) {
             transitionHeroToIndex(heroCurrentIndex - 1);
             startHeroRotation();
@@ -2383,7 +2345,6 @@
           try { Lampa.Controller.toggle('menu'); } catch (e) { }
         },
         right: function () {
-          // Browse hero items rightwards; stop at the last item.
           if (heroItems.length > 1 && heroCurrentIndex < heroItems.length - 1) {
             transitionHeroToIndex(heroCurrentIndex + 1);
             startHeroRotation();
@@ -2513,7 +2474,6 @@
       }
     }
 
-    // The url is known up front, so a trailer can always start without a lookup.
     function heroIsTrailerInstant(item) {
       return !!(item && item.id && heroTrailerEnabled());
     }
@@ -2551,7 +2511,6 @@
       stopHeroTrailer();
     }
 
-    // Rows that only make sense outside austro.
     function updateAustroHiddenRows() {
       try {
         var rows = document.querySelectorAll('[data-agnative-hide-in-austro]');
@@ -2586,7 +2545,6 @@
       heroStartTrailer(force);
     }
 
-    // Validity check after any async step: trailer still wanted, same item, hero present.
     function heroValid(reqId, force) {
       if (!heroTrailerActive) return false;
       if (!force && !heroPlayFocused()) return false;
@@ -2614,7 +2572,6 @@
       if (h && heroTrailerActive) h.classList.add('agnative-hero--trailer');
     }
 
-    // No lookup involved: the id and media type are all the url needs.
     function heroTrailerQueue(tmdbId, type, callback) {
       if (!tmdbId) return callback([]);
       callback([(type === 'tv' ? 'tv' : 'movie') + '/' + tmdbId]);
@@ -2692,7 +2649,6 @@
 
       function abandonKey() {
         if (isStale()) return;
-        // Every language for this title failed — do not retry it this session.
         heroUnplayable[key] = true;
         cleanupHeroVideoOnly();
         attemptHeroTrailerKey(reqId, queue, index + 1, force);
@@ -2705,8 +2661,6 @@
         if (urlIdx >= urls.length) { abandonKey(); return; }
         var url = urls[urlIdx++];
         heroVideoCurrentSrc = url;
-        // Not routed through videoLoad(): every refresh returns a new signature, so the blob
-        // cache would never hit and would just accumulate copies.
         (function (src, cb) { cb(src, false); })(url, function (resolvedSrc, fromCache) {
           if (isStale()) {
             if (resolvedSrc !== url) videoRevoke(resolvedSrc);
@@ -2912,7 +2866,6 @@
 
         heroItems = [];
 
-        // A TMDB list was chosen: use it, and fall back to the main page if it never loads.
         if (getHeroSource() !== 'main' && !heroSourceFailed) {
           if (!heroSourcePool.length) {
             refreshHeroSourcePool();
@@ -3007,10 +2960,6 @@
         bindAction(playBtn, openHeroCurrentItem);
         buildHeroIndicators(indicatorsEl);
 
-        // Track hero focus state:
-        // - hero gets --unfocused class when focus leaves (used for margin animation)
-        // - hero gets --hidden class only when focus moves DOWN to cards
-        //   (when moving UP to topnav, hero stays visible)
         try {
           var $$ = window.$ || window.jQuery;
           if ($$) {
@@ -3085,7 +3034,6 @@
         setTimeout(runHeroPrefetchStep, delay || 250);
       }
 
-      // Trailer urls need no resolving now, so there is nothing left to prefetch.
       finishStep(250);
     }
 
@@ -3127,9 +3075,6 @@
           }
         });
 
-        // ═══════════════════════════════════════════════════════════
-        // 1. Основные
-        // ═══════════════════════════════════════════════════════════
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
@@ -3227,9 +3172,6 @@
           }
         });
 
-        // ═══════════════════════════════════════════════════════════
-        // 2. Верхняя панель
-        // ═══════════════════════════════════════════════════════════
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
@@ -3310,9 +3252,6 @@
           }
         });
 
-        // ═══════════════════════════════════════════════════════════
-        // 3. Hero-баннер (BETA)
-        // ═══════════════════════════════════════════════════════════
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
@@ -3331,9 +3270,6 @@
           }
         });
 
-        // ═══════════════════════════════════════════════════════════
-        // 4. Карточки
-        // ═══════════════════════════════════════════════════════════
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
@@ -3527,9 +3463,6 @@
           onChange: function () { }
         });
 
-        // ═══════════════════════════════════════════════════════════
-        // 5. Логотипы и постеры
-        // ═══════════════════════════════════════════════════════════
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
@@ -3641,9 +3574,6 @@
           }
         });
 
-        // ═══════════════════════════════════════════════════════════
-        // 6. Текст и шрифты
-        // ═══════════════════════════════════════════════════════════
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
@@ -3696,9 +3626,6 @@
           }
         });
 
-        // ═══════════════════════════════════════════════════════════
-        // 7. Часы и панель
-        // ═══════════════════════════════════════════════════════════
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
@@ -3769,9 +3696,6 @@
           }
         });
 
-        // ═══════════════════════════════════════════════════════════
-        // 8. Данные
-        // ═══════════════════════════════════════════════════════════
         Lampa.SettingsApi.addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
@@ -4173,6 +4097,8 @@
             }, 500);
             setTimeout(triggerExtraRowRender, 900);
             syncBackButton();
+            setTimeout(syncBackButton, 300);
+            setTimeout(syncBackButton, 900);
             schedulePatch();
             try {
               var comp = e.object && e.object.component;
@@ -4320,9 +4246,6 @@
       return window.innerWidth < 768 || (window.innerWidth < 1024 && 'ontouchstart' in window);
     }
 
-    // On mobile Lampa only renders rows visible in the initial viewport (~4).
-    // Simulate a scroll-down so the IntersectionObserver triggers 2 extra rows,
-    // then snap back to top — invisible to the user but forces 6 rows to render.
     function triggerExtraRowRender() {
       if (!isMobile()) return;
       var scroll = document.querySelector('.activity--active .scroll.scroll--mask.scroll--over') ||
@@ -4357,6 +4280,15 @@
       return null;
     }
 
+    function pickYear(data) {
+      if (!data) return '';
+      var raw = data.release_date || data.first_air_date || '';
+      if (typeof raw === 'number') raw = String(raw);
+      if (typeof raw !== 'string') return '';
+      var m = raw.match(/\d{4}/);
+      return m ? m[0] : '';
+    }
+
     function getGenreNames(item) {
       var names = [];
       if (!item) return names;
@@ -4373,8 +4305,6 @@
       return names;
     }
 
-    // Quoted CSS string for use in `content:` — austro renders the card badge from
-    // localized text instead of a generated DOM node.
     function cssString(value) {
       return '"' + String(value == null ? '' : value).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
     }
@@ -4382,7 +4312,6 @@
     function injectStyle() {
       if (!document.head && !document.body) return;
       var existing = document.getElementById(STYLE_ID);
-      // The sheet embeds translated strings, so it must be rebuilt when the language changes.
       var signature = STYLE_ID + '|' + getUiLang();
       if (existing && styleSignature === signature) return;
 
@@ -4755,9 +4684,6 @@
         'body.' + BODY_CLASS + ' .head__button {',
         '  display: none !important;',
         '}',
-        /* ── Back button + page title, left cluster ──
-           Layout is driven by BACK_ATTR so the burger, the native actions and the title all
-           shift together when the button appears, instead of leaving a hole on the main page. */
         'body.' + BODY_CLASS + ' .agnative-head-back {',
         '  position: absolute !important;',
         '  left: 1em !important;',
@@ -4803,10 +4729,18 @@
         '  outline: none !important;',
         '  color: #fff !important;',
         '}',
-        'body.' + BODY_CLASS + ' .head__title {',
+        'body.' + BODY_CLASS + ' .head__menu-icon:hover, body.' + BODY_CLASS + ' .head__menu-icon.focus, body.' + BODY_CLASS + ' .head__menu-icon.hover {',
+        '  background: rgba(255,255,255,.18) !important;',
+        '  border-color: rgba(255,255,255,.20) !important;',
+        '  outline: none !important;',
+        '  color: #fff !important;',
+        '}',
+
+        'body.' + BODY_CLASS + ' .head__title { display: none !important; }',
+        'body.' + BODY_CLASS + '[' + BACK_ATTR + '="on"] .head__title {',
         '  display: block !important;',
         '  position: absolute !important;',
-        '  left: calc(1em + 2.6em + 1em) !important;',
+        '  left: calc(1em + 5.2em + 1.5em) !important;',
         '  top: .46em !important;',
         '  right: auto !important;',
         '  bottom: auto !important;',
@@ -4829,9 +4763,6 @@
         '  transition: left .2s ease !important;',
         '}',
         'body.' + BODY_CLASS + ' .head__title:empty { display: none !important; }',
-        'body.' + BODY_CLASS + '[' + BACK_ATTR + '="on"] .head__title {',
-        '  left: calc(1em + 5.2em + 1.5em) !important;',
-        '}',
         'body.' + BODY_CLASS + '[' + BACK_ATTR + '="on"] .head__menu-icon {',
         '  left: calc(1em + 2.6em + .5em) !important;',
         '}',
@@ -4930,10 +4861,6 @@
         'body.' + BODY_CLASS + ' .head__logo-icon {',
         '  display: none !important;',
         '}',
-        // Some Lampa builds inject their own `!important` rules for the burger and the logo
-        // at a higher specificity than `body.<plugin> .head__*` (siaivo.github.io hides
-        // .head__menu-icon and force-shows .head__logo-icon for `body.mouse--controll`).
-        // These two rules outrank them so the plugin's top bar stays intact everywhere.
         'html body.' + BODY_CLASS + '.' + BODY_CLASS + '[' + TOPNAV_ENABLE_ATTR + '="on"] .head .head__body .head__menu-icon.head__menu-icon {',
         '  display: inline-flex !important;',
         '  visibility: visible !important;',
@@ -5044,7 +4971,6 @@
         'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"][' + BACKDROP_ATTR + '="off"] .items-line .card { width:14.3em !important; }',
         'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .items-line .card { width:21.2em !important; }',
         'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"][' + BACKDROP_ATTR + '="off"] .items-line .card { width:15.6em !important; }',
-        // Compact service/genre cards (e.g. from SURS plugin) — half size of regular cards
         'body.' + BODY_CLASS + ' .card.card--button-compact .nfx-card-overlay, body.' + BODY_CLASS + ' .card.card--button-compact .nfx-card-logo, body.' + BODY_CLASS + ' .card.card--button-compact .nfx-card-rating, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .nfx-card-overlay, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .nfx-card-logo, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .nfx-card-rating, body.' + BODY_CLASS + ' .card.card--genre-compact .nfx-card-overlay, body.' + BODY_CLASS + ' .card.card--genre-compact .nfx-card-logo, body.' + BODY_CLASS + ' .card.card--genre-compact .nfx-card-rating { display:none !important; }',
         'body.' + BODY_CLASS + ' .card.card--button-compact .card__view, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .card__view, body.' + BODY_CLASS + ' .card.card--genre-compact .card__view { display:flex !important; align-items:center !important; justify-content:center !important; padding-bottom:56% !important; background-color:rgba(200,200,200,.16) !important; }',
         'body.' + BODY_CLASS + ' .card.card--button-compact .card__button-label, body.' + BODY_CLASS + ' .card.card--genre-compact .card__genre-label { display:block !important; position:absolute !important; bottom:.42em !important; left:0 !important; right:0 !important; text-align:center !important; color:#fff !important; padding:.34em !important; font-size:calc(.78em * var(--agnative-scale, 1)) !important; font-weight:600 !important; line-height:1.1 !important; z-index:2 !important; text-shadow:0 1px 2px rgba(0,0,0,.7) !important; pointer-events:none !important; }',
@@ -5061,7 +4987,6 @@
         'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="md"] .items-line .card.card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="md"] .items-line .card.streaming-card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="md"] .items-line .card.card--genre-compact { width:8.8em !important; }',
         'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"] .items-line .card.card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"] .items-line .card.streaming-card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="lg"] .items-line .card.card--genre-compact { width:9.7em !important; }',
         'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .items-line .card.card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .items-line .card.streaming-card--button-compact, body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .items-line .card.card--genre-compact { width:10.6em !important; }',
-        // Scale text inside (logo labels, etc) accordingly
         'body.' + BODY_CLASS + ' .card.card--button-compact .card__view, body.' + BODY_CLASS + ' .card.streaming-card--button-compact .card__view, body.' + BODY_CLASS + ' .card.card--genre-compact .card__view { font-size:.85em !important; }',
         'body.' + BODY_CLASS + ' .card .card-watched { position:absolute !important; left:.55em !important; right:.55em !important; bottom:.55em !important; top:auto !important; z-index:3 !important; display:block !important; opacity:0 !important; transform:translateY(.45em) scale(.94) !important; transition: opacity .18s ease 0s, transform .18s ease 0s !important; pointer-events:none !important; background:rgba(15,17,22,.72) !important; border:1px solid rgba(255,255,255,.09) !important; border-radius:.85em !important; box-shadow:0 10px 22px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.07) !important; backdrop-filter:blur(16px) saturate(140%) !important; -webkit-backdrop-filter:blur(16px) saturate(140%) !important; overflow:hidden !important; max-height:calc(100% - 1.2em) !important; }',
         'body.' + BODY_CLASS + ' .card.focus .card-watched, body.' + BODY_CLASS + ' .card.hover .card-watched { opacity:1 !important; transform:translateY(0) scale(1) !important; transition: opacity .32s ease 1s, transform .14s ease-out !important; }',
@@ -5090,9 +5015,6 @@
         'body.' + BODY_CLASS + '[' + CARD_SIZE_ATTR + '="xl"] .card-episode { width:21.2em !important; }',
         'body.' + BODY_CLASS + ' .card-episode.focus, body.' + BODY_CLASS + ' .card-episode.hover, body.' + BODY_CLASS + ' .card-episode.focus .card-episode__body, body.' + BODY_CLASS + ' .card-episode.hover .card-episode__body { border:0 !important; outline:0 !important; box-shadow:none !important; background:transparent !important; }',
         'body.' + BODY_CLASS + ' .card-episode { transition: transform .28s cubic-bezier(.34,1.4,.64,1), box-shadow .28s ease !important; will-change: transform !important; }',
-        // No box-shadow here: .card-episode is a transparent, unrounded box while the artwork
-        // inside is clipped to 1.55em, so a drop shadow on it shows square corners sticking out
-        // behind the rounded image. The depth comes from .full-episode__img, which is rounded.
         'body.' + BODY_CLASS + ' .card-episode.focus, body.' + BODY_CLASS + ' .card-episode.hover, body.' + BODY_CLASS + ' .card-episode.traverse { transform: scale(1.05) translateY(-4px) !important; box-shadow: none !important; z-index: 10 !important; position: relative !important; }',
         'body.' + BODY_CLASS + ' .card-episode__body { background:transparent !important; border:0 !important; outline:0 !important; box-shadow:none !important; padding:0 !important; margin:0 !important; display:block !important; overflow:visible !important; }',
         'body.' + BODY_CLASS + ' .card-episode .full-episode { position:relative !important; display:block !important; background:transparent !important; border:0 !important; box-shadow:none !important; padding:0 !important; margin:0 !important; overflow:visible !important; transform-origin:center center !important; transition: transform .28s cubic-bezier(.22,.61,.36,1) !important; }',
@@ -5915,25 +5837,19 @@
         'body.' + BODY_CLASS + ' .agnative-hero[' + HERO_ANIMATION_ATTR + '="on"].agnative-hero--switching .agnative-hero__bg { opacity:0; }',
         'body.' + BODY_CLASS + ' .agnative-hero__overview:empty, body.' + BODY_CLASS + ' .agnative-hero__year:empty, body.' + BODY_CLASS + ' .agnative-hero__meta:empty, body.' + BODY_CLASS + ' .agnative-hero__badge:empty { display:none; }',
 
-        /* ── Explorer (online / torrent source picker) ── */
-        // Main layout — hide left info panel, center the files list in a tidy zone
         'body.' + BODY_CLASS + ' .explorer.layer--width { background:transparent !important; box-shadow:none !important; display:block !important; }',
         'body.' + BODY_CLASS + ' .explorer__left, body.' + BODY_CLASS + ' .explorer__card { display:none !important; }',
         'body.' + BODY_CLASS + ' .explorer__files { width:100% !important; max-width:78em !important; margin:0 auto !important; padding:0 1.5em !important; }',
         'body.' + BODY_CLASS + ' .explorer__files-head { padding:4.1em 0 .8em !important; }',
         'body.' + BODY_CLASS + ' .explorer__files-head .torrent-filter { display:flex !important; justify-content:center !important; align-items:center !important; gap:.55em !important; flex-wrap:wrap !important; }',
 
-        // Filter / search buttons
         'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button { background:rgba(255,255,255,.08) !important; border:1px solid rgba(255,255,255,.13) !important; border-radius:999px !important; padding:.42em 1.15em !important; color:rgba(255,255,255,.88) !important; font-size:.88em !important; font-weight:600 !important; line-height:1.2 !important; transition:background .18s ease, box-shadow .18s ease, transform .18s ease !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.08) !important; margin:0 !important; height:auto !important; }',
         'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.focus, body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.hover { background:rgba(255,255,255,.18) !important; border-color:rgba(255,255,255,.16) !important; outline:none !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.16), 0 4px 10px rgba(0,0,0,.22) !important; transform:scale(1.04) !important; color:#fff !important; }',
 
-
-        // Torrent / online-prestige / watched-history result rows
         'body.' + BODY_CLASS + ' .torrent-item.selector, body.' + BODY_CLASS + ' .online-prestige.selector, body.' + BODY_CLASS + ' .watched-history.selector { background:rgba(255,255,255,.055) !important; border:1px solid rgba(255,255,255,.09) !important; border-radius:1.1em !important; margin-bottom:.55em !important; padding:.85em 1.1em !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.06) !important; transition:background .2s ease, box-shadow .2s ease, transform .2s ease !important; }',
         'body.' + BODY_CLASS + ' .torrent-item.selector.focus, body.' + BODY_CLASS + ' .torrent-item.selector.hover, body.' + BODY_CLASS + ' .online-prestige.selector.focus, body.' + BODY_CLASS + ' .online-prestige.selector.hover, body.' + BODY_CLASS + ' .watched-history.selector.focus, body.' + BODY_CLASS + ' .watched-history.selector.hover { background:rgba(255,255,255,.13) !important; border-color:rgba(255,255,255,.14) !important; outline:none !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 14px 36px rgba(0,0,0,.4), 0 6px 16px rgba(0,0,0,.22) !important; transform:scale(1.025) !important; position:relative !important; z-index:5 !important; }',
         'body.' + BODY_CLASS + ' .torrent-item.selector.focus::after, body.' + BODY_CLASS + ' .torrent-item.selector.focus::before, body.' + BODY_CLASS + ' .torrent-item.selector.hover::after, body.' + BODY_CLASS + ' .torrent-item.selector.hover::before, body.' + BODY_CLASS + ' .online-prestige.selector.focus::after, body.' + BODY_CLASS + ' .online-prestige.selector.focus::before, body.' + BODY_CLASS + ' .online-prestige.selector.hover::after, body.' + BODY_CLASS + ' .online-prestige.selector.hover::before, body.' + BODY_CLASS + ' .watched-history.selector.focus::after, body.' + BODY_CLASS + ' .watched-history.selector.focus::before, body.' + BODY_CLASS + ' .watched-history.selector.hover::after, body.' + BODY_CLASS + ' .watched-history.selector.hover::before { display:none !important; content:none !important; border:0 !important; box-shadow:none !important; }',
 
-        // Row content
         'body.' + BODY_CLASS + ' .torrent-item__title { font-size:.92em !important; font-weight:600 !important; color:rgba(255,255,255,.92) !important; line-height:1.35 !important; margin-bottom:.45em !important; }',
         'body.' + BODY_CLASS + ' .torrent-item__details { display:flex !important; flex-wrap:wrap !important; gap:.3em !important; margin-bottom:.45em !important; align-items:center !important; }',
         'body.' + BODY_CLASS + ' .torrent-item__bitrate.bitrate, body.' + BODY_CLASS + ' .bitrate > span { background:rgba(255,255,255,.1) !important; border-radius:.4em !important; padding:.12em .45em !important; font-size:.7em !important; font-weight:700 !important; color:rgba(255,255,255,.8) !important; border:0 !important; }',
@@ -5942,26 +5858,78 @@
         'body.' + BODY_CLASS + ' .torrent-item__seeds, body.' + BODY_CLASS + ' .torrent-item__grabs { font-size:.7em !important; color:rgba(255,255,255,.45) !important; }',
         'body.' + BODY_CLASS + ' .torrent-item__viewed { opacity:.5 !important; }',
 
-        // Torrent serial (season/episode list within item)
         'body.' + BODY_CLASS + ' .torrent-serial.selector { background:rgba(255,255,255,.04) !important; border:1px solid rgba(255,255,255,.08) !important; border-radius:1em !important; margin-bottom:.4em !important; transition:background .18s ease, box-shadow .18s ease !important; }',
         'body.' + BODY_CLASS + ' .torrent-serial.selector.focus, body.' + BODY_CLASS + ' .torrent-serial.selector.hover { background:rgba(255,255,255,.11) !important; border-color:rgba(255,255,255,.12) !important; outline:none !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 10px 28px rgba(0,0,0,.32) !important; transform:scale(1.02) !important; position:relative !important; z-index:5 !important; }',
         'body.' + BODY_CLASS + ' .torrent-serial.selector.focus::after, body.' + BODY_CLASS + ' .torrent-serial.selector.focus::before, body.' + BODY_CLASS + ' .torrent-serial.selector.hover::after, body.' + BODY_CLASS + ' .torrent-serial.selector.hover::before { display:none !important; content:none !important; border:0 !important; box-shadow:none !important; }',
 
-        // Performance mode "low" — smaller scale, lighter shadows
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-item.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-serial.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .online-prestige.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .watched-history.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .explorer__files .torrent-filter .simple-button { transition: background .15s ease, transform .15s ease !important; }',
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-item.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-item.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .online-prestige.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .online-prestige.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .watched-history.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .watched-history.selector.hover { transform:scale(1.015) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 6px 16px rgba(0,0,0,.28) !important; }',
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-serial.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .torrent-serial.selector.hover { transform:scale(1.012) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 4px 12px rgba(0,0,0,.22) !important; }',
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .explorer__files .torrent-filter .simple-button.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .explorer__files .torrent-filter .simple-button.hover { transform:scale(1.03) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 3px 8px rgba(0,0,0,.18) !important; }',
 
-        // Performance mode "ultra" — no scale, no shadows, only background change
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-item.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-serial.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .online-prestige.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .watched-history.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .explorer__files .torrent-filter .simple-button { transition:none !important; will-change:auto !important; }',
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-item.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-item.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-serial.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-serial.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .online-prestige.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .online-prestige.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .watched-history.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .watched-history.selector.hover { transform:none !important; box-shadow:none !important; background:rgba(255,255,255,.18) !important; border-color:rgba(255,255,255,.28) !important; }',
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .explorer__files .torrent-filter .simple-button.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .explorer__files .torrent-filter .simple-button.hover { transform:none !important; box-shadow:none !important; background:rgba(255,255,255,.26) !important; }',
 
-        /* ── Left cluster, responsive.
-           Below 767px the centred nav is hidden, so the title gets the whole middle and is
-           bounded by `right` instead of a guessed max-width. .head__navigator sits at left:1em
-           in that block, which is exactly where the back button now is — push it past both. */
+        'body.' + BODY_CLASS + ' .card[data-nfx-switched="native"] .card__title { display:block !important; position:absolute !important; left:0 !important; right:0 !important; bottom:0 !important; z-index:3 !important; margin:0 !important; padding:0 1.02em 1.55em !important; max-height:none !important; font-size:calc(1em * var(--agnative-scale, 1)) !important; font-weight:700 !important; line-height:1.2 !important; color:#fff !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; text-shadow:0 1px 3px rgba(0,0,0,.9) !important; -webkit-line-clamp:none !important; transform:none !important; }',
+        'body.' + BODY_CLASS + ' .card[data-nfx-switched="native"] .card__age { display:block !important; position:absolute !important; left:1.02em !important; right:1.02em !important; bottom:.85em !important; z-index:3 !important; margin:0 !important; font-size:calc(.72em * var(--agnative-scale, 1)) !important; font-weight:600 !important; line-height:1.2 !important; color:rgba(255,255,255,.8) !important; white-space:nowrap !important; overflow:hidden !important; text-shadow:0 1px 3px rgba(0,0,0,.9) !important; transform:none !important; }',
+        'body.' + BODY_CLASS + ' .card[data-nfx-switched="native"] .card__img { object-position:center center !important; }',
+        'body.' + BODY_CLASS + '[' + OVERLAY_ALIGN_ATTR + '="center"] .card[data-nfx-switched="native"] .card__title, body.' + BODY_CLASS + '[' + OVERLAY_ALIGN_ATTR + '="center"] .card[data-nfx-switched="native"] .card__age { text-align:center !important; }',
+        'body.' + BODY_CLASS + '[' + OVERLAY_ALIGN_ATTR + '="end"] .card[data-nfx-switched="native"] .card__title, body.' + BODY_CLASS + '[' + OVERLAY_ALIGN_ATTR + '="end"] .card[data-nfx-switched="native"] .card__age { text-align:right !important; }',
+        'body.' + BODY_CLASS + ' .card--button-compact[data-nfx-switched="native"] .card__title, body.' + BODY_CLASS + ' .card--genre-compact[data-nfx-switched="native"] .card__title { display:none !important; }',
+
+        'body.' + BODY_CLASS + ' .card-more__box { background: rgba(255,255,255,.06) !important; border: 1px solid rgba(255,255,255,.08) !important; border-radius: 1.55em !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.06) !important; transition: background .22s ease, border-color .22s ease, box-shadow .22s ease !important; }',
+        'body.' + BODY_CLASS + ' .card-more__title { font-size: 1.1em !important; font-weight: 600 !important; color: rgba(255,255,255,.9) !important; margin-top: -.55em !important; }',
+        'body.' + BODY_CLASS + ' .card-more.focus .card-more__box, body.' + BODY_CLASS + ' .card-more.hover .card-more__box { background: rgba(255,255,255,.16) !important; border-color: rgba(255,255,255,.2) !important; box-shadow: inset 0 0 0 .14em rgba(255,255,255,.9), inset 0 1px 0 rgba(255,255,255,.16) !important; }',
+        'body.' + BODY_CLASS + ' .card-more.focus .card-more__box::after, body.' + BODY_CLASS + ' .card-more.hover .card-more__box::after { content: none !important; display: none !important; border: 0 !important; }',
+        'body.' + BODY_CLASS + ' .card-more--small-radius .card-more__box { border-radius: 1.1em !important; }',
+        'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card-more__box { border-radius: 1.15em !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .card-more__box { transition: none !important; }',
+
+        'body.' + BODY_CLASS + ' .menu-edit-list__item { border-radius: .9em !important; padding: .45em .55em !important; margin-bottom: .25em !important; background: rgba(255,255,255,.05) !important; border: 1px solid rgba(255,255,255,.06) !important; }',
+        'body.' + BODY_CLASS + ' .menu-edit-list__item:nth-child(even) { background: rgba(255,255,255,.05) !important; }',
+        'body.' + BODY_CLASS + ' .menu-edit-list__icon { background: rgba(255,255,255,.08) !important; }',
+        'body.' + BODY_CLASS + ' .menu-edit-list__title { font-size: 1.15em !important; font-weight: 600 !important; color: rgba(255,255,255,.92) !important; }',
+        'body.' + BODY_CLASS + ' .menu-edit-list__move, body.' + BODY_CLASS + ' .menu-edit-list__toggle { border-radius: .7em !important; color: rgba(255,255,255,.8) !important; transition: background .16s ease, color .16s ease !important; }',
+        'body.' + BODY_CLASS + ' .menu-edit-list__move.focus, body.' + BODY_CLASS + ' .menu-edit-list__toggle.focus { background: #fff !important; color: #0b0d12 !important; border-radius: .7em !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .menu-edit-list__move, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .menu-edit-list__toggle { transition: none !important; }',
+
+        'body.' + BODY_CLASS + ' .search, body.' + BODY_CLASS + ' .search-box { background: rgba(4,6,10,.5) !important; backdrop-filter: blur(14px) saturate(125%) !important; -webkit-backdrop-filter: blur(14px) saturate(125%) !important; }',
+
+        'body.' + BODY_CLASS + ' .search__input, body.' + BODY_CLASS + ' .search-box .search__input { box-sizing: border-box !important; margin: 0 auto 1em !important; padding: .5em .9em !important; border-radius: 1.1em !important; background: rgba(22,24,30,.52) !important; border: 1px solid rgba(255,255,255,.12) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 14px 34px rgba(0,0,0,.3) !important; backdrop-filter: blur(20px) saturate(140%) !important; -webkit-backdrop-filter: blur(20px) saturate(140%) !important; color: rgba(255,255,255,.96) !important; font-size: 1.5em !important; font-weight: 600 !important; line-height: 1.5 !important; }',
+
+        'body.' + BODY_CLASS + ' .simple-keyboard { background: transparent !important; }',
+        'body.' + BODY_CLASS + ' .simple-keyboard .hg-row { gap: .32em !important; margin-bottom: .32em !important; }',
+        'body.' + BODY_CLASS + ' .simple-keyboard .hg-button { background: rgba(255,255,255,.07) !important; border: 1px solid rgba(255,255,255,.08) !important; border-radius: .7em !important; color: rgba(255,255,255,.92) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.07) !important; transition: background .16s ease, color .16s ease, transform .16s ease !important; }',
+        'body.' + BODY_CLASS + ' .simple-keyboard .hg-button.focus, body.' + BODY_CLASS + ' .simple-keyboard .hg-button.hg-activeButton, body.' + BODY_CLASS + ' .simple-keyboard .hg-button:hover { background: #fff !important; color: #0b0d12 !important; border-color: transparent !important; transform: scale(1.04) !important; }',
+
+        'body.' + BODY_CLASS + ' .search-history-key { background: rgba(255,255,255,.06) !important; border: 1px solid rgba(255,255,255,.08) !important; border-radius: 999px !important; transition: background .18s ease, color .18s ease !important; }',
+        'body.' + BODY_CLASS + ' .search-history-key.focus { background: #fff !important; color: #0b0d12 !important; border-color: transparent !important; }',
+        'body.' + BODY_CLASS + ' .search-history-key.focus:before { filter: invert(1) !important; }',
+
+        'body.' + BODY_CLASS + ' .search-source { border-radius: 999px !important; background: rgba(255,255,255,.06) !important; border: 1px solid rgba(255,255,255,.08) !important; padding: .35em .95em !important; margin-right: .4em !important; transition: background .18s ease, color .18s ease !important; }',
+        'body.' + BODY_CLASS + ' .search-source__tab { font-weight: 600 !important; }',
+        'body.' + BODY_CLASS + ' .search-source__count { opacity: .6 !important; font-weight: 700 !important; }',
+        'body.' + BODY_CLASS + ' .search-source.active { background: rgba(255,255,255,.16) !important; border-color: rgba(255,255,255,.2) !important; color: #fff !important; opacity: 1 !important; }',
+        'body.' + BODY_CLASS + ' .search-source.active .search-source__tab { color: #fff !important; }',
+        'body.' + BODY_CLASS + ' .search-source.focus, body.' + BODY_CLASS + ' .search-source.hover, body.' + BODY_CLASS + ' .search-source:hover { background: #fff !important; color: #0b0d12 !important; border-color: transparent !important; outline: none !important; opacity: 1 !important; }',
+        'body.' + BODY_CLASS + ' .search-source.focus .search-source__tab, body.' + BODY_CLASS + ' .search-source.hover .search-source__tab, body.' + BODY_CLASS + ' .search-source:hover .search-source__tab { color: #0b0d12 !important; }',
+        'body.' + BODY_CLASS + ' .search-source.active.focus .search-source__tab, body.' + BODY_CLASS + ' .search-source.active.hover .search-source__tab, body.' + BODY_CLASS + ' .search-source.active:hover .search-source__tab { color: #0b0d12 !important; }',
+        'body.' + BODY_CLASS + ' .search-source.focus .search-source__count, body.' + BODY_CLASS + ' .search-source.hover .search-source__count, body.' + BODY_CLASS + ' .search-source:hover .search-source__count { opacity: .85 !important; background-color: rgba(0,0,0,.72) !important; color: #fff !important; }',
+
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .search, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .search-box { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgba(4,6,10,.82) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .search__input { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgba(26,29,34,.97) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .search, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .search-box { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgb(14,16,20) !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .search__input { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgb(26,29,34) !important; box-shadow: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .simple-keyboard .hg-button, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .search-history-key, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .search-source { transition: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .simple-keyboard .hg-button.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .simple-keyboard .hg-button.hg-activeButton { transform: none !important; }',
+        'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .search__input { border-radius: .8em !important; }',
+        'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .simple-keyboard .hg-button { border-radius: .5em !important; }',
+
+        '@media (max-width: 767px) {',
+        '  body.' + BODY_CLASS + ' .search__input { font-size: 1.25em !important; }',
+        '}',
+
         '@media (max-width: 767px) {',
         '  body.' + BODY_CLASS + ' .head__title { right: 10.5em !important; max-width: none !important; font-size: calc(1.05em * var(--agnative-scale, 1)) !important; }',
         '  body.' + BODY_CLASS + ' .head__navigator { left: calc(1em + 2.6em + .6em) !important; }',
@@ -5971,7 +5939,6 @@
         '  body.' + BODY_CLASS + ' .head__title { right: 9.5em !important; font-size: calc(.95em * var(--agnative-scale, 1)) !important; }',
         '}',
 
-        /* ── Notifications button (right dock, left of the clock) ── */
         'body.' + BODY_CLASS + ' .agnative-topnav-right__notice.selector { position:relative !important; width:2.16em !important; min-width:2.16em !important; padding:0 !important; overflow:visible !important; color:rgba(255,255,255,.92) !important; }',
         'body.' + BODY_CLASS + ' .agnative-topnav-right__notice-icon { display:inline-flex !important; align-items:center !important; justify-content:center !important; width:1.02em !important; height:1.02em !important; }',
         'body.' + BODY_CLASS + ' .agnative-topnav-right__notice-icon svg { width:1.02em !important; height:1.02em !important; display:block !important; }',
@@ -5984,7 +5951,6 @@
         'body.' + BODY_CLASS + ' .agnative-topnav-rightdock .agnative-topnav-right__notice.hover, body.' + BODY_CLASS + ' .agnative-topnav-rightdock .agnative-topnav-right__notice.focus { background:rgba(255,255,255,.14) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.10) !important; transform:translateY(-.02em) !important; color:#fff !important; }',
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .agnative-topnav-right__notice.has-notice .agnative-topnav-right__notice-icon { animation:none !important; }',
 
-        /* ── Modal / popups ── */
         'body.' + BODY_CLASS + ' .modal { background:rgba(4,6,10,.46) !important; backdrop-filter:blur(12px) saturate(125%) !important; -webkit-backdrop-filter:blur(12px) saturate(125%) !important; }',
         'body.' + BODY_CLASS + ' .modal__content { background:rgba(22,24,30,.62) !important; background-image:none !important; border:1px solid rgba(255,255,255,.10) !important; border-radius:1.6em !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 26px 64px rgba(0,0,0,.5) !important; backdrop-filter:blur(24px) saturate(150%) !important; -webkit-backdrop-filter:blur(24px) saturate(150%) !important; padding:1.6em !important; }',
         'body.' + BODY_CLASS + ' .modal.animate .modal__content { animation:agnativeModalIn .3s cubic-bezier(.22,.61,.36,1) both; }',
@@ -6006,14 +5972,12 @@
         '  body.' + BODY_CLASS + ' .modal__content { border-radius:1.9em 1.9em 0 0 !important; }',
         '}',
 
-        /* ── Noty / bell toasts ── */
         'body.' + BODY_CLASS + ' .noty { left:50% !important; right:auto !important; bottom:1.4em !important; width:max-content !important; max-width:min(48em, calc(100vw - 3em)) !important; background:rgba(22,24,30,.72) !important; color:#fff !important; border:1px solid rgba(255,255,255,.10) !important; border-radius:1.25em !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 20px 48px rgba(0,0,0,.42) !important; backdrop-filter:blur(22px) saturate(150%) !important; -webkit-backdrop-filter:blur(22px) saturate(150%) !important; transform:translate(-50%, calc(100% + 2em)) !important; }',
         'body.' + BODY_CLASS + ' .noty--visible { transform:translate(-50%, 0) !important; }',
         'body.' + BODY_CLASS + ' .noty__body { padding:.9em 1.6em !important; }',
         'body.' + BODY_CLASS + ' .noty__text { font-size:1.02em !important; font-weight:600 !important; letter-spacing:.004em !important; }',
         'body.' + BODY_CLASS + ' .bell__item { background:rgba(22,24,30,.72) !important; border:1px solid rgba(255,255,255,.10) !important; border-radius:1.25em !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 20px 48px rgba(0,0,0,.42) !important; backdrop-filter:blur(22px) saturate(150%) !important; -webkit-backdrop-filter:blur(22px) saturate(150%) !important; }',
 
-        /* ── Notice list (opened by the top-bar bell) ── */
         'body.' + BODY_CLASS + ' .navigation-tabs { background:rgba(255,255,255,.05) !important; border:1px solid rgba(255,255,255,.07) !important; border-radius:999px !important; padding:.3em !important; margin-bottom:1.4em !important; }',
         'body.' + BODY_CLASS + ' .navigation-tabs__split { opacity:0 !important; padding:0 !important; width:0 !important; overflow:hidden !important; }',
         'body.' + BODY_CLASS + ' .navigation-tabs__button { border-radius:999px !important; padding:.55em 1em !important; font-weight:600 !important; color:rgba(255,255,255,.8) !important; transition:background .2s ease, color .2s ease, transform .2s ease !important; }',
@@ -6022,7 +5986,6 @@
         'body.' + BODY_CLASS + ' .navigation-tabs__badge { background:#ff453a !important; border-radius:999px !important; padding:.12em .48em !important; font-weight:800 !important; margin-top:-.35em !important; }',
         'body.' + BODY_CLASS + ' .notice { background:rgba(255,255,255,.04) !important; border:1px solid rgba(255,255,255,.06) !important; border-radius:1.15em !important; padding:1em 1.1em !important; transition:background .2s ease, transform .2s ease, box-shadow .2s ease !important; }',
         'body.' + BODY_CLASS + ' .notice + .notice { margin-top:.5em !important; }',
-        // Modal scrolls are .scroll--over (overflow:hidden), so focus must not grow the row.
         'body.' + BODY_CLASS + ' .notice.focus, body.' + BODY_CLASS + ' .notice.hover { background:rgba(255,255,255,.14) !important; border-color:rgba(255,255,255,.24) !important; outline:none !important; transform:none !important; box-shadow:inset 0 0 0 .1em rgba(255,255,255,.5), inset 0 1px 0 rgba(255,255,255,.16) !important; }',
         'body.' + BODY_CLASS + ' .notice__title { font-size:1.2em !important; font-weight:700 !important; color:rgba(255,255,255,.96) !important; line-height:1.3 !important; }',
         'body.' + BODY_CLASS + ' .notice__descr { font-size:1.02em !important; color:rgba(255,255,255,.76) !important; }',
@@ -6031,7 +5994,6 @@
         'body.' + BODY_CLASS + ' .notice__footer > div { background:rgba(255,255,255,.09) !important; border-radius:999px !important; padding:.3em .72em !important; font-size:.85em !important; }',
         'body.' + BODY_CLASS + ' .notice__author-img { border-radius:999px !important; }',
 
-        /* ── Extensions (plugins) page ── */
         'body.' + BODY_CLASS + ' .extensions { background:rgba(11,13,17,.9) !important; backdrop-filter:blur(26px) saturate(140%) !important; -webkit-backdrop-filter:blur(26px) saturate(140%) !important; }',
         'body.' + BODY_CLASS + ' .extensions .head-backward { display:block !important; }',
         'body.' + BODY_CLASS + ' .extensions .head-backward__title { font-size:1.85em !important; font-weight:800 !important; letter-spacing:.004em !important; color:rgba(255,255,255,.97) !important; }',
@@ -6058,7 +6020,6 @@
         'body.' + BODY_CLASS + ' .plugins-catalog__line, body.' + BODY_CLASS + ' .plugins-catalog__line:nth-child(2n) { background:rgba(255,255,255,.05) !important; border:1px solid rgba(255,255,255,.06) !important; border-radius:1em !important; margin-bottom:.35em !important; transition:background .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease !important; }',
         'body.' + BODY_CLASS + ' .plugins-catalog__line.focus, body.' + BODY_CLASS + ' .plugins-catalog__line.hover { background:#fff !important; color:#0b0d12 !important; border-color:transparent !important; outline:none !important; transform:none !important; box-shadow:0 6px 18px rgba(0,0,0,.3) !important; }',
 
-        /* ── Perf downgrades for the blocks above ── */
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .modal, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .modal { backdrop-filter:none !important; -webkit-backdrop-filter:none !important; background:rgba(4,6,10,.66) !important; }',
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .modal__content, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .noty, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .bell__item, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .extensions { backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }',
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .modal__content { background:rgba(26,29,34,.97) !important; }',
@@ -6071,53 +6032,28 @@
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .modal__button.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .modal__button.hover { transform:none !important; box-shadow:none !important; }',
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .extensions__item.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="low"] .extensions__item.hover { transform:scale(1.02) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 8px 20px rgba(0,0,0,.3) !important; }',
 
-        /* ══ "Австралопитек" mode ══
-           Zero DOM injection, zero network: the card look is rebuilt purely from the nodes
-           Lampa already renders (.card__title / .card__age / .card__vote / .card__type),
-           which the plugin normally hides in favour of its own overlay. Real backdrops and
-           movie logos are unavailable here — they would need TMDB requests per card. */
-
-        // Lampa promotes every card (and its title/age) to its own compositing layer.
-        // On the devices this mode targets that is the single biggest memory cost.
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card__title, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card__age { will-change:auto !important; transform:none !important; }',
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card__view { margin-bottom:0 !important; }',
-        // Radius must stay at the 1.55em the .card__view clip-path uses, otherwise the corners
-        // show a gap between the image and the mask.
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card__img { object-fit:cover !important; }',
 
-
-        // Title + year lifted out of flow onto the poster; the scrim is the existing
-        // .card__view::before gradient, so no extra pseudo-element is needed.
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"][' + LOGO_TITLE_ATTR + '="on"] .card__title { display:block !important; position:absolute !important; left:0 !important; right:0 !important; bottom:0 !important; z-index:3 !important; margin:0 !important; padding:0 .85em 1.55em !important; max-height:none !important; font-size:calc(.95em * var(--agnative-scale, 1)) !important; font-weight:700 !important; line-height:1.2 !important; color:#fff !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; text-shadow:0 1px 3px rgba(0,0,0,.9) !important; -webkit-line-clamp:none !important; }',
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"][' + LOGO_TITLE_ATTR + '="on"] .card__age { display:block !important; position:absolute !important; left:.9em !important; right:.9em !important; bottom:.45em !important; z-index:3 !important; margin:0 !important; font-size:calc(.72em * var(--agnative-scale, 1)) !important; font-weight:600 !important; line-height:1.2 !important; color:rgba(255,255,255,.82) !important; white-space:nowrap !important; overflow:hidden !important; text-shadow:0 1px 3px rgba(0,0,0,.9) !important; }',
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"][' + OVERLAY_ALIGN_ATTR + '="center"] .card__title, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"][' + OVERLAY_ALIGN_ATTR + '="center"] .card__age { text-align:center !important; }',
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"][' + OVERLAY_ALIGN_ATTR + '="end"] .card__title, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"][' + OVERLAY_ALIGN_ATTR + '="end"] .card__age { text-align:right !important; }',
-        // Cards without a media title (genre / button tiles) keep their centred caption.
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card--button-compact .card__title, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card--genre-compact .card__title, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card--collection .card__title { padding-bottom:.7em !important; text-align:center !important; }',
 
-        // Rating pill straight from Lampa's own .card__vote.
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"][' + RATING_ATTR + '="on"] .card__view .card__vote { display:inline-flex !important; align-items:center !important; justify-content:center !important; position:absolute !important; top:.7em !important; right:.72em !important; left:auto !important; bottom:auto !important; width:auto !important; height:auto !important; min-width:0 !important; margin:0 !important; padding:.34em .62em !important; border-radius:.8em !important; background:rgba(12,14,20,.86) !important; color:#fff !important; font-size:calc(.72em * var(--agnative-scale, 1)) !important; font-weight:800 !important; letter-spacing:.02em !important; line-height:1 !important; white-space:nowrap !important; z-index:4 !important; border:0 !important; box-shadow:none !important; text-shadow:none !important; }',
 
-        // Badge from .card__type. Lampa only emits that node (and .card--tv) for series,
-        // so movies simply carry no badge in this mode.
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card__type { display:none !important; }',
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"][' + BADGE_ATTR + '="on"] .card--tv::after { content:' + cssString(t('badge_tv')) + ' !important; display:block !important; position:absolute !important; left:.72em !important; top:.7em !important; right:auto !important; bottom:auto !important; margin:0 !important; padding:.34em .62em !important; border-radius:.8em !important; background:rgba(12,14,20,.86) !important; color:#fff !important; font-size:calc(.72em * var(--agnative-scale, 1)) !important; font-weight:800 !important; letter-spacing:.05em !important; line-height:1 !important; white-space:nowrap !important; z-index:4 !important; border:0 !important; box-shadow:none !important; pointer-events:none !important; }',
 
-        // Focus ring instead of a scale transform — no layer promotion, no repaint storm.
-        // It has to be an *inset* shadow: .card__view is clipped with clip-path, which would
-        // cut an outer ring off at the rounded corners.
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card.focus .card__view, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card.hover .card__view { box-shadow:inset 0 0 0 .16em #fff !important; }',
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card.focus, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card.hover { transform:none !important; }',
-        // Episode cards use the same flat focus as everything else in this mode.
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card-episode.focus, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card-episode.hover, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card-episode.traverse, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card-episode.focus .full-episode, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card-episode.hover .full-episode { transform:none !important; }',
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card-episode.focus .full-episode__img, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .card-episode.hover .full-episode__img { filter:none !important; box-shadow:inset 0 0 0 .16em #fff !important; }',
 
-        // The plugin's own card decorations never exist here; hide them defensively so a
-        // mode switch without a reload cannot leave leftovers on screen.
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .nfx-card-overlay, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .nfx-card-logo, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .nfx-card-rating, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .agnative-hero { display:none !important; }',
 
-        // The left dock is the plugin's own, same as in every other mode — it is just built
-        // once here and kept observer-free. Lampa's native menu stays collapsed.
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .agnative-leftdock { backdrop-filter:none !important; -webkit-backdrop-filter:none !important; background:rgb(24,27,33) !important; box-shadow:0 12px 34px rgba(0,0,0,.55) !important; }',
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .agnative-leftdock__item { transition:background .15s ease !important; }',
         'body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .agnative-leftdock__item.focus, body.' + BODY_CLASS + '[' + AUSTRO_ATTR + '="on"] .agnative-leftdock__item.hover { transform:none !important; box-shadow:none !important; background:rgba(255,255,255,.24) !important; }'
@@ -6386,15 +6322,11 @@
       } catch (e) { return 0; }
     }
 
-    // Lampa marks its own head icon with `active` when there is something unread. Mirroring
-    // that covers builds where count() is not meaningful but the indicator still is.
     function noticeIsActive() {
       var native = nativeNoticeIcon();
       return !!(native && native.classList && native.classList.contains('active'));
     }
 
-    // Prefer Lampa's own bell so the button matches the rest of the app (and any fork that
-    // swapped the icon). Falls back to the sprite, then to a bundled glyph.
     function syncNoticeIcon(btn) {
       var host = btn && btn.querySelector('.agnative-topnav-right__notice-icon');
       if (!host) return;
@@ -6411,7 +6343,6 @@
         source = 'inline';
         html = iconBell();
       }
-      // Upgrade in place once a better source shows up (the head icon is added on app ready).
       if (host.getAttribute('data-icon-source') === source) return;
       host.innerHTML = html;
       host.setAttribute('data-icon-source', source);
@@ -6439,8 +6370,6 @@
       }
     }
 
-    // Notice.drawCount() is Lampa's own "unread changed" hook — piggyback on it so the badge
-    // updates the moment a notification arrives instead of waiting for the clock tick.
     function patchNoticeCounter() {
       if (noticeCounterPatched) return;
       try {
@@ -6472,7 +6401,6 @@
     function triggerNotice() {
       closeControlPanel(false);
       try {
-        // Prefer the native head icon so forks that replace the handler keep working.
         var nativeBtn = qs('.head__action.notice--icon') || qs('.head__actions .notice--icon');
         if (nativeBtn) {
           triggerSelectorEnter(nativeBtn);
@@ -6838,10 +6766,6 @@
       }
     }
 
-    // Lampa.Controller has no getter for a registered controller, so the native `menu` and
-    // `head` controllers cannot be captured before being overridden. When the plugin is
-    // switched off we re-register faithful copies of Lampa's own definitions, otherwise the
-    // app would keep routing focus to the (already removed) leftdock and lose navigation.
     function restoreNativeControllers() {
       if (!window.Lampa || !Lampa.Controller || typeof Lampa.Controller.add !== 'function') return;
 
@@ -6938,8 +6862,6 @@
             var headEl = qs('.head__body') || qs('.head');
             if (!headEl) return;
             var view = $(headEl);
-            // Return to the last used top-bar button (e.g. after closing the notice modal)
-            // instead of always snapping back to the first menu item.
             var target = (topnavLastFocused && headEl.contains(topnavLastFocused)) ? topnavLastFocused : null;
             if (!target) {
               target = qs('.agnative-topnav-shell__item.selector', headEl)
@@ -7189,9 +7111,6 @@
       btn.addEventListener('mousedown', swallow, true);
     }
 
-    // Cheap stand-in for the menu MutationObserver: a dozen attribute reads, run only when
-    // safePatch() fires. Plugins register their menu items asynchronously, so the dock has to
-    // notice new entries even though nothing is watching the menu in austro.
     function leftdockSignature() {
       var parts = [];
       qsa('.menu .menu__item.selector').forEach(function (item) {
@@ -7204,8 +7123,6 @@
     function buildLeftdock() {
       if (!document.body) return null;
       var dock = qs('.agnative-leftdock');
-      // safePatch() runs on every activity change; in austro rebuild only when the source
-      // menu actually changed, instead of re-cloning the dock every single time.
       if (austroMode() && dock && qs('.agnative-leftdock__item', dock)) {
         if (dock.__agnativeMenuSignature === leftdockSignature()) return dock;
       }
@@ -7277,7 +7194,6 @@
     }
 
     function bindLeftdockAutoScroll(dock) {
-      // In austro the scroll is driven from the focus handler in bindAction() instead.
       if (austroMode()) return;
       if (!dock || dock.__agnativeAutoScrollObserver || typeof MutationObserver !== 'function') return;
       var observer = new MutationObserver(function (mutations) {
@@ -7320,7 +7236,6 @@
           toggle: function () {
             var d = qs('.agnative-leftdock');
             if (!d) {
-              // Dock is gone (plugin disabled at runtime) — never leave the app without focus.
               try { Lampa.Controller.toggle('content'); } catch (e) { }
               return;
             }
@@ -7365,7 +7280,6 @@
       return dock;
     }
 
-    // Sits in the right dock, immediately to the left of the clock.
     function ensureNoticeButton(head) {
       if (!head) return null;
       var existing = qs('.agnative-topnav-right__notice', head) || document.querySelector('.agnative-topnav-right__notice');
@@ -7386,7 +7300,6 @@
           + '<span class="agnative-topnav-right__notice-badge"></span>';
         bindAction(btn, triggerNotice);
       }
-      // Always keep it first so it stays left of the clock even when toggled on later.
       if (btn.parentNode !== dock || dock.firstChild !== btn) dock.insertBefore(btn, dock.firstChild);
       syncNoticeIcon(btn);
       patchNoticeCounter();
@@ -7483,9 +7396,6 @@
       try { size = Lampa.Storage.get(TOPNAV_SIZE_KEY, 'md'); } catch (e) { }
       if (!/^(xs|sm|md|lg|xl)$/.test(size)) size = 'md';
       document.body.setAttribute(TOPNAV_SIZE_ATTR, size);
-      // Gates the high-specificity rule that keeps the burger visible; forks such as
-      // siaivo.github.io hide it with `!important`, but the plugin uses it as the
-      // left dock trigger, so it must stay clickable while our top bar is active.
       document.body.setAttribute(TOPNAV_ENABLE_ATTR, topnavEnabled() ? 'on' : 'off');
     }
 
@@ -7517,6 +7427,7 @@
       attachTopnavWheelForwarding();
       bindHeadMenuIconClick();
       ensureBackButton(head);
+      syncBackButton();
       ensureNoticeButton(head);
       ensureClock(head);
       ensureProfileButton(head);
@@ -7576,7 +7487,6 @@
       } else {
         endDefs = [searchDef, favoriteDef];
       }
-      // Settings icon (shown only when the clock control panel is off) always stays at the end.
       if (!controlPanelEnabled()) {
         endDefs.push({ role: 'settings', svg: iconSettings(), handler: triggerSettings });
       }
@@ -7785,10 +7695,6 @@
              cardEl.classList.contains('card--genre-compact');
     }
 
-    // Austro card handling: no API request, no injected node, no caching. Portrait keeps
-    // Lampa's own poster (the only image carrying title art); landscape points the existing
-    // <img> at card_data.backdrop_path, which Lampa already uses itself for `wide` cards.
-    // That swaps one image download for another instead of adding work.
     function austroSwapCardImage(cardEl) {
       if (!cardEl || cardEl.getAttribute('data-agnative-austro-img')) return;
       if (isSursButtonCard(cardEl)) {
@@ -7800,9 +7706,6 @@
       var img = cardEl.querySelector('.card__img');
       if (!img || img.tagName !== 'IMG') return;
 
-      // Lampa loads card images lazily: the template ships img_load.svg and the real src is
-      // only assigned in the card's own `visible` handler. Swapping before that happens gets
-      // silently overwritten, so wait instead of marking the card as done.
       var current = img.getAttribute('src') || '';
       if (!current || current.indexOf('img_load') >= 0) return;
 
@@ -7825,11 +7728,8 @@
       if (!data.backdrop_path && !data.id) return;
       cardEl.setAttribute('data-agnative-austro-img', '1');
 
-      // Show the plain backdrop straight away — it is already in card_data, no request.
       apply(data.backdrop_path);
 
-      // Then upgrade to a backdrop that has the title artwork baked in. That is one small
-      // JSON lookup per title, cached in IndexedDB forever, and it replaces no image download.
       if (!data.id) return;
       fetchTitledBackdrop(data.id, data.name ? 'tv' : 'movie', function (titledPath) {
         if (!titledPath || !austroMode() || !backdropEnabled()) return;
@@ -7838,11 +7738,6 @@
       });
     }
 
-    // Lampa fires `visible` on every card as it scrolls into view, and that is also when it
-    // assigns the real image src. The event is dispatched with bubbles=false
-    // (Utils.trigger -> initEvent(name, false, true)), so it can only be caught on the way
-    // down — a capture listener on document sees it, jQuery delegation never would.
-    // The swap is deferred by a tick so it lands after the card's own visible handler.
     function bindAustroCardVisibility() {
       if (window.__AGNATIVE_AUSTRO_CARDS_BOUND__ || !document.addEventListener) return;
       window.__AGNATIVE_AUSTRO_CARDS_BOUND__ = true;
@@ -7869,7 +7764,10 @@
       cardEl.setAttribute('data-nfx-switched', '1');
 
       var data = extractCardData(cardEl);
-      if (!data) return;
+      if (!data) {
+        cardEl.setAttribute('data-nfx-switched', 'native');
+        return;
+      }
 
       var perfLevel = resolvePerfLevel();
       var isUltra = perfLevel === 'ultra' || perfLevel === 'austro';
@@ -7945,9 +7843,7 @@
         var pTmdbType = data.name ? 'tv' : 'movie';
         var pView = cardEl.querySelector('.card__view');
         var pVote = data.vote_average ? parseFloat(data.vote_average) : 0;
-        var pYear = '';
-        if (data.release_date) pYear = data.release_date.substring(0, 4);
-        else if (data.first_air_date) pYear = data.first_air_date.substring(0, 4);
+        var pYear = pickYear(data);
         var pGenreNames = getGenreNames(data);
         var pMetaLeft = [];
         if (pVote > 0) pMetaLeft.push('<span class="nfx-card-overlay__match">' + Math.round(pVote * 10) + '%</span>');
@@ -8009,9 +7905,7 @@
       }
 
       var vote = data.vote_average ? parseFloat(data.vote_average) : 0;
-      var year = '';
-      if (data.release_date) year = data.release_date.substring(0, 4);
-      else if (data.first_air_date) year = data.first_air_date.substring(0, 4);
+      var year = pickYear(data);
 
       var overlay = document.createElement('div');
       overlay.className = 'nfx-card-overlay';
@@ -8158,16 +8052,19 @@
       try {
         if (window.Lampa && Lampa.Activity && typeof Lampa.Activity.all === 'function') {
           var all = Lampa.Activity.all();
-          // Activity.backward() is a no-op on the last entry, so hide the button there.
           return !!(all && all.length > 1);
         }
       } catch (e) { }
       return false;
     }
 
+    function inBalancer() {
+      return !!document.querySelector('.activity--active .explorer');
+    }
+
     function syncBackButton() {
       if (!document.body) return;
-      document.body.setAttribute(BACK_ATTR, canGoBack() ? 'on' : 'off');
+      document.body.setAttribute(BACK_ATTR, (inBalancer() && canGoBack()) ? 'on' : 'off');
     }
 
     function ensureBackButton(head) {
@@ -8484,8 +8381,6 @@
         return;
       }
 
-      // Austro keeps the small metadata records (one TMDB lookup per title, ever) but not the
-      // image blob store, which is what would download every picture twice.
       setPersistEnabled(true);
       setImageCacheEnabled(!austroMode());
       if (!austroMode()) prune(getCacheMaxBytes());
@@ -8511,8 +8406,6 @@
       watchSettingsLifecycle();
       processCards(document.body);
       schedulePatch();
-      // Other plugins register their menu items well after app ready. With no menu observer
-      // in austro, re-check a few times on a bounded schedule so their entries reach the dock.
       if (austroMode()) {
         [1000, 3000, 8000, 15000].forEach(function (delay) {
           setTimeout(function () {
@@ -8522,8 +8415,6 @@
           }, delay);
         });
       }
-      // Polling retry: try build hero every 1s for 30s, until built.
-      // startPlugin() runs again on several storage changes, so keep a single timer.
       stopHeroPoll();
       var heroAttempts = 0;
       heroPollTimer = setInterval(function () {
