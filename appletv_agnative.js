@@ -74,6 +74,7 @@
     HERO_TRAILER_DELAY_KEY: 'appletv_agnative_hero_trailer_delay',
     TOPNAV_ENABLE_KEY: 'appletv_agnative_topnav_visible',
     TOPNAV_ENABLE_ATTR: 'data-agnative-topnav',
+    BACK_ATTR: 'data-agnative-back',
     TOPNAV_ICONS_ORDER_KEY: 'appletv_agnative_topnav_icons_order',
     TOPNAV_SIZE_KEY: 'appletv_agnative_topnav_size',
     TOPNAV_SIZE_ATTR: 'data-agnative-topnav-size',
@@ -81,7 +82,7 @@
     SETTINGS_HIDE_COMPONENT: 'agnative_settings_hide'
   };
 
-  const PLUGIN_VERSION = '0.5.1';
+  const PLUGIN_VERSION = '0.5.2';
   const PLUGIN_AUTHORS = 'llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96';
 
   const ru = {
@@ -1113,6 +1114,7 @@
       HERO_TRAILER_DELAY_KEY,
       TOPNAV_ENABLE_KEY,
       TOPNAV_ENABLE_ATTR,
+      BACK_ATTR,
       TOPNAV_ICONS_ORDER_KEY,
       TOPNAV_SIZE_KEY,
       TOPNAV_SIZE_ATTR,
@@ -1497,6 +1499,7 @@
           document.body.removeAttribute(LOGO_TITLE_ATTR);
           document.body.removeAttribute(TOPNAV_SIZE_ATTR);
           document.body.removeAttribute(TOPNAV_ENABLE_ATTR);
+          document.body.removeAttribute(BACK_ATTR);
         }
         var style = document.getElementById(STYLE_ID);
         if (style) style.remove();
@@ -1507,6 +1510,8 @@
         if (dock) dock.remove();
         var clock = document.getElementById(CLOCK_ID);
         if (clock) clock.remove();
+        var back = document.querySelector('.agnative-head-back');
+        if (back) back.remove();
         var notice = document.querySelector('.agnative-topnav-right__notice');
         if (notice) notice.remove();
         var panel = document.querySelector('.agnative-control-panel');
@@ -4167,6 +4172,7 @@
               } catch (err) { }
             }, 500);
             setTimeout(triggerExtraRowRender, 900);
+            syncBackButton();
             schedulePatch();
             try {
               var comp = e.object && e.object.component;
@@ -4735,7 +4741,6 @@
         '  mask-image: none !important;',
         '  -webkit-mask-image: none !important;',
         '}',
-        'body.' + BODY_CLASS + ' .head__title,',
         'body.' + BODY_CLASS + ' .head__time,',
         'body.' + BODY_CLASS + ' .head__split,',
         'body.' + BODY_CLASS + ' .head__logo,',
@@ -4750,6 +4755,92 @@
         'body.' + BODY_CLASS + ' .head__button {',
         '  display: none !important;',
         '}',
+        /* ── Back button + page title, left cluster ──
+           Layout is driven by BACK_ATTR so the burger, the native actions and the title all
+           shift together when the button appears, instead of leaving a hole on the main page. */
+        'body.' + BODY_CLASS + ' .agnative-head-back {',
+        '  position: absolute !important;',
+        '  left: 1em !important;',
+        '  top: .46em !important;',
+        '  z-index: 21 !important;',
+        '  width: 2.6em !important;',
+        '  height: 2.6em !important;',
+        '  min-width: 2.6em !important;',
+        '  margin: 0 !important;',
+        '  padding: 0 !important;',
+        '  box-sizing: border-box !important;',
+        '  display: inline-flex !important;',
+        '  align-items: center !important;',
+        '  justify-content: center !important;',
+        '  border-radius: 999px !important;',
+        '  background: rgba(22,24,30,.26) !important;',
+        '  border: 1px solid rgba(255,255,255,.10) !important;',
+        '  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 8px 18px rgba(0,0,0,.12) !important;',
+        '  backdrop-filter: blur(18px) saturate(140%) !important;',
+        '  -webkit-backdrop-filter: blur(18px) saturate(140%) !important;',
+        '  color: rgba(255,255,255,.95) !important;',
+        '  cursor: pointer !important;',
+        '  opacity: 0 !important;',
+        '  transform: translateX(-.45em) !important;',
+        '  pointer-events: none !important;',
+        '  transition: opacity .2s ease, transform .2s ease, background .2s ease !important;',
+        '}',
+        'body.' + BODY_CLASS + ' .agnative-head-back > svg {',
+        '  display: block !important;',
+        '  width: 1.15em !important;',
+        '  height: 1.15em !important;',
+        '  fill: none !important;',
+        '  stroke: currentColor !important;',
+        '}',
+        'body.' + BODY_CLASS + '[' + BACK_ATTR + '="on"] .agnative-head-back {',
+        '  opacity: 1 !important;',
+        '  transform: none !important;',
+        '  pointer-events: auto !important;',
+        '}',
+        'body.' + BODY_CLASS + ' .agnative-head-back.focus, body.' + BODY_CLASS + ' .agnative-head-back.hover {',
+        '  background: rgba(255,255,255,.18) !important;',
+        '  border-color: rgba(255,255,255,.20) !important;',
+        '  outline: none !important;',
+        '  color: #fff !important;',
+        '}',
+        'body.' + BODY_CLASS + ' .head__title {',
+        '  display: block !important;',
+        '  position: absolute !important;',
+        '  left: calc(1em + 2.6em + 1em) !important;',
+        '  top: .46em !important;',
+        '  right: auto !important;',
+        '  bottom: auto !important;',
+        '  height: 2.6em !important;',
+        '  line-height: 2.6em !important;',
+        '  margin: 0 !important;',
+        '  padding: 0 !important;',
+        '  z-index: 19 !important;',
+        '  max-width: 20em !important;',
+        '  max-width: min(20em, calc(50vw - 13em)) !important;',
+        '  font-size: calc(1em * var(--agnative-scale, 1)) !important;',
+        '  font-weight: 600 !important;',
+        '  letter-spacing: .004em !important;',
+        '  color: rgba(255,255,255,.78) !important;',
+        '  white-space: nowrap !important;',
+        '  overflow: hidden !important;',
+        '  text-overflow: ellipsis !important;',
+        '  text-shadow: 0 1px 6px rgba(0,0,0,.55) !important;',
+        '  pointer-events: none !important;',
+        '  transition: left .2s ease !important;',
+        '}',
+        'body.' + BODY_CLASS + ' .head__title:empty { display: none !important; }',
+        'body.' + BODY_CLASS + '[' + BACK_ATTR + '="on"] .head__title {',
+        '  left: calc(1em + 5.2em + 1.5em) !important;',
+        '}',
+        'body.' + BODY_CLASS + '[' + BACK_ATTR + '="on"] .head__menu-icon {',
+        '  left: calc(1em + 2.6em + .5em) !important;',
+        '}',
+        'body.' + BODY_CLASS + '[' + BACK_ATTR + '="on"] .head__actions {',
+        '  left: calc(1em + 5.2em + 1.3em) !important;',
+        '}',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .agnative-head-back, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .head__title, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .head__menu-icon { transition: none !important; }',
+        'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .agnative-head-back { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgb(30,33,40) !important; }',
+
         'body.' + BODY_CLASS + ' .head__actions {',
         '  position: absolute !important;',
         '  left: calc(1em + 2.6em + .8em) !important;',
@@ -4792,6 +4883,7 @@
         'body.' + BODY_CLASS + ' .head__menu-icon {',
         '  position: absolute !important;',
         '  left: 1em !important;',
+        '  transition: left .2s ease !important;',
         '  top: .46em !important;',
         '  transform: none !important;',
         '  z-index: 20 !important;',
@@ -5835,9 +5927,6 @@
         'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button { background:rgba(255,255,255,.08) !important; border:1px solid rgba(255,255,255,.13) !important; border-radius:999px !important; padding:.42em 1.15em !important; color:rgba(255,255,255,.88) !important; font-size:.88em !important; font-weight:600 !important; line-height:1.2 !important; transition:background .18s ease, box-shadow .18s ease, transform .18s ease !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.08) !important; margin:0 !important; height:auto !important; }',
         'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.focus, body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.hover { background:rgba(255,255,255,.18) !important; border-color:rgba(255,255,255,.16) !important; outline:none !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.16), 0 4px 10px rgba(0,0,0,.22) !important; transform:scale(1.04) !important; color:#fff !important; }',
 
-        'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.agnative-explorer-back { display:inline-flex !important; align-items:center !important; justify-content:center !important; width:auto !important; height:auto !important; aspect-ratio:1 / 1 !important; padding:.42em !important; border-radius:50% !important; flex-shrink:0 !important; line-height:1 !important; color:rgba(255,255,255,.95) !important; }',
-        'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.agnative-explorer-back > svg { display:block !important; width:1.2em !important; height:1.2em !important; color:inherit !important; fill:none !important; stroke:currentColor !important; margin:0 !important; flex-shrink:0 !important; }',
-        'body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.agnative-explorer-back.focus, body.' + BODY_CLASS + ' .explorer__files .torrent-filter .simple-button.agnative-explorer-back.hover { color:#fff !important; transform:scale(1.04) !important; animation:none !important; }',
 
         // Torrent / online-prestige / watched-history result rows
         'body.' + BODY_CLASS + ' .torrent-item.selector, body.' + BODY_CLASS + ' .online-prestige.selector, body.' + BODY_CLASS + ' .watched-history.selector { background:rgba(255,255,255,.055) !important; border:1px solid rgba(255,255,255,.09) !important; border-radius:1.1em !important; margin-bottom:.55em !important; padding:.85em 1.1em !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.06) !important; transition:background .2s ease, box-shadow .2s ease, transform .2s ease !important; }',
@@ -5868,6 +5957,19 @@
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-item.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-serial.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .online-prestige.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .watched-history.selector, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .explorer__files .torrent-filter .simple-button { transition:none !important; will-change:auto !important; }',
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-item.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-item.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-serial.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .torrent-serial.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .online-prestige.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .online-prestige.selector.hover, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .watched-history.selector.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .watched-history.selector.hover { transform:none !important; box-shadow:none !important; background:rgba(255,255,255,.18) !important; border-color:rgba(255,255,255,.28) !important; }',
         'body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .explorer__files .torrent-filter .simple-button.focus, body.' + BODY_CLASS + '[' + PERF_ATTR + '="ultra"] .explorer__files .torrent-filter .simple-button.hover { transform:none !important; box-shadow:none !important; background:rgba(255,255,255,.26) !important; }',
+
+        /* ── Left cluster, responsive.
+           Below 767px the centred nav is hidden, so the title gets the whole middle and is
+           bounded by `right` instead of a guessed max-width. .head__navigator sits at left:1em
+           in that block, which is exactly where the back button now is — push it past both. */
+        '@media (max-width: 767px) {',
+        '  body.' + BODY_CLASS + ' .head__title { right: 10.5em !important; max-width: none !important; font-size: calc(1.05em * var(--agnative-scale, 1)) !important; }',
+        '  body.' + BODY_CLASS + ' .head__navigator { left: calc(1em + 2.6em + .6em) !important; }',
+        '  body.' + BODY_CLASS + '[' + BACK_ATTR + '="on"] .head__navigator { left: calc(1em + 5.2em + 1.1em) !important; }',
+        '}',
+        '@media (max-width: 480px) {',
+        '  body.' + BODY_CLASS + ' .head__title { right: 9.5em !important; font-size: calc(.95em * var(--agnative-scale, 1)) !important; }',
+        '}',
 
         /* ── Notifications button (right dock, left of the clock) ── */
         'body.' + BODY_CLASS + ' .agnative-topnav-right__notice.selector { position:relative !important; width:2.16em !important; min-width:2.16em !important; padding:0 !important; overflow:visible !important; color:rgba(255,255,255,.92) !important; }',
@@ -7395,6 +7497,8 @@
         if (dock) dock.remove();
         var clock = document.getElementById(CLOCK_ID);
         if (clock) clock.remove();
+        var back = document.querySelector('.agnative-head-back');
+        if (back) back.remove();
         var notice = document.querySelector('.agnative-topnav-right__notice');
         if (notice) notice.remove();
         var panel = document.querySelector('.agnative-control-panel');
@@ -7412,6 +7516,7 @@
 
       attachTopnavWheelForwarding();
       bindHeadMenuIconClick();
+      ensureBackButton(head);
       ensureNoticeButton(head);
       ensureClock(head);
       ensureProfileButton(head);
@@ -8049,30 +8154,41 @@
       for (var j = 0; j < eps.length; j++) switchEpisodeCardToBackdrop(eps[j]);
     }
 
-    function injectExplorerBackButton(scope) {
-      if (!scope || scope.nodeType !== 1) return;
-      var filters = [];
-      if (scope.classList && scope.classList.contains('torrent-filter')) {
-        filters.push(scope);
-      } else if (scope.querySelectorAll) {
-        var found = scope.querySelectorAll('.torrent-filter');
-        for (var k = 0; k < found.length; k++) filters.push(found[k]);
-      }
-      for (var i = 0; i < filters.length; i++) {
-        var filter = filters[i];
-        if (filter.__agnativeBackInjected) continue;
-        if (filter.querySelector('.agnative-explorer-back')) continue;
-        filter.__agnativeBackInjected = true;
-        var btn = document.createElement('div');
-        btn.className = 'simple-button selector agnative-explorer-back';
+    function canGoBack() {
+      try {
+        if (window.Lampa && Lampa.Activity && typeof Lampa.Activity.all === 'function') {
+          var all = Lampa.Activity.all();
+          // Activity.backward() is a no-op on the last entry, so hide the button there.
+          return !!(all && all.length > 1);
+        }
+      } catch (e) { }
+      return false;
+    }
+
+    function syncBackButton() {
+      if (!document.body) return;
+      document.body.setAttribute(BACK_ATTR, canGoBack() ? 'on' : 'off');
+    }
+
+    function ensureBackButton(head) {
+      if (!head) return null;
+      var btn = qs('.agnative-head-back', head) || document.querySelector('.agnative-head-back');
+      if (!btn) {
+        btn = document.createElement('div');
+        btn.className = 'agnative-head-back selector';
         btn.setAttribute('data-selector', 'true');
         btn.setAttribute('tabindex', '0');
-        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M14.5 5.5L8 12l6.5 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        btn.setAttribute('aria-label', 'back');
+        btn.innerHTML = iconBackward();
         bindAction(btn, function () {
-          try { if (window.Lampa && Lampa.Activity && Lampa.Activity.backward) Lampa.Activity.backward(); } catch (e) {}
+          try {
+            if (window.Lampa && Lampa.Activity && Lampa.Activity.backward) Lampa.Activity.backward();
+          } catch (e) { }
         });
-        filter.insertBefore(btn, filter.firstChild);
       }
+      if (btn.parentNode !== head) head.appendChild(btn);
+      syncBackButton();
+      return btn;
     }
 
     function observeCards() {
@@ -8102,7 +8218,6 @@
             var eps = node.querySelectorAll('.card-episode');
             for (var m = 0; m < eps.length; m++) switchEpisodeCardToBackdrop(eps[m]);
           }
-          injectExplorerBackButton(node);
         }
         if (!document.querySelector('.agnative-hero')) setTimeout(buildHeroBanner, 200);
       }
@@ -8352,7 +8467,6 @@
       observeMenuChanges();
       if (!content) return;
       processCards(content);
-      injectExplorerBackButton(document.body);
       if (!document.querySelector('.agnative-hero')) setTimeout(buildHeroBanner, 300);
     }
 
