@@ -82,7 +82,7 @@
     SETTINGS_HIDE_COMPONENT: 'agnative_settings_hide'
   };
 
-  const PLUGIN_VERSION = '0.5.3';
+  const PLUGIN_VERSION = '0.5.4 forked';
   const PLUGIN_AUTHORS = 'llowmikee, nrsua, gwynnbleiidd, arabianq, ang3el7z, dimir96';
 
   const ru = {
@@ -112,6 +112,11 @@
     set_topnav_name: 'Пункты Topnav', set_topnav_desc: 'Меню вверху страницы',
     set_topnav_title: 'Пункты верхнего меню',
     set_topnav_item_desc: 'Пункт menu_list: ',
+    set_topnav_hint_name: 'Как это работает',
+    set_topnav_hint_desc: 'Нажмите на пункт, чтобы включить или выключить его. Удерживайте OK на включённом пункте, чтобы изменить позицию.',
+    set_topnav_item_off_desc: 'Выключен, не показывается в верхней панели',
+    set_topnav_item_hold_desc: 'удерживайте OK, чтобы изменить позицию',
+    set_topnav_order_title: 'Позиция пункта',
     set_logo_lang_name: 'Язык логотипов',
     set_logo_lang_desc: 'Если логотипа на выбранном языке нет, используется английский',
     set_font_size_name: 'Размер шрифта',
@@ -260,6 +265,11 @@
     set_topnav_name: 'Topnav items', set_topnav_desc: 'Top page menu',
     set_topnav_title: 'Top navigation items',
     set_topnav_item_desc: 'menu_list item: ',
+    set_topnav_hint_name: 'How it works',
+    set_topnav_hint_desc: 'Press an item to turn it on or off. Hold OK on an enabled item to change its position.',
+    set_topnav_item_off_desc: 'Disabled, hidden from the top bar',
+    set_topnav_item_hold_desc: 'hold OK to change position',
+    set_topnav_order_title: 'Item position',
     set_logo_lang_name: 'Logo language',
     set_logo_lang_desc: 'If no logo in chosen language, English is used',
     set_font_size_name: 'Font size',
@@ -408,6 +418,11 @@
     set_topnav_name: 'Пункти Topnav', set_topnav_desc: 'Меню вгорі сторінки',
     set_topnav_title: 'Пункти верхнього меню',
     set_topnav_item_desc: 'Пункт menu_list: ',
+    set_topnav_hint_name: 'Як це працює',
+    set_topnav_hint_desc: 'Натисніть на пункт, щоб увімкнути або вимкнути його. Утримуйте OK на увімкненому пункті, щоб змінити позицію.',
+    set_topnav_item_off_desc: 'Вимкнено, не показується у верхній панелі',
+    set_topnav_item_hold_desc: 'утримуйте OK, щоб змінити позицію',
+    set_topnav_order_title: 'Позиція пункту',
     set_logo_lang_name: 'Мова логотипів',
     set_logo_lang_desc: 'Якщо логотип обраною мовою відсутній, використовується англійська',
     set_font_size_name: 'Розмір шрифту',
@@ -556,6 +571,11 @@
     set_topnav_name: 'Пункты Topnav', set_topnav_desc: 'Меню ўверсе старонкі',
     set_topnav_title: 'Пункты верхняга меню',
     set_topnav_item_desc: 'Пункт menu_list: ',
+    set_topnav_hint_name: 'Як гэта працуе',
+    set_topnav_hint_desc: 'Націсніце на пункт, каб уключыць або выключыць яго. Утрымлівайце OK на ўключаным пункце, каб змяніць пазіцыю.',
+    set_topnav_item_off_desc: 'Выключаны, не паказваецца ў верхняй панэлі',
+    set_topnav_item_hold_desc: 'утрымлівайце OK, каб змяніць пазіцыю',
+    set_topnav_order_title: 'Пазіцыя пункта',
     set_logo_lang_name: 'Мова лагатыпаў',
     set_logo_lang_desc: 'Калі лагатыпа на выбранай мове няма, выкарыстоўваецца англійская',
     set_font_size_name: 'Памер шрыфту',
@@ -1123,6 +1143,16 @@
     } = AGNATIVE_KEYS;
 
     var CARD_ANIM_DEFAULT = 'appletv';
+    var BOOL_SETTING_KEYS = [
+      ENABLE_KEY,
+      TOPNAV_ENABLE_KEY,
+      BACKDROP_KEY,
+      BADGE_KEY,
+      RATING_KEY,
+      CLOCK_SECONDS_KEY,
+      CONTROL_PANEL_KEY,
+      NOTICE_BUTTON_KEY
+    ];
     var scheduled = false;
     var clockTimer = null;
     var logoCache = {};
@@ -1188,6 +1218,7 @@
     var activityListenerBound = false;
     var fullListenerBound = false;
     var topnavSettingsOpen = false;
+    var topnavItemNodes = {};
     var perfModeDirty = false;
     var controlPanelOpen = false;
     var controlPanelPrevController = '';
@@ -1226,12 +1257,7 @@
     }
 
     function pluginEnabled() {
-      try {
-        if (!window.Lampa || !Lampa.Storage) return true;
-        return Lampa.Storage.get(ENABLE_KEY, 'on') !== 'off';
-      } catch (e) {
-        return true;
-      }
+      return storageFlagOn(ENABLE_KEY, 'on');
     }
 
     function detectLampaLang() {
@@ -1346,11 +1372,43 @@
       } catch (e) { return 'color'; }
     }
 
+    function isFlagValueOn(value) {
+      return !(
+        value === false ||
+        value === 'false' ||
+        value === 'off' ||
+        value === 0 ||
+        value === '0' ||
+        value === '' ||
+        value === null ||
+        typeof value === 'undefined'
+      );
+    }
+
     function storageFlagOn(key, def) {
+      var fallback = !(def === 'off' || def === false || def === 'false');
       try {
-        if (!window.Lampa || !Lampa.Storage) return def !== 'off';
-        return Lampa.Storage.get(key, def) !== 'off';
-      } catch (e) { return def !== 'off'; }
+        if (!window.Lampa || !Lampa.Storage) return fallback;
+        return isFlagValueOn(Lampa.Storage.get(key, fallback ? 'true' : 'false'));
+      } catch (e) { return fallback; }
+    }
+
+    function setStorageFlag(key, enabled) {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return;
+        Lampa.Storage.set(key, enabled ? 'true' : 'false');
+      } catch (e) { }
+    }
+
+    function migrateFlagSettings() {
+      try {
+        if (!window.Lampa || !Lampa.Storage) return;
+        BOOL_SETTING_KEYS.forEach(function (key) {
+          var raw = Lampa.Storage.get(key, '');
+          if (raw === 'on' || raw === 1 || raw === '1') Lampa.Storage.set(key, 'true');
+          else if (raw === 'off' || raw === 0 || raw === '0') Lampa.Storage.set(key, 'false');
+        });
+      } catch (e) { }
     }
 
     function backdropEnabled() { return storageFlagOn(BACKDROP_KEY, 'on'); }
@@ -1568,10 +1626,12 @@
     function openTopnavSettingsSection() {
       if (!window.Lampa || !Lampa.Settings || !Lampa.Settings.create) return;
       topnavSettingsOpen = true;
+      topnavItemNodes = {};
       setTimeout(function () {
         Lampa.Settings.create(TOPNAV_SETTINGS_COMPONENT, {
           onBack: function () {
             topnavSettingsOpen = false;
+            topnavItemNodes = {};
             Lampa.Settings.create(SETTINGS_COMPONENT);
             setTimeout(function () { startPlugin(); }, 50);
             setTimeout(function () { schedulePatch(); }, 120);
@@ -1821,7 +1881,7 @@
     function resetSettings() {
       try {
         if (!window.Lampa || !Lampa.Storage) return;
-        Lampa.Storage.set(ENABLE_KEY, 'on');
+        setStorageFlag(ENABLE_KEY, true);
         Lampa.Storage.set(GLARE_KEY, 'on');
         Lampa.Storage.set(CARD_ANIM_KEY, CARD_ANIM_DEFAULT);
         Lampa.Storage.set(CARD_ANIM_ORBIT_KEY, 'false');
@@ -1829,13 +1889,13 @@
         Lampa.Storage.set(LOGO_LANG_KEY, 'auto');
         Lampa.Storage.set(FONT_SIZE_KEY, 'md');
         Lampa.Storage.set(CATEGORY_SIZE_KEY, 'md');
-        Lampa.Storage.set(BACKDROP_KEY, 'on');
-        Lampa.Storage.set(BADGE_KEY, 'on');
-        Lampa.Storage.set(RATING_KEY, 'off');
+        setStorageFlag(BACKDROP_KEY, true);
+        setStorageFlag(BADGE_KEY, true);
+        setStorageFlag(RATING_KEY, false);
         Lampa.Storage.set(RATING_STYLE_KEY, 'color');
-        Lampa.Storage.set(CLOCK_SECONDS_KEY, 'off');
-        Lampa.Storage.set(CONTROL_PANEL_KEY, 'off');
-        Lampa.Storage.set(NOTICE_BUTTON_KEY, 'on');
+        setStorageFlag(CLOCK_SECONDS_KEY, false);
+        setStorageFlag(CONTROL_PANEL_KEY, false);
+        setStorageFlag(NOTICE_BUTTON_KEY, true);
         Lampa.Storage.set(PERF_MODE_KEY, 'auto');
         Lampa.Storage.set(CARD_SIZE_KEY, 'md');
         Lampa.Storage.set(LOGO_SIZE_KEY, 'md');
@@ -1854,7 +1914,7 @@
         Lampa.Storage.set(HERO_QUALITY_KEY, 'w1280');
         Lampa.Storage.set(HERO_TRAILER_MODE_KEY, 'mixed');
         Lampa.Storage.set(HERO_TRAILER_DELAY_KEY, '8');
-        Lampa.Storage.set(TOPNAV_ENABLE_KEY, 'on');
+        setStorageFlag(TOPNAV_ENABLE_KEY, true);
         Lampa.Storage.set(TOPNAV_SIZE_KEY, 'md');
         Lampa.Storage.set(TOPNAV_ICONS_ORDER_KEY, 'end');
         Lampa.Storage.set(TOPNAV_ITEMS_KEY, ['main', 'movie', 'tv', 'cartoon']);
@@ -1886,32 +1946,121 @@
       } catch (e) { }
     }
 
-    function setTopnavActionState(action, enabled) {
-      var current = getStoredTopnavActions().filter(function (item, index, arr) {
+    function uniqueTopnavActions() {
+      return getStoredTopnavActions().filter(function (item, index, arr) {
         return item && arr.indexOf(item) === index;
       });
+    }
+
+    function topnavActionIndex(action, list) {
+      var current = list || uniqueTopnavActions();
+      var idx = current.indexOf(action);
+      if (idx !== -1) return idx;
+      var norm = normalizeTopnavAction(action);
+      if (!norm) return -1;
+      for (var i = 0; i < current.length; i++) {
+        if (normalizeTopnavAction(current[i]) === norm) return i;
+      }
+      return -1;
+    }
+
+    function topnavActionEnabled(action) {
+      return topnavActionIndex(action) !== -1;
+    }
+
+    function setTopnavActionState(action, enabled) {
+      var current = uniqueTopnavActions();
+      var idx = topnavActionIndex(action, current);
 
       if (enabled) {
-        if (current.indexOf(action) === -1) current.push(action);
-      } else {
-        current = current.filter(function (item) { return item !== action; });
+        if (idx === -1) current.push(action);
+      } else if (idx !== -1) {
+        current.splice(idx, 1);
       }
 
       setStoredTopnavActions(current);
     }
 
-    function moveTopnavAction(action, direction) {
-      var current = getStoredTopnavActions().filter(function (item, index, arr) {
-        return item && arr.indexOf(item) === index;
-      });
-      var idx = current.indexOf(action);
+    function moveTopnavActionTo(action, position) {
+      var current = uniqueTopnavActions();
+      var idx = topnavActionIndex(action, current);
       if (idx === -1) return;
-      var newIdx = direction === 'up' ? idx - 1 : idx + 1;
-      if (newIdx < 0 || newIdx >= current.length) return;
-      var tmp = current[idx];
-      current[idx] = current[newIdx];
-      current[newIdx] = tmp;
+      var moved = current.splice(idx, 1)[0];
+      if (position < 0) position = 0;
+      if (position > current.length) position = current.length;
+      current.splice(position, 0, moved);
       setStoredTopnavActions(current);
+    }
+
+    function topnavItemParamKey(action) {
+      return 'agnative_topnav_item_' + action;
+    }
+
+    function syncTopnavItemParam(action) {
+      var key = topnavItemParamKey(action);
+      var enabled = topnavActionEnabled(action);
+      try {
+        if (window.Lampa && Lampa.Storage && Lampa.Storage.get(key, '') === enabled) return;
+      } catch (e) { }
+      setStorageFlag(key, enabled);
+    }
+
+    function topnavPositionBadge(position) {
+      return '<span class="agnative-pos-badge" style="display:inline-block;min-width:1.6em;margin-left:.6em;padding:.1em .45em;' +
+        'font-size:.62em;font-weight:800;line-height:1.5;text-align:center;vertical-align:middle;color:#fff;' +
+        'background:rgba(255,255,255,.22);border-radius:1em;">' + position + '</span>';
+    }
+
+    function decorateTopnavItem(action) {
+      var entry = topnavItemNodes[action];
+      if (!entry || !entry.node) return;
+      var idx = topnavActionIndex(action);
+      var on = idx !== -1;
+      try {
+        entry.node.find('.settings-param__name').html(entry.label + (on ? topnavPositionBadge(idx + 1) : ''));
+        entry.node.find('.settings-param__descr').html(on
+          ? t('set_topnav_position') + ' ' + (idx + 1) + ' · ' + t('set_topnav_item_hold_desc')
+          : t('set_topnav_item_off_desc'));
+      } catch (e) { }
+    }
+
+    function refreshTopnavItems() {
+      Object.keys(topnavItemNodes).forEach(function (action) {
+        syncTopnavItemParam(action);
+        decorateTopnavItem(action);
+      });
+    }
+
+    function openTopnavPositionSelect(action, label) {
+      if (!window.Lampa || !Lampa.Select || !Lampa.Controller) return;
+      var current = uniqueTopnavActions();
+      var idx = topnavActionIndex(action, current);
+      if (idx === -1 || current.length < 2) return;
+
+      var items = [];
+      for (var i = 0; i < current.length; i++) {
+        items.push({
+          title: t('set_topnav_position') + ' ' + (i + 1),
+          position: i,
+          selected: i === idx
+        });
+      }
+
+      var previous = '';
+      try { previous = Lampa.Controller.enabled().name; } catch (e) { }
+
+      Lampa.Select.show({
+        title: label || t('set_topnav_order_title'),
+        items: items,
+        onBack: function () {
+          try { Lampa.Controller.toggle(previous || 'settings_component'); } catch (e) { }
+        },
+        onSelect: function (selected) {
+          moveTopnavActionTo(action, selected.position);
+          refreshTopnavItems();
+          try { Lampa.Controller.toggle(previous || 'settings_component'); } catch (e) { }
+        }
+      });
     }
 
     function getSelectedTopnavItems() {
@@ -3048,10 +3197,22 @@
       } catch (e) { return false; }
     }
 
+    function addParam(data) {
+      try {
+        Lampa.SettingsApi.addParam(data);
+      } catch (e) {
+        try {
+          console.log('AppleTV AgNative', 'settings param failed:', data && data.param && data.param.name, e);
+        } catch (err) { }
+      }
+    }
+
     function registerSettings() {
       try {
         if (!window.Lampa || !Lampa.SettingsApi || window.__APPLETV_AGNATIVE_TOPNAV_SETTINGS__) return;
         window.__APPLETV_AGNATIVE_TOPNAV_SETTINGS__ = true;
+
+        migrateFlagSettings();
 
         if (Lampa.Template && Lampa.Template.add) {
           Lampa.Template.add('settings_' + SETTINGS_COMPONENT, '<div></div>');
@@ -3066,7 +3227,7 @@
           name: 'Agnative'
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: { name: 'agnative_about_info', type: 'static' },
           field: {
@@ -3075,26 +3236,25 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
           field: { name: t('set_main_title') }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: ENABLE_KEY,
-            type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
-            default: 'off'
+            type: 'trigger',
+            default: 'true'
           },
           field: {
             name: t('set_enable_name'),
             description: t('set_enable_desc')
           },
           onChange: function (value) {
-            if (value === 'off') {
+            if (!isFlagValueOn(value)) {
               removePluginUi();
               return;
             }
@@ -3107,7 +3267,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: UI_LANG_KEY,
@@ -3130,7 +3290,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: PERF_MODE_KEY,
@@ -3160,7 +3320,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: { name: 'agnative_reset_button', type: 'button' },
           field: {
@@ -3172,31 +3332,30 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
           field: { name: t('set_section_topnav') }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: TOPNAV_ENABLE_KEY,
-            type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
-            default: 'on'
+            type: 'trigger',
+            default: 'true'
           },
           field: {
             name: t('set_topnav_enable_name'),
             description: t('set_topnav_enable_desc')
           },
           onChange: function (value) {
-            if (value === 'off') removeTopnavUi();
+            if (!isFlagValueOn(value)) removeTopnavUi();
             else setTimeout(function () { schedulePatch(); }, 50);
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: TOPNAV_SIZE_KEY,
@@ -3219,7 +3378,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: TOPNAV_ICONS_ORDER_KEY,
@@ -3240,7 +3399,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: { name: 'agnative_open_topnav_settings', type: 'button' },
           field: {
@@ -3252,13 +3411,13 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
           field: { name: t('set_section_hero_banner') + ' <span class="agnative-beta-badge">BETA</span>' }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: { name: 'agnative_open_hero_settings', type: 'button' },
           field: {
@@ -3270,19 +3429,18 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
           field: { name: t('set_section_cards') }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: BACKDROP_KEY,
-            type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
-            default: 'on'
+            type: 'trigger',
+            default: 'true'
           },
           field: {
             name: t('set_backdrop_name'),
@@ -3295,7 +3453,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: CARD_IMAGE_MODE_KEY,
@@ -3325,7 +3483,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: CARD_SIZE_KEY,
@@ -3348,7 +3506,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: OVERLAY_ALIGN_KEY,
@@ -3369,13 +3527,12 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: BADGE_KEY,
-            type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
-            default: 'on'
+            type: 'trigger',
+            default: 'true'
           },
           field: {
             name: t('set_badge_name'),
@@ -3390,13 +3547,12 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: RATING_KEY,
-            type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
-            default: 'off'
+            type: 'trigger',
+            default: 'false'
           },
           field: {
             name: langText('title_rating', t('set_rating_name')),
@@ -3411,7 +3567,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: RATING_STYLE_KEY,
@@ -3428,7 +3584,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: CARD_ANIM_KEY,
@@ -3449,7 +3605,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: CARD_ANIM_ORBIT_KEY,
@@ -3463,13 +3619,13 @@
           onChange: function () { }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
           field: { name: t('set_section_logos') }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: LOGO_LANG_KEY,
@@ -3506,7 +3662,7 @@
           }
         } catch (e) { }
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: LOGO_TITLE_KEY,
@@ -3525,7 +3681,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: LOGO_SIZE_KEY,
@@ -3548,7 +3704,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: POSTER_QUALITY_KEY,
@@ -3574,13 +3730,13 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
           field: { name: t('set_section_text') }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: FONT_SIZE_KEY,
@@ -3603,7 +3759,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: CATEGORY_SIZE_KEY,
@@ -3626,19 +3782,18 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
           field: { name: t('set_section_clock') }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: CLOCK_SECONDS_KEY,
-            type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
-            default: 'off'
+            type: 'trigger',
+            default: 'false'
           },
           field: {
             name: t('set_clock_seconds_name'),
@@ -3649,31 +3804,29 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: CONTROL_PANEL_KEY,
-            type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
-            default: 'off'
+            type: 'trigger',
+            default: 'false'
           },
           field: {
             name: t('set_control_panel_name'),
             description: t('set_control_panel_desc')
           },
           onChange: function (value) {
-            if (value === 'off') closeControlPanel(true);
+            if (!isFlagValueOn(value)) closeControlPanel(true);
             setTimeout(function () { schedulePatch(); }, 80);
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: NOTICE_BUTTON_KEY,
-            type: 'select',
-            values: { on: t('val_on'), off: t('val_off') },
-            default: 'on'
+            type: 'trigger',
+            default: 'true'
           },
           field: {
             name: t('set_notice_button_name'),
@@ -3684,7 +3837,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: { name: 'agnative_open_settings_hide', type: 'button' },
           field: {
@@ -3696,13 +3849,13 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: { type: 'title' },
           field: { name: t('set_section_data') }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_COMPONENT,
           param: {
             name: CACHE_SIZE_KEY,
@@ -3725,13 +3878,13 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: HERO_SETTINGS_COMPONENT,
           param: { type: 'title' },
           field: { name: t('set_hero_title') }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: HERO_SETTINGS_COMPONENT,
           param: {
             name: HERO_KEY,
@@ -3748,7 +3901,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: HERO_SETTINGS_COMPONENT,
           param: {
             name: HERO_SOURCE_KEY,
@@ -3776,7 +3929,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: HERO_SETTINGS_COMPONENT,
           param: {
             name: HERO_ALIGN_KEY,
@@ -3797,7 +3950,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: HERO_SETTINGS_COMPONENT,
           param: {
             name: HERO_INDICATORS_KEY,
@@ -3816,7 +3969,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: HERO_SETTINGS_COMPONENT,
           param: {
             name: HERO_ANIMATION_KEY,
@@ -3833,7 +3986,7 @@
         });
 
         var heroIntervalSec = t('val_sec_short');
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: HERO_SETTINGS_COMPONENT,
           param: {
             name: HERO_INTERVAL_KEY,
@@ -3864,7 +4017,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: HERO_SETTINGS_COMPONENT,
           param: {
             name: HERO_BG_ANIM_KEY,
@@ -3889,7 +4042,7 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: HERO_SETTINGS_COMPONENT,
           param: {
             name: HERO_QUALITY_KEY,
@@ -3927,7 +4080,7 @@
           }
         } catch (e) { }
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: HERO_SETTINGS_COMPONENT,
           param: {
             name: HERO_TRAILER_MODE_KEY,
@@ -3951,7 +4104,8 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        var heroTrailerSec = t('val_sec_short');
+        addParam({
           component: HERO_SETTINGS_COMPONENT,
           param: {
             name: HERO_TRAILER_DELAY_KEY,
@@ -3981,51 +4135,51 @@
           }
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: TOPNAV_SETTINGS_COMPONENT,
           param: { type: 'title' },
           field: { name: t('set_topnav_title') }
         });
 
-        var posMax = 15;
-        var posValues = { off: t('val_hide') };
-        for (var pi = 1; pi <= posMax; pi++) posValues['p' + pi] = t('set_topnav_position') + ' ' + pi;
+        addParam({
+          component: TOPNAV_SETTINGS_COMPONENT,
+          param: { name: 'agnative_topnav_hint', type: 'static' },
+          field: {
+            name: t('set_topnav_hint_name'),
+            description: t('set_topnav_hint_desc')
+          }
+        });
 
         getAvailableTopnavItems().forEach(function (item) {
-          var stored = getStoredTopnavActions();
-          var currentIdx = stored.indexOf(item.action);
-          var currentDefault = currentIdx === -1 ? 'off' : ('p' + (currentIdx + 1));
-
-          Lampa.SettingsApi.addParam({
+          addParam({
             component: TOPNAV_SETTINGS_COMPONENT,
             param: {
-              name: 'agnative_topnav_item_' + item.action,
-              type: 'select',
-              values: posValues,
-              default: currentDefault
+              name: topnavItemParamKey(item.action),
+              type: 'trigger',
+              default: topnavActionEnabled(item.action) ? 'true' : 'false'
             },
             field: {
               name: item.label,
-              description: t('set_topnav_item_desc') + item.action
+              description: t('set_topnav_item_off_desc')
+            },
+            onRender: function (node) {
+              topnavItemNodes[item.action] = { node: node, label: item.label };
+              syncTopnavItemParam(item.action);
+              decorateTopnavItem(item.action);
+              try {
+                node.on('hover:long', function () {
+                  openTopnavPositionSelect(item.action, item.label);
+                });
+              } catch (e) { }
             },
             onChange: function (value) {
-              if (value === 'off') {
-                setTopnavActionState(item.action, false);
-                return;
-              }
-              var targetPos = parseInt(value.replace('p', ''), 10) - 1;
-              if (isNaN(targetPos) || targetPos < 0) return;
-              var current = getStoredTopnavActions().filter(function (a, i, arr) { return a && arr.indexOf(a) === i; });
-              var oldIdx = current.indexOf(item.action);
-              if (oldIdx !== -1) current.splice(oldIdx, 1);
-              if (targetPos > current.length) targetPos = current.length;
-              current.splice(targetPos, 0, item.action);
-              setStoredTopnavActions(current);
+              setTopnavActionState(item.action, isFlagValueOn(value));
+              refreshTopnavItems();
             }
           });
         });
 
-        Lampa.SettingsApi.addParam({
+        addParam({
           component: SETTINGS_HIDE_COMPONENT,
           param: { type: 'title' },
           field: { name: t('set_settings_hide_title') }
@@ -4034,7 +4188,7 @@
         var hiddenList = getHiddenSettingsSections();
         getSettingsSectionDefs().forEach(function (sec) {
           var isHidden = hiddenList.indexOf(sec.id) !== -1;
-          Lampa.SettingsApi.addParam({
+          addParam({
             component: SETTINGS_HIDE_COMPONENT,
             param: {
               name: 'agnative_settings_hide_' + sec.id,
@@ -4046,8 +4200,7 @@
               description: t('set_settings_hide_item_desc')
             },
             onChange: function (value) {
-              var hide = value === true || value === 'true' || value === 'on';
-              toggleSettingsSectionHidden(sec.id, hide);
+              toggleSettingsSectionHidden(sec.id, isFlagValueOn(value));
               applyHiddenSettingsSectionsCSS();
             }
           });
@@ -4207,7 +4360,7 @@
 
           if (e.name === BACKDROP_KEY || e.name === BADGE_KEY || e.name === RATING_KEY) {
             syncCardFlags();
-            if (e.name === BACKDROP_KEY || (e.value && e.value !== 'off')) {
+            if (e.name === BACKDROP_KEY || isFlagValueOn(e.value)) {
               resetCardSwitches();
               setTimeout(function () { schedulePatch(); }, 80);
             }
@@ -7380,7 +7533,7 @@
     }
 
     function topnavEnabled() {
-      try { return window.Lampa && Lampa.Storage.get(TOPNAV_ENABLE_KEY, 'on') !== 'off'; } catch (e) { return true; }
+      return storageFlagOn(TOPNAV_ENABLE_KEY, 'on');
     }
 
     function getTopnavIconsOrder() {
